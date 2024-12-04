@@ -86,6 +86,12 @@ const Header = () => {
                   <FaHome size={20} />
                   Home
                 </li>
+                <Link to="/dashboard" className="flex items-center gap-3 cursor-pointer">
+                <li className="flex items-center gap-3 cursor-pointer">
+                  <FaEnvelope size={20} />
+                  Dashboard
+                </li>
+                </Link>
                 <li className="flex items-center gap-3 cursor-pointer">
                   <FaInfoCircle size={20} />
                   About

@@ -2,9 +2,10 @@ import { Routes, Route } from "react-router-dom";
 import ButtonGradient from "./assets/svg/ButtonGradient";
 import Benefits from "./components/Benefits";
 import { AuthProvider } from "./AuthContext";
-import RegisterPage from "./components/register"; // Import the RegisterPage
-import Login from "./components/login";
+import RegisterPage from "./pages/register";
+import Login from "./pages/login";
 import Layout from "./layout";
+import DashboardPage from "./pages/dashboard";
 
 const App = () => {
   return (
@@ -13,6 +14,7 @@ const App = () => {
           <Route path="/" element={<Layout />}>
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
           </Route>
         </Routes>
       <ButtonGradient />
