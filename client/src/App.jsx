@@ -6,6 +6,7 @@ import RegisterPage from "./pages/register";
 import Login from "./pages/login";
 import Layout from "./layout";
 import DashboardPage from "./pages/dashboard";
+import UserInfoForm from "./pages/UserInfoForm";
 
 const App = () => {
   return (
@@ -15,6 +16,7 @@ const App = () => {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/user-info" element={<UserInfoForm />} />
           </Route>
         </Routes>
       <ButtonGradient />

@@ -18,7 +18,6 @@ const Register = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-
       const result = await response.json();
       if (response.ok) {
         setSuccessMessage(result.message);  // Display success message

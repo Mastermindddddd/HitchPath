@@ -3,18 +3,27 @@ import Section from "./Section";
 import { BackgroundCircles} from "./design/Hero";
 import { heroIcons } from "../constants";
 import { ScrollParallax } from "react-just-parallax";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import {motion, useScroll, useTransform} from "framer-motion";
 
 
 const Hero = () => {
   const parallaxRef = useRef(null);
   const heroRef = useRef(null);
+  const [userName, setUserName] = useState("");
   const { scrollYProgress } = useScroll({
     target:heroRef,
     offset: ['start end', 'end start'],
   })
   const translateY = useTransform(scrollYProgress, [0, 1], [150, -150]);
+
+  useEffect(() => {
+    const storedName = localStorage.getItem("userName");
+    if (storedName) {
+      setUserName(storedName);
+    }
+  }, []);
+
 
   return (
     <section
@@ -25,6 +34,7 @@ const Hero = () => {
     >
       <div className="md:flex items-center ">
       <div className="md:w-[478px] lg:w-[778px] lg:ml-10 px-4 sm:px-6 md:px-0">
+      {userName && <p className="text-sm">Welcome, {userName}!</p>}
   <h1 className="h1 mb-6 text-center md:text-left text-2xl sm:text-3xl lg:text-5xl font-bold leading-tight">
     Explore the Possibilities of&nbsp;AI&nbsp;Chatting with&nbsp;
     <span className="inline-block relative text-blue-600">
