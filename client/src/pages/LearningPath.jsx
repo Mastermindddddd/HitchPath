@@ -134,42 +134,25 @@ const LearningPath = () => {
         <CircularProgress />
       ) : learningPath.length > 0 ? (
         <>
-          <Typography variant="h4" gutterBottom>
+          <Typography variant="h4" mb={2}>
             Your Personalized Learning Path
           </Typography>
-          <LinearProgress
-            variant="determinate"
-            value={((currentStep + 1) / learningPath.length) * 100}
-            sx={{
-              height: 10,
-              borderRadius: 5,
-              background: "rgba(255, 255, 255, 0.3)",
-              "& .MuiLinearProgress-bar": {
-                background: "gold",
-              },
-              my: 2,
-            }}
-          />
           {renderSteps()}
-          <Button
-            variant="contained"
-            sx={{
-              mt: 3,
-              background: "gold",
-              color: "black",
-              "&:hover": { background: "#ffd700" },
-            }}
-            disabled={currentStep === learningPath.length - 1}
-            onClick={handleNextStep}
-          >
-            {currentStep === learningPath.length - 1
-              ? "Learning Complete!"
-              : "Next Step"}
-          </Button>
+          <Box sx={{ mt: 3 }}>
+            {currentStep < learningPath.length - 1 && (
+              <Button
+                variant="contained"
+                sx={{ backgroundColor: "#1e40af", mt: 2 }}
+                onClick={handleNextStep}
+              >
+                Next Step
+              </Button>
+            )}
+          </Box>
         </>
       ) : (
-        <Typography variant="h6" color="error">
-          No learning path found.
+        <Typography variant="h6" color="text.secondary">
+          No learning path available yet.
         </Typography>
       )}
     </Box>

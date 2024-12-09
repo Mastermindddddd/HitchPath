@@ -157,6 +157,12 @@ app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
       return res.status(404).json({ error: "User not found." });
     }
 
+    // If the user already has a saved learning path, return it
+    if (user.hasSavedLearningPath) {
+      return res.json({ learningPath: user.learningPath });
+    }
+
+    // If not, generate a new learning path
     const {
       careerPath = "General software development",
       currentSkillLevel = "Beginner",
@@ -195,15 +201,24 @@ app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
     });
 
     const rawResponse = response.choices[0]?.message?.content;
-    console.log("Raw response from Mistral:", rawResponse);
+    console.log("Raw response from Mistral:", rawResponse); // Log raw response
 
-    // Extract JSON content using a regex
     const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       throw new Error("Failed to extract JSON from response.");
     }
 
     const learningPath = JSON.parse(jsonMatch[0]);
+    console.log("Parsed Learning Path:", learningPath);
+
+    // Save the learning path and mark hasSavedLearningPath as true
+    user.learningPath = learningPath.steps;
+    user.hasSavedLearningPath = true;
+
+    // Log before saving to ensure the data is correct
+    console.log("User data before saving:", user);
+
+    const updatedUser = await user.save();
 
     res.json({ learningPath: learningPath.steps });
   } catch (error) {
@@ -211,84 +226,6 @@ app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
     res.status(500).json({ error: "Failed to generate learning path." });
   }
 });
-
-
-/*
-  app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found." });
-    }
-
-    // Use mock data for user fields if not provided
-    const {
-      careerPath = "General software development",
-      currentSkillLevel = "Beginner",
-      preferredLearningStyle = "Interactive",
-      shortTermGoals = "Learn basic coding",
-      longTermGoals = "Become a software engineer",
-    } = user;
-
-    const prompt = `
-      Based on the following user preferences:
-      - Career Path: ${careerPath}
-      - Current Skill Level: ${currentSkillLevel}
-      - Preferred Learning Style: ${preferredLearningStyle}
-      - Short-Term Goals: ${shortTermGoals}
-      - Long-Term Goals: ${longTermGoals}
-
-      Generate a personalized learning path with actionable steps, tips, and milestones. Return the response in the following parsable JSON format:
-
-      {
-        "steps": [
-          "Step 1 description",
-          "Step 2 description",
-          "Step 3 description",
-          ...
-        ]
-      }
-    `;
-
-    // Mock Response for Quota Exceeded
-    const mockResponse = {
-      steps: [
-        "Step 1: Understand basic programming concepts (e.g., variables, loops, and conditionals).",
-        "Step 2: Learn a beginner-friendly programming language like Python.",
-        "Step 3: Practice by completing simple coding exercises and projects.",
-        "Step 4: Explore online interactive tutorials and coding platforms.",
-        "Step 5: Join a coding community or find a mentor to guide your learning.",
-        "Step 6: Set up your development environment and build small applications.",
-        "Step 7: Study basic data structures and algorithms.",
-        "Step 8: Begin exploring career-specific skills (e.g., web development or data science).",
-        "Step 9: Create a portfolio showcasing your projects.",
-        "Step 10: Prepare for technical interviews and apply for entry-level roles.",
-      ],
-    };
-
-    // Uncomment below to enable real OpenAI call when quota is available
-    /*
-    const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: prompt }],
-    });
-
-    const learningPathJSON = response.choices[0]?.message?.content.trim();
-    const learningPath = JSON.parse(learningPathJSON);
-
-    res.json({ learningPath: learningPath.steps });
-    */
-
-    // Send Mock Response
-   // res.json({ learningPath: mockResponse.steps });
- // } catch (error) {
-  //  console.error("Error generating learning path:", error.response?.data || error.message);
-   // res.status(500).json({ error: "Failed to generate learning path." });
- // }
-//});
-
 
 app.post("/api/test-openai", async (req, res) => {
   try {

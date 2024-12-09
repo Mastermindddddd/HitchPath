@@ -23,6 +23,8 @@ const userSchema = new mongoose.Schema({
   reminderTone: { type: String },
   devicePreference: { type: String },
   accessibilityNeeds: { type: String },
+  learningPath: { type: Array, default: [] },  // Save the learning path here
+  hasSavedLearningPath: { type: Boolean, default: false }, // Track if user has a saved path
 });
 
 const User = mongoose.model("User", userSchema);
