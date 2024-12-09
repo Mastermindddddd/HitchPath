@@ -1,20 +1,14 @@
-import { curve, heroBackground, robot, smallSphere, brainwaveSymbol } from "../assets";
-import Section from "./Section";
-import { BackgroundCircles} from "./design/Hero";
-import { heroIcons } from "../constants";
-import { ScrollParallax } from "react-just-parallax";
 import { useRef, useState, useEffect } from "react";
-import {motion, useScroll, useTransform} from "framer-motion";
-
+import { useScroll, useTransform, motion } from "framer-motion";
 
 const Hero = () => {
   const parallaxRef = useRef(null);
   const heroRef = useRef(null);
   const [userName, setUserName] = useState("");
   const { scrollYProgress } = useScroll({
-    target:heroRef,
+    target: heroRef,
     offset: ['start end', 'end start'],
-  })
+  });
   const translateY = useTransform(scrollYProgress, [0, 1], [150, -150]);
 
   useEffect(() => {
@@ -23,6 +17,12 @@ const Hero = () => {
       setUserName(storedName);
     }
   }, []);
+
+  const handleLogout = () => {
+    // Clear the user name from localStorage and reset state
+    localStorage.removeItem("userName");
+    setUserName("");
+  };
 
 
   return (

@@ -9,17 +9,15 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(""); // Clear previous errors
-    console.log("Login initiated"); // Debugging log
     try {
       const response = await axios.post("http://localhost:3000/login", { email, password });
-      console.log("Response received:", response.data); // Debugging log
       const { token, user } = response.data;
       localStorage.setItem("token", token);
       localStorage.setItem("userName", user.name);
       alert("Login successful!");
       window.location.href = "/"; // Redirect after successful login
     } catch (err) {
-      console.error("Login error:", err); // Debugging log
+      console.error("Login error:", err);
       setError(err.response?.data?.error || "An error occurred.");
     }
   };

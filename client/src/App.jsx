@@ -7,6 +7,8 @@ import Login from "./pages/login";
 import Layout from "./layout";
 import DashboardPage from "./pages/dashboard";
 import UserInfoForm from "./pages/UserInfoForm";
+import LearningPath from "./pages/LearningPath";
+import OpenAITest from "./pages/openAI";
 
 const App = () => {
   return (
@@ -17,6 +19,8 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/user-info" element={<UserInfoForm />} />
+            <Route path="/generate-path" element={<LearningPath />} />
+            <Route path="/openAI-test" element={<OpenAITest />} />
           </Route>
         </Routes>
       <ButtonGradient />

@@ -3,7 +3,7 @@ import { socials } from "../constants";
 
 const Footer = () => {
   return (
-    <footer className="bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-gray-300 py-10">
+    <footer className="bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-gray-300 py-10 mt-auto">
       <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-6 px-4">
         {/* Brand Name and Rights */}
         <p className="text-sm sm:text-base text-center sm:text-left">

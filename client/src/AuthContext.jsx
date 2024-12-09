@@ -1,7 +1,10 @@
 import React, { createContext, useState, useEffect } from "react";
 import jwt_decode from "jwt-decode";
 
-export const AuthContext = createContext();
+export const AuthContext = createContext({
+  user: null,
+  logout: () => {}
+});
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -11,6 +14,7 @@ export const AuthProvider = ({ children }) => {
     if (token) {
       const decoded = jwt_decode(token);
       setUser(decoded);
+      console.log("Token Expiry:", new Date(decoded.exp * 1000));
     }
   }, []);
 

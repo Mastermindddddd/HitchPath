@@ -1,16 +1,30 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-require("dotenv").config();
-const { check, validationResult } = require("express-validator");
-const User = require("./models/userModel"); // Import the User model
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+import { check, validationResult } from "express-validator";
+import User from "./models/userModel.js";
+import OpenAI from "openai";
+import { Mistral } from '@mistralai/mistralai';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET;
 const MONGO_URI = process.env.MONGO_URI;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
+// OpenAI API configuration
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY, // Ensure your API key is stored in an environment variable
+});
+
+// Configure Mistral AI
+const mistral = new Mistral({
+  apiKey: process.env.MISTRAL_API_KEY, // Ensure your Mistral API key is stored in an environment variable
+});
 
 // Middleware
 app.use(express.json());
@@ -96,21 +110,25 @@ app.post("/login", async (req, res) => {
 });
 
 // Middleware to authenticate token
-function authenticateToken(req, res, next) {
-  const token = req.headers.authorization?.split(" ")[1];
+const authenticateToken = (req, res, next) => {
+  const token = req.header("Authorization")?.replace("Bearer ", "");
+
   if (!token) {
-    return res.status(401).json({ error: "Access Denied. No token provided." });
+    return res.status(403).send("Access denied");
   }
 
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded; // Attach user details to request
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      if (err.name === "TokenExpiredError") {
+        return res.status(401).send("Token expired, please log in again");
+      }
+      return res.status(403).send("Invalid token");
+    }
+
+    req.user = user;
     next();
-  } catch (error) {
-    console.error("Token verification failed:", error);
-    res.status(403).json({ error: "Invalid token." });
-  }
-}
+  });
+};
 
 // Update user information endpoint
 app.post("/api/user/update", authenticateToken, async (req, res) => {
@@ -130,7 +148,163 @@ app.post("/api/user/update", authenticateToken, async (req, res) => {
   }
 });
 
+app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
 
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    const {
+      careerPath = "General software development",
+      currentSkillLevel = "Beginner",
+      preferredLearningStyle = "Interactive",
+      shortTermGoals = "Learn basic coding",
+      longTermGoals = "Become a software engineer",
+    } = user;
+
+    const prompt = `
+      Based on the following user preferences:
+      - Career Path: ${careerPath}
+      - Current Skill Level: ${currentSkillLevel}
+      - Preferred Learning Style: ${preferredLearningStyle}
+      - Short-Term Goals: ${shortTermGoals}
+      - Long-Term Goals: ${longTermGoals}
+
+      Generate a personalized learning path with actionable steps, tips, and milestones. Return the response in the following parsable JSON format:
+
+      {
+        "steps": [
+          {
+            "id": 1,
+            "title": "Step title",
+            "description": "Step description",
+            "milestone": "Step milestone",
+            "tips": ["Tip 1", "Tip 2"]
+          },
+          ...
+        ]
+      }
+    `;
+
+    const response = await mistral.chat.complete({
+      model: "open-mistral-nemo",
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const rawResponse = response.choices[0]?.message?.content;
+    console.log("Raw response from Mistral:", rawResponse);
+
+    // Extract JSON content using a regex
+    const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Failed to extract JSON from response.");
+    }
+
+    const learningPath = JSON.parse(jsonMatch[0]);
+
+    res.json({ learningPath: learningPath.steps });
+  } catch (error) {
+    console.error("Error generating learning path:", error.message);
+    res.status(500).json({ error: "Failed to generate learning path." });
+  }
+});
+
+
+/*
+  app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    // Use mock data for user fields if not provided
+    const {
+      careerPath = "General software development",
+      currentSkillLevel = "Beginner",
+      preferredLearningStyle = "Interactive",
+      shortTermGoals = "Learn basic coding",
+      longTermGoals = "Become a software engineer",
+    } = user;
+
+    const prompt = `
+      Based on the following user preferences:
+      - Career Path: ${careerPath}
+      - Current Skill Level: ${currentSkillLevel}
+      - Preferred Learning Style: ${preferredLearningStyle}
+      - Short-Term Goals: ${shortTermGoals}
+      - Long-Term Goals: ${longTermGoals}
+
+      Generate a personalized learning path with actionable steps, tips, and milestones. Return the response in the following parsable JSON format:
+
+      {
+        "steps": [
+          "Step 1 description",
+          "Step 2 description",
+          "Step 3 description",
+          ...
+        ]
+      }
+    `;
+
+    // Mock Response for Quota Exceeded
+    const mockResponse = {
+      steps: [
+        "Step 1: Understand basic programming concepts (e.g., variables, loops, and conditionals).",
+        "Step 2: Learn a beginner-friendly programming language like Python.",
+        "Step 3: Practice by completing simple coding exercises and projects.",
+        "Step 4: Explore online interactive tutorials and coding platforms.",
+        "Step 5: Join a coding community or find a mentor to guide your learning.",
+        "Step 6: Set up your development environment and build small applications.",
+        "Step 7: Study basic data structures and algorithms.",
+        "Step 8: Begin exploring career-specific skills (e.g., web development or data science).",
+        "Step 9: Create a portfolio showcasing your projects.",
+        "Step 10: Prepare for technical interviews and apply for entry-level roles.",
+      ],
+    };
+
+    // Uncomment below to enable real OpenAI call when quota is available
+    /*
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const learningPathJSON = response.choices[0]?.message?.content.trim();
+    const learningPath = JSON.parse(learningPathJSON);
+
+    res.json({ learningPath: learningPath.steps });
+    */
+
+    // Send Mock Response
+   // res.json({ learningPath: mockResponse.steps });
+ // } catch (error) {
+  //  console.error("Error generating learning path:", error.response?.data || error.message);
+   // res.status(500).json({ error: "Failed to generate learning path." });
+ // }
+//});
+
+
+app.post("/api/test-openai", async (req, res) => {
+  try {
+    const { prompt } = req.body;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    res.json({ reply: response.choices[0]?.message?.content });
+  } catch (error) {
+    console.error("Error with OpenAI API:", error.response?.data || error.message);
+    res.status(500).json({ error: "Failed to fetch response from OpenAI" });
+  }
+});
 
 // Example protected route
 app.get("/protected", authenticateToken, (req, res) => {
@@ -142,5 +316,5 @@ app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   console.log("JWT_SECRET:", JWT_SECRET);
   console.log("MONGO_URI:", MONGO_URI);
-
+  console.log("OpenAI:", OPENAI_API_KEY);
 });

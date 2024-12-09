@@ -1,13 +1,17 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { disablePageScroll, enablePageScroll } from "scroll-lock";
 import { FaHome, FaInfoCircle, FaTag, FaEnvelope, FaTimes } from "react-icons/fa";
 import { brainwave } from "../assets";
+import { AuthContext } from "../AuthContext"; // Import AuthContext
 
 const Header = () => {
   const pathname = useLocation();
   const [openNavigation, setOpenNavigation] = useState(false);
   const sidebarRef = useRef(null);
+
+  // Get user and logout function from AuthContext
+  const { user, logout } = useContext(AuthContext);
 
   // Open/Close Sidebar
   const toggleNavigation = () => {
@@ -59,9 +63,16 @@ const Header = () => {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-4 ml-auto">
-        <Link to="/login" onClick={handleSignIn}>
-  <button className="hidden lg:flex">Sign in</button>
-</Link>
+          {/* Conditional Rendering of Sign In / Sign Out */}
+          {user ? (
+            <button className="hidden lg:flex" onClick={logout}>
+              Sign out
+            </button>
+          ) : (
+            <Link to="/login" onClick={handleSignIn}>
+              <button className="hidden lg:flex">Sign in</button>
+            </Link>
+          )}
 
           {/* Hamburger/Cross Button */}
           <button className="flex px-3" onClick={toggleNavigation}>
@@ -87,10 +98,10 @@ const Header = () => {
                   Home
                 </li>
                 <Link to="/dashboard" className="flex items-center gap-3 cursor-pointer">
-                <li className="flex items-center gap-3 cursor-pointer">
-                  <FaEnvelope size={20} />
-                  Dashboard
-                </li>
+                  <li className="flex items-center gap-3 cursor-pointer">
+                    <FaEnvelope size={20} />
+                    Dashboard
+                  </li>
                 </Link>
                 <li className="flex items-center gap-3 cursor-pointer">
                   <FaInfoCircle size={20} />
@@ -106,13 +117,22 @@ const Header = () => {
                 </li>
               </ul>
 
-              {/* Sign In Button */}
+              {/* Sign In / Sign Out Button */}
               <div className="mt-auto">
-              <Link to="/login">
-                <button className="w-full bg-blue-500 text-white py-2 rounded-lg">
-                  Sign In
-                </button>
-              </Link>
+                {user ? (
+                  <button
+                    className="w-full bg-blue-500 text-white py-2 rounded-lg"
+                    onClick={logout}
+                  >
+                    Sign Out
+                  </button>
+                ) : (
+                  <Link to="/login">
+                    <button className="w-full bg-blue-500 text-white py-2 rounded-lg">
+                      Sign In
+                    </button>
+                  </Link>
+                )}
               </div>
             </div>
           </div>

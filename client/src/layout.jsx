@@ -16,7 +16,7 @@ const Layout = () => {
   const isRootRoute = location.pathname === "/";
 
   return (
-    <div className="pt-[4.75rem] lg:pt-[5.25rem] overflow-hidden">
+    <div className="pt-[4.75rem] lg:pt-[5.25rem] overflow-hidden flex flex-col min-h-screen">
       <Header />
       {isRootRoute && (
         <>
