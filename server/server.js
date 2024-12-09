@@ -148,6 +148,30 @@ app.post("/api/user/update", authenticateToken, async (req, res) => {
   }
 });
 
+app.get("/api/user-info/completed", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    // Check if required fields are completed
+    const isUserInfoComplete = user.name && user.email && user.careerPath && user.currentSkillLevel;
+
+    if (isUserInfoComplete) {
+      res.json({ completed: true });
+    } else {
+      res.json({ completed: false });
+    }
+  } catch (error) {
+    console.error("Error checking user info:", error.message);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+
 app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom"; 
 
 const UserInfoForm = () => {
   const [formData, setFormData] = useState({
@@ -29,6 +30,8 @@ const UserInfoForm = () => {
   const [step, setStep] = useState(1);
   const totalSteps = 5;
 
+  const navigate = useNavigate(); 
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -57,11 +60,13 @@ const UserInfoForm = () => {
         }
       );
       console.log("User information updated successfully:", response.data);
+
+      // Redirect to /learning-path
+      navigate("/learning-path");
     } catch (error) {
       console.error("Error updating user information:", error);
     }
   };
-
   const renderStep = () => {
     switch (step) {
       case 1:

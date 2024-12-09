@@ -19,8 +19,7 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/user-info" element={<UserInfoForm />} />
-            <Route path="/generate-path" element={<LearningPath />} />
-            <Route path="/openAI-test" element={<OpenAITest />} />
+            <Route path="/learning-path" element={<LearningPath />} />
           </Route>
         </Routes>
       <ButtonGradient />

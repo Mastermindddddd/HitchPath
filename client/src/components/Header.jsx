@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useContext } from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import { disablePageScroll, enablePageScroll } from "scroll-lock";
 import { FaHome, FaInfoCircle, FaTag, FaEnvelope, FaTimes } from "react-icons/fa";
 import { brainwave } from "../assets";
@@ -7,6 +8,7 @@ import { AuthContext } from "../AuthContext"; // Import AuthContext
 
 const Header = () => {
   const pathname = useLocation();
+  const navigate = useNavigate();
   const [openNavigation, setOpenNavigation] = useState(false);
   const sidebarRef = useRef(null);
 
@@ -34,6 +36,26 @@ const Header = () => {
     if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
       setOpenNavigation(false);
       enablePageScroll();
+    }
+  };
+
+  const handleLearningPathClick = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get("http://localhost:3000/api/user-info/completed", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.data.completed) {
+        navigate("/learning-path");
+      } else {
+        navigate("/user-info");
+      }
+    } catch (error) {
+      console.error("Error checking user info:", error);
+      navigate("/user-info"); // Redirect to user-info as a fallback
     }
   };
 
@@ -96,6 +118,11 @@ const Header = () => {
                 <li className="flex items-center gap-3 cursor-pointer">
                   <FaHome size={20} />
                   Home
+                </li>
+                <li>
+                  <button onClick={handleLearningPathClick}>
+                    My Learning/Career Path
+                  </button>
                 </li>
                 <Link to="/dashboard" className="flex items-center gap-3 cursor-pointer">
                   <li className="flex items-center gap-3 cursor-pointer">
