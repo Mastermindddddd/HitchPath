@@ -1,5 +1,14 @@
 const mongoose = require("mongoose");
 
+const stepSchema = new mongoose.Schema({
+  id: { type: Number, required: true },
+  title: { type: String, required: true },
+  description: { type: String, required: true },
+  milestone: { type: String, required: true },
+  tips: { type: [String], default: [] },
+  resources: [{ title: String, url: String }],
+});
+
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
@@ -23,7 +32,7 @@ const userSchema = new mongoose.Schema({
   reminderTone: { type: String },
   devicePreference: { type: String },
   accessibilityNeeds: { type: String },
-  learningPath: { type: Array, default: [] },  // Save the learning path here
+  learningPath: { type: [stepSchema], default: [] },  // Save the learning path here
   hasSavedLearningPath: { type: Boolean, default: false }, // Track if user has a saved path
 });
 

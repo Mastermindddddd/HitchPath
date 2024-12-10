@@ -203,7 +203,7 @@ app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
       - Short-Term Goals: ${shortTermGoals}
       - Long-Term Goals: ${longTermGoals}
 
-      Generate a personalized learning path with actionable steps, tips, and milestones. Return the response in the following parsable JSON format:
+      Generate a personalized learning path with actionable steps, tips, milestones, and recommended resources (with titles and URLs). Return the response in this JSON format:
 
       {
         "steps": [
@@ -212,12 +212,15 @@ app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
             "title": "Step title",
             "description": "Step description",
             "milestone": "Step milestone",
-            "tips": ["Tip 1", "Tip 2"]
-          },
-          ...
+            "tips": ["Tip 1", "Tip 2"],
+            "resources": [
+              { "title": "Resource Title", "url": "https://example.com" }
+            ]
+          }
         ]
       }
     `;
+
 
     const response = await mistral.chat.complete({
       model: "open-mistral-nemo",
@@ -242,28 +245,11 @@ app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
     // Log before saving to ensure the data is correct
     console.log("User data before saving:", user);
 
-    const updatedUser = await user.save();
-
+    await user.save();
     res.json({ learningPath: learningPath.steps });
   } catch (error) {
     console.error("Error generating learning path:", error.message);
     res.status(500).json({ error: "Failed to generate learning path." });
-  }
-});
-
-app.post("/api/test-openai", async (req, res) => {
-  try {
-    const { prompt } = req.body;
-
-    const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: prompt }],
-    });
-
-    res.json({ reply: response.choices[0]?.message?.content });
-  } catch (error) {
-    console.error("Error with OpenAI API:", error.response?.data || error.message);
-    res.status(500).json({ error: "Failed to fetch response from OpenAI" });
   }
 });
 

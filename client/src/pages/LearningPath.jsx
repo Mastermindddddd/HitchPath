@@ -53,7 +53,8 @@ const LearningPath = () => {
     return (
       <Stepper orientation="vertical" activeStep={currentStep}>
         {learningPath.map((step, index) => {
-          const isLocked = index > currentStep; // Lock steps that haven't been reached yet
+          const isLocked = index > currentStep;
+  
           return (
             <Step key={index} active={index <= currentStep}>
               <motion.div
@@ -65,8 +66,6 @@ const LearningPath = () => {
                   sx={{
                     color: "white",
                     "& .MuiStepLabel-label": { color: isLocked ? "gray" : "white" },
-                    display: "flex",
-                    alignItems: "center",
                   }}
                 >
                   <Typography
@@ -74,9 +73,6 @@ const LearningPath = () => {
                     sx={{ display: "flex", alignItems: "center", gap: 1 }}
                   >
                     Step {index + 1}: {step.title}
-                    {isLocked && (
-                      <LockIcon sx={{ color: "gray", fontSize: 20, ml: 2 }} />
-                    )}
                   </Typography>
                 </StepLabel>
                 <motion.div
@@ -91,7 +87,7 @@ const LearningPath = () => {
                       border: "1px solid #fff",
                       borderRadius: 2,
                       padding: 2,
-                      filter: isLocked ? "blur(3px)" : "none", // Apply blur if locked
+                      filter: isLocked ? "blur(3px)" : "none",
                     }}
                   >
                     {step.description}
@@ -101,11 +97,28 @@ const LearningPath = () => {
                       color: "lightgray",
                       fontStyle: "italic",
                       mt: 1,
-                      filter: isLocked ? "blur(3px)" : "none", // Apply blur if locked
+                      filter: isLocked ? "blur(3px)" : "none",
                     }}
                   >
                     Milestone: {step.milestone}
                   </Typography>
+                  <Typography variant="subtitle1" sx={{ color: "white", mt: 2 }}>
+                    Resources:
+                  </Typography>
+                  <ul>
+                    {step.resources.map((resource, i) => (
+                      <li key={i}>
+                        <a
+                          href={resource.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: "#4caf50" }}
+                        >
+                          {resource.title}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
                 </motion.div>
               </motion.div>
             </Step>
@@ -114,7 +127,7 @@ const LearningPath = () => {
       </Stepper>
     );
   };
-
+  
   return (
     <Box
       sx={{
