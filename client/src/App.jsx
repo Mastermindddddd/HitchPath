@@ -8,6 +8,7 @@ import Layout from "./layout";
 import DashboardPage from "./pages/dashboard";
 import UserInfoForm from "./pages/UserInfoForm";
 import LearningPathWithBackground from "./pages/LearningPathWithBackground";
+import Chatbot from "./pages/Chatbot";
 
 const App = () => {
   return (
@@ -19,6 +20,7 @@ const App = () => {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/user-info" element={<UserInfoForm />} />
             <Route path="/learning-path" element={<LearningPathWithBackground />} />
+            <Route path="/Chatbot" element={<Chatbot />} />
           </Route>
         </Routes>
       <ButtonGradient />

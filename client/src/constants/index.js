@@ -128,21 +128,21 @@ export const roadmap = [
 ];
 
 export const collabText =
-  "With smart automation and top-notch security, it's the perfect solution for teams looking to work smarter.";
+  "Leverage cutting-edge AI to get precise recommendations that align with your potential and ambitions.";
 
 export const collabContent = [
   {
     id: "0",
-    title: "Seamless Integration",
+    title: "AI-Driven Accuracy",
     text: collabText,
   },
   {
     id: "1",
-    title: "Smart Automation",
+    title: "Skill Development Focus",
   },
   {
     id: "2",
-    title: "Top-notch Security",
+    title: "Expert-Level Advice",
   },
 ];
 
@@ -244,16 +244,16 @@ export const pricing = [
 export const benefits = [
   {
     id: "0",
-    title: "Ask anything",
-    text: "Lets users quickly find answers to their questions without having to search through multiple sources.",
+    title: "Personalized Guidance",
+    text: "Receive tailored recommendations for learning and career paths based on your unique skills, interests, and goals.",
     backgroundUrl: "./src/assets/benefits/card-1.svg",
     iconUrl: benefitIcon1,
     imageUrl: benefitImage2,
   },
   {
     id: "1",
-    title: "Improve everyday",
-    text: "The app uses natural language processing to understand user queries and provide accurate and relevant responses.",
+    title: "Goal-Oriented Insights",
+    text: "Break down your long-term ambitions into manageable steps with actionable advice from AI.",
     backgroundUrl: "./src/assets/benefits/card-2.svg",
     iconUrl: benefitIcon2,
     imageUrl: benefitImage2,
@@ -261,8 +261,8 @@ export const benefits = [
   },
   {
     id: "2",
-    title: "Connect everywhere",
-    text: "Connect with the AI chatbot from anywhere, on any device, making it more accessible and convenient.",
+    title: "24/7 Availability",
+    text: "Your AI assistant is always ready to help—any time of the day or night, at your convenience.",
     backgroundUrl: "./src/assets/benefits/card-3.svg",
     iconUrl: benefitIcon3,
     imageUrl: benefitImage2,

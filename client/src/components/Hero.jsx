@@ -36,14 +36,13 @@ const Hero = () => {
       <div className="md:w-[478px] lg:w-[778px] lg:ml-10 px-4 sm:px-6 md:px-0">
       {userName && <p className="text-sm">Welcome, {userName}!</p>}
   <h1 className="h1 mb-6 text-center md:text-left text-2xl sm:text-3xl lg:text-5xl font-bold leading-tight">
-    Explore the Possibilities of&nbsp;AI&nbsp;Chatting with&nbsp;
+  Smart Career Paths: Designed Just for You with&nbsp;
     <span className="inline-block relative text-blue-600">
       HitchPath
     </span>
   </h1>
   <p className="body-1 max-w-xl mx-auto md:mx-0 mb-6 text-n-2 text-center md:text-left text-base sm:text-lg lg:text-xl leading-relaxed">
-    Unleash the power of AI within Brainwave. Upgrade your productivity with 
-    HitchPathAI, the ultimate open AI chat app designed to transform your workflow.
+  Gain clarity and direction for your learning and career success like never before. Let AI recommend personalized learning paths tailored to your ambitions.
   </p>
   <div className="flex justify-center md:justify-start mt-4">
     <button 

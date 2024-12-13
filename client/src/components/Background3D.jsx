@@ -1,9 +1,10 @@
 import React, { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
+import { MeshStandardMaterial } from "three";
 
 const RotatingModel = () => {
-  const { scene } = useGLTF("/AI.glb");
+  const { scene } = useGLTF("/rotunde.glb");
 
   return (
     <primitive
@@ -37,7 +38,7 @@ const Background3D = () => {
           enableZoom={false}
           enablePan={false} // Disables panning to keep the model centered
           autoRotate
-          autoRotateSpeed={0.1} // Slow rotation speed
+          autoRotateSpeed={0.02} // Slow rotation speed
         />
       </Canvas>
     );

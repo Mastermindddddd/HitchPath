@@ -10,7 +10,7 @@ const Benefits = () => {
       <div className="container mx-auto relative z-2 px-4 sm:px-6 lg:px-8">
         <Heading
           className="md:max-w-md lg:max-w-2xl mx-auto text-center mb-12"
-          title="Your Journey, Personalized by AI with HitchPath."
+          title="Turn Your Aspirations into Reality with AI."
         />
 
         <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
