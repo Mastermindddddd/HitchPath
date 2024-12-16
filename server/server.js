@@ -37,6 +37,10 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("Error connecting to MongoDB:", err));
 
+  app.get('/', (req, res) => {
+    res.send('Hello, this is the root route of the HitchPath server!');
+  });
+
 // Registration endpoint
 app.post(
   "/register",
