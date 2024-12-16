@@ -1,5 +1,5 @@
-import React, { createContext, useState, useEffect } from "react";
 import jwt_decode from "jwt-decode";
+import { createContext, useState, useEffect } from "react";
 
 export const AuthContext = createContext({
   user: null,
@@ -14,14 +14,13 @@ export const AuthProvider = ({ children }) => {
     if (token) {
       const decoded = jwt_decode(token);
       setUser(decoded);
-      console.log("Token Expiry:", new Date(decoded.exp * 1000));
     }
   }, []);
 
   const logout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
-    window.location.href = "/login"; // Redirect to login
+    localStorage.removeItem("token"); // Remove the token from localStorage
+    setUser(null); // Clear the user state
+    window.location.href = "/login"; // Redirect to login page
   };
 
   return (

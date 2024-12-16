@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { useScroll, useTransform, motion } from "framer-motion";
+import {Link} from "react-router-dom";
 
 const Hero = () => {
   const parallaxRef = useRef(null);
@@ -45,12 +46,13 @@ const Hero = () => {
   Gain clarity and direction for your learning and career success like never before. Let AI recommend personalized learning paths tailored to your ambitions.
   </p>
   <div className="flex justify-center md:justify-start mt-4">
-    <button 
-      href="/pricing" 
-      className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition duration-300"
-    >
-      Get Started
-    </button>
+    <Link to="/register">
+      <button 
+        className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition duration-300"
+      >
+        Get Started
+      </button>
+    </Link>
   </div>
 </div>
 

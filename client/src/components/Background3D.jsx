@@ -10,7 +10,7 @@ const RotatingModel = () => {
     <primitive
       object={scene}
       scale={1.5}
-      position={[0, 0, 0]}
+      position={[0, -0.9, 0]}
       rotation={[0, 0, 0]}
     />
   );

@@ -20,7 +20,7 @@ const App = () => {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/user-info" element={<UserInfoForm />} />
             <Route path="/learning-path" element={<LearningPathWithBackground />} />
-            <Route path="/Chatbot" element={<Chatbot />} />
+            <Route path="/guidemate-AI" element={<Chatbot />} />
           </Route>
         </Routes>
       <ButtonGradient />

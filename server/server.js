@@ -99,8 +99,8 @@ app.post("/login", async (req, res) => {
       return res.status(400).json({ error: "Invalid email or password." });
     }
 
-    // Generate token
-    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "1h" });
+    // Generate token without expiration
+    const token = jwt.sign({ id: user._id }, JWT_SECRET); // No 'expiresIn'
 
     res.json({ token, user: { name: user.name, email: user.email } });
   } catch (error) {
@@ -108,6 +108,7 @@ app.post("/login", async (req, res) => {
     res.status(500).json({ error: "Server error." });
   }
 });
+
 
 // Middleware to authenticate token
 const authenticateToken = (req, res, next) => {
@@ -252,6 +253,72 @@ app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
     res.status(500).json({ error: "Failed to generate learning path." });
   }
 });
+
+app.post("/api/chatbot", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { message } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    // Prepare prompt with user data
+    const prompt = `
+  You are a personalized AI assistant for learning and career guidance. 
+  The user has the following information:
+  - Name: ${user.name}
+  - Career Path: ${user.careerPath || "Not specified"}
+  - Current Skill Level: ${user.currentSkillLevel}
+  - Preferred Learning Style: ${user.preferredLearningStyle}
+  - Short-Term Goals: ${user.shortTermGoals || "Not specified"}
+  - Long-Term Goals: ${user.longTermGoals || "Not specified"}
+
+  The user asked: "${message}".
+  
+  Please provide a helpful response in short, concise points with headings where appropriate. Focus on being straight to the point.
+`;
+
+
+    const response = await mistral.chat.complete({
+      model: "open-mistral-nemo",
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const rawBotResponse = response.choices[0]?.message?.content || "I'm not sure how to respond to that.";
+
+    // Format bot response into sections with headings and bullet points
+    const formattedResponse = formatBotResponse(rawBotResponse);
+
+    res.json({ response: formattedResponse });
+  } catch (error) {
+    console.error("Error in chatbot endpoint:", error.message);
+    res.status(500).json({ error: "Failed to process request." });
+  }
+});
+
+// Utility function to format bot responses
+function formatBotResponse(response) {
+  // Split by new lines to identify sections
+  const sections = response.split("\n").filter((line) => line.trim() !== "");
+  let formatted = "";
+
+  sections.forEach((section) => {
+    if (section.startsWith("- ")) {
+      // Format as a bullet point
+      formatted += `\u2022 ${section.slice(2)}\n`;
+    } else if (section.endsWith(":")) {
+      // Format as a heading
+      formatted += `\n**${section}**\n`;
+    } else {
+      // Add regular text
+      formatted += `${section}\n`;
+    }
+  });
+
+  return formatted.trim();
+}
 
 // Example protected route
 app.get("/protected", authenticateToken, (req, res) => {

@@ -1,4 +1,5 @@
 import React from 'react';
+import {Link} from 'react-router-dom';
 import './cta.css';
 
 const CTA = () => (
@@ -8,7 +9,9 @@ const CTA = () => (
       <h3>Register Today & start exploring the endless possibilities.</h3>
     </div>
     <div className="gpt3__cta-btn">
+      <Link to="/register">
       <button type="button">Get Started</button>
+      </Link>
     </div>
   </div>
 );

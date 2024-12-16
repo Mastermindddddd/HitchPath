@@ -13,8 +13,8 @@ const Services = () => {
     <section id="how-to-use">
       <div className="container mt-20">
         <Heading
-          title="Generative AI made for creators."
-          text="HitchPath unlocks the potential of AI-powered applications"
+          title="Generative AI Tailored for Growth."
+          text="HitchPath unlocks the potential of AI-driven learning and career paths for everyone."
         />
 
         <div className="relative">
@@ -28,14 +28,14 @@ const Services = () => {
                 width={800}
                 alt="Smartest AI"
                 height={730}
-                src={service1}
+                src={"/src/assets/services/service-1.jpg"}
               />
             </div>
 
             <div className="relative z-1 max-w-[17rem] ml-auto">
-              <h4 className="h4 mb-4">Smartest AI</h4>
+              <h4 className="h4 mb-4">Unlock Potential</h4>
               <p className="body-2 mb-[3rem] text-n-3">
-                HitchPath unlocks the potential of AI-powered applications
+              HitchPath empowers you with AI-driven learning and career paths, unlocking your true potential.
               </p>
               <ul className="body-2">
                 {brainwaveServices.map((item, index) => (
@@ -55,7 +55,7 @@ const Services = () => {
             <div className="relative min-h-[39rem] border border-n-1/10 rounded-3xl overflow-hidden">
               <div className="absolute inset-0">
                 <img
-                  src={service2}
+                  src={"/src/assets/services/service-2.jpg"}
                   className="h-full w-full object-cover"
                   width={630}
                   height={750}
@@ -66,8 +66,9 @@ const Services = () => {
               <div className="absolute inset-0 flex flex-col justify-end p-8 bg-gradient-to-b from-n-8/0 to-n-8/90 lg:p-15">
                 <h4 className="h4 mb-4">Career Path</h4>
                 <p className="body-2 mb-[3rem] text-n-3">
-                  Automatically enhance your photos using our AI app&apos;s
-                  photo editing feature. Try it now!
+                Discover tailored career paths designed to match your unique skills, interests, and goals. 
+                HitchPath provides AI-driven insights to help you navigate your professional journey with 
+                confidence and clarity.
                 </p>
               </div>
 
