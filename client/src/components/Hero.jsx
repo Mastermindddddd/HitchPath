@@ -59,7 +59,7 @@ const Hero = () => {
         {/*<BackgroundCircles />*/}
         <div className="mt-4 md:mt-0 md:h-[648px] md:flex-1 relative lg:left-[10%] flex justify-center items-center">
         <motion.img 
-          src={"/src/assets/ai.png"} 
+          src={"/ai.png"} 
           width={190} height={40} 
           alt="learnado" 
           className="h-[300px] w-auto md:absolute md:h-full md:w-auto md:max-w-none md:-left-6 lg:left-0"
@@ -74,7 +74,7 @@ const Hero = () => {
           }}
         />
         <motion.img
-          src="/src/assets/roadmap/image-3.png" 
+          src="/image-3.png" 
           width={260} 
           height={260} 
           alt="4.small" 
@@ -84,7 +84,7 @@ const Hero = () => {
           }}
         />
         <motion.img
-          src="/src/assets/roadmap/hero.png" 
+          src="/hero.png" 
           width={220} 
           height={220}
           alt="Cool"
