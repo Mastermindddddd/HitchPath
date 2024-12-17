@@ -28,7 +28,7 @@ const Services = () => {
                 width={800}
                 alt="Smartest AI"
                 height={730}
-                src={"/src/assets/services/service-1.jpg"}
+                src={"/service-1.jpg"}
               />
             </div>
 
@@ -55,7 +55,7 @@ const Services = () => {
             <div className="relative min-h-[39rem] border border-n-1/10 rounded-3xl overflow-hidden">
               <div className="absolute inset-0">
                 <img
-                  src={"/src/assets/services/service-2.jpg"}
+                  src={"/service-2.jpg"}
                   className="h-full w-full object-cover"
                   width={630}
                   height={750}
