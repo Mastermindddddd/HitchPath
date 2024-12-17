@@ -51,7 +51,7 @@ const UserInfoForm = () => {
       }
 
       const response = await axios.post(
-        "http://localhost:3000/api/user/update",
+        `${process.env.REACT_APP_API_URL}/api/user/update`,
         formData,
         {
           headers: {

@@ -10,7 +10,7 @@ const Login = () => {
     e.preventDefault();
     setError(""); // Clear previous errors
     try {
-      const response = await axios.post("http://localhost:3000/login", { email, password });
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/login`, { email, password });
       const { token, user } = response.data;
       localStorage.setItem("token", token);
       localStorage.setItem("userName", user.name);
