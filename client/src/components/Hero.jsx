@@ -35,7 +35,6 @@ const Hero = () => {
     >
       <div className="md:flex items-center ">
       <div className="md:w-[478px] lg:w-[778px] lg:ml-10 px-4 sm:px-6 md:px-0">
-      {userName && <p className="text-sm">Welcome, {userName}!</p>}
   <h1 className="h1 mb-6 text-center md:text-left text-2xl sm:text-3xl lg:text-5xl font-bold leading-tight">
   Smart Career Paths: Designed Just for You with&nbsp;
     <span className="inline-block relative text-blue-600">

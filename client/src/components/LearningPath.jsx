@@ -16,7 +16,7 @@ const LearningPath = () => {
         if (!token) throw new Error("User not authenticated");
 
         const { data } = await axios.get(
-          "http://localhost:3000/api/generate-learning-path",
+          `${process.env.REACT_APP_API_URL}/api/generate-learning-path`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
