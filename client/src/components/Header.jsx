@@ -88,9 +88,11 @@ const Header = () => {
     >
       <div className="flex items-center px-5 lg:px-7.5 xl:px-10 py-4">
         {/* Logo */}
-        <a className="block w-[12rem] xl:mr-8" href="/">
-          <img src={"/ai-platform.svg"} width={70} height={20} alt="Brainwave" />
+        <a className="block w-[12rem] xl:mr-8 flex items-center space-x-2" href="/">
+          <img src={"/ai-platform.svg"} width={30} height={30} alt="Brainwave" />
+          <p className="text-lg font-semibold text-gray-400">hitchpath</p>
         </a>
+
 
         {/* Action Buttons */}
         <div className="flex items-center gap-4 ml-auto">
