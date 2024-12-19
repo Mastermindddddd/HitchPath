@@ -51,7 +51,7 @@ const Header = () => {
   const handleLearningPathClick = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:3000/api/user-info/completed", {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/user-info/completed`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
