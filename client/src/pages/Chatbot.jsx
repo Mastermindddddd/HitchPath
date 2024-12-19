@@ -22,7 +22,7 @@ const Chatbot = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/chatbot`,
+        `${import.meta.env.VITE_API_URL}/api/chatbot`,
         { message },
         { headers: { Authorization: `Bearer ${token}` } }
       );

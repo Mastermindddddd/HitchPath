@@ -10,7 +10,12 @@ const Login = () => {
     e.preventDefault();
     setError(""); // Clear previous errors
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/login`, { email, password });
+      const apiUrl = import.meta.env.VITE_API_URL;
+      console.log("API URL:", apiUrl); // Debugging
+      if (!apiUrl) {
+        throw new Error("API URL is not defined in environment variables.");
+      }
+      const response = await axios.post(`${apiUrl}/login`, { email, password });
       const { token, user } = response.data;
       localStorage.setItem("token", token);
       localStorage.setItem("userName", user.name);
@@ -21,7 +26,6 @@ const Login = () => {
       setError(err.response?.data?.error || "An error occurred.");
     }
   };
-  
 
   return (
     <div class="flex items-center font-[sans-serif] h-full md:min-h-screen p-4">
@@ -45,7 +49,7 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter email"
               required 
-              class="w-full text-gray-800 text-sm border-b border-gray-300 focus:border-blue-600 px-2 py-3 outline-none" 
+              class="w-full text-sm border-b border-gray-300 focus:border-blue-600 px-2 py-3 outline-none" 
                />
             <svg xmlns="http://www.w3.org/2000/svg" 
               fill="#bbb" 
@@ -82,7 +86,7 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password"
                 required 
-                class="w-full text-gray-800 text-sm border-b border-gray-300 focus:border-blue-600 px-2 py-3 outline-none" 
+                class="w-full text-sm border-b border-gray-300 focus:border-blue-600 px-2 py-3 outline-none" 
               />
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
