@@ -11,10 +11,6 @@ const Login = () => {
     setError(""); // Clear previous errors
     try {
       const apiUrl = import.meta.env.VITE_API_URL;
-      console.log("API URL:", apiUrl); // Debugging
-      if (!apiUrl) {
-        throw new Error("API URL is not defined in environment variables.");
-      }
       const response = await axios.post(`${apiUrl}/login`, { email, password });
       const { token, user } = response.data;
       localStorage.setItem("token", token);

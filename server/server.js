@@ -28,7 +28,11 @@ const mistral = new Mistral({
 
 // Middleware
 app.use(express.json());
-app.use(cors({ origin: "*", credentials: true }));
+app.use(cors({
+  origin: 'https://hitchpath.netlify.app', // Replace with your frontend URL
+  methods: 'GET,POST,PUT,DELETE', // Specify allowed methods
+  allowedHeaders: 'Content-Type,Authorization' // Specify allowed headers
+}));
 
 
 // MongoDB connection
