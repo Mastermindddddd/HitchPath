@@ -9,6 +9,7 @@ import DashboardPage from "./pages/dashboard";
 import UserInfoForm from "./pages/UserInfoForm";
 import LearningPathWithBackground from "./pages/LearningPathWithBackground";
 import Chatbot from "./pages/Chatbot";
+import SpecificTopicPath from "./pages/SpecificTopicPath";
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
             <Route path="/user-info" element={<UserInfoForm />} />
             <Route path="/learning-path" element={<LearningPathWithBackground />} />
             <Route path="/guidemate-AI" element={<Chatbot />} />
+            <Route path="/generate-path" element={<SpecificTopicPath />} />
           </Route>
         </Routes>
       <ButtonGradient />
