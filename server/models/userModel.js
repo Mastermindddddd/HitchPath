@@ -9,6 +9,14 @@ const stepSchema = new mongoose.Schema({
   resources: [{ title: String, url: String }],
 });
 
+const specificPathSchema = new mongoose.Schema({
+  id: { type: Number, required: true },
+  topic: { type: String, required: true },
+  learningPath: { type: [stepSchema], default: [] },
+  createdAt: { type: Date, default: Date.now },
+});;
+
+
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
@@ -33,6 +41,7 @@ const userSchema = new mongoose.Schema({
   devicePreference: { type: String },
   accessibilityNeeds: { type: String },
   learningPath: { type: [stepSchema], default: [] },  // Save the learning path here
+  specificPaths: { type: [specificPathSchema], default: [] },
   hasSavedLearningPath: { type: Boolean, default: false }, // Track if user has a saved path
 });
 
