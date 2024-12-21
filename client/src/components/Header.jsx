@@ -58,7 +58,7 @@ const Header = () => {
       });
 
       if (response.data.completed) {
-        navigate("/learning-path");
+        navigate("/learning-path"); 
       } else {
         navigate("/user-info");
       }
@@ -144,7 +144,7 @@ const Header = () => {
               <span className="text-lg sm:text-base">My Goal Path</span>
             </button>
           </li>
-          <Link to="/dashboard" className="flex items-center gap-3 cursor-pointer">
+          <Link to="/generate-path" className="flex items-center gap-3 cursor-pointer">
             <li className="flex items-center gap-3 cursor-pointer">
               <FaThLarge size={20} />
               <span className="text-lg sm:text-base">Custom path</span>
