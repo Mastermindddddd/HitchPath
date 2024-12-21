@@ -28,10 +28,20 @@ const mistral = new Mistral({
 
 // Middleware
 app.use(express.json());
+const allowedOrigins = [
+  'https://hitchpath.netlify.app', 'http://localhost:5173'
+];
+
 app.use(cors({
-  origin: 'https://hitchpath.netlify.app', // Replace with your frontend URL
-  methods: 'GET,POST,PUT,DELETE', // Specify allowed methods
-  allowedHeaders: 'Content-Type,Authorization' // Specify allowed headers
+  origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+      } else {
+          callback(new Error('Not allowed by CORS'));
+      }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 
