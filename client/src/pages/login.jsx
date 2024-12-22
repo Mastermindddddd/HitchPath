@@ -24,17 +24,11 @@ const Login = () => {
   };
 
   return (
-    <div class="flex items-center font-[sans-serif] h-full md:min-h-screen p-4">
+    <div class="flex items-center font-[sans-serif] h-full md:min-h-screen p-4 mt-40">
       <div class="grid justify-center max-w-md mx-auto">
-        <div>
-          <img 
-            src="login-image.webp" 
-            class="w-full object-cover rounded-2xl bg-white" 
-            alt="login-image" />
-        </div>
-
+        
         <form onSubmit={handleLogin} class="bg-white rounded-2xl p-6 -mt-24 relative z-10 shadow-[0_2px_16px_-3px_rgba(6,81,237,0.3)]">
-          <div class="mb-6">
+          <div class="mb-12">
             <h3 class="text-3xl font-extrabold text-blue-600">Sign in</h3>
           </div>
 
@@ -124,16 +118,15 @@ const Login = () => {
             </div>
           </div>
 
-         
+          <div class="mt-12">
             <button 
               type="submit" 
               class="w-full py-2.5 px-4 text-sm font-semibold tracking-wider rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
             >
               Sign in
             </button>
-            <p class="text-sm text-center mt-6">
-              Don't have an account <a href="/register" class="text-blue-600 font-semibold hover:underline ml-1 whitespace-nowrap">Register here</a></p>
-            
+            <p class="text-gray-800 text-sm mt-6 text-center">Don't have an account? <a href="/register" class="text-blue-600 font-semibold hover:underline ml-1">Register here</a></p>
+          </div>
 
           <hr class="my-6 border-gray-300" />
 
