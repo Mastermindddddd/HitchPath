@@ -25,10 +25,10 @@ const Layout = () => {
           <Collaboration />
           <CTA />
           <Services />
+          <Footer />
         </>
       )}
       <Outlet />
-      <Footer />
     </div>
   );
 };

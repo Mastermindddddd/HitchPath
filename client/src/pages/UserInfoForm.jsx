@@ -130,8 +130,7 @@ const UserInfoForm = () => {
             <label>
               Preferred Learning Style:
               <select name="preferredLearningStyle" value={formData.preferredLearningStyle} onChange={handleChange} 
-                className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white
-">
+                className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800">
                 <option value="">Select</option>
                 <option value="visual">Visual</option>
                 <option value="auditory">Auditory</option>
@@ -154,7 +153,7 @@ const UserInfoForm = () => {
             <label>
               Pace of Learning:
               <select name="paceOfLearning" value={formData.paceOfLearning} onChange={handleChange} 
-                className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white">
+                className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800">
                 <option value="">Select</option>
                 <option value="fast">Fast</option>
                 <option value="moderate">Moderate</option>
@@ -184,7 +183,7 @@ const UserInfoForm = () => {
             </label>
             <label>
               Current Skill Level:
-              <select name="currentSkillLevel" value={formData.currentSkillLevel} onChange={handleChange} className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white">
+              <select name="currentSkillLevel" value={formData.currentSkillLevel} onChange={handleChange} className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800">
                 <option value="">Select</option>
                 <option value="beginner">Beginner</option>
                 <option value="intermediate">Intermediate</option>
@@ -250,13 +249,12 @@ const UserInfoForm = () => {
     }
   };
 
-  return (  
+  return (
     <div className="p-6 max-w-4xl mx-auto bg-gradient-to-r from-blue-900 to-purple-700 rounded-lg shadow-xl text-white mb-20">
       <h2 className="text-2xl font-bold text-center mb-6">
         Update Your Information
       </h2>
 
-      {/* Progress Bar */}
       <div className="relative h-4 bg-gray-300 rounded-full mb-8">
         <div
           className="absolute top-0 left-0 h-full bg-purple-600 rounded-full transition-all duration-500"
@@ -299,7 +297,6 @@ const UserInfoForm = () => {
         </div>
       </form>
 
-      {/* Gamification */}
       {step < totalSteps && (
         <div className="text-center mt-6">
           🎉 <strong>Complete Step {step}</strong> to unlock more insights!
@@ -313,5 +310,4 @@ const UserInfoForm = () => {
     </div>
   );
 };
-
 export default UserInfoForm;

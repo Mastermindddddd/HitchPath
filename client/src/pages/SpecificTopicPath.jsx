@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { Typography, CircularProgress } from "@mui/material";
 
 const SpecificTopicPath = () => {
   const [topic, setTopic] = useState("");
   const [details, setDetails] = useState("");
   const [generatedPath, setGeneratedPath] = useState(null);
   const [previousPaths, setPreviousPaths] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const fetchPreviousPaths = async () => {
     try {
@@ -23,6 +25,7 @@ const SpecificTopicPath = () => {
   }, []);
 
   const generatePath = async () => {
+    setLoading(true);
     try {
       const { data } = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/specific-path/generate`,
@@ -33,168 +36,128 @@ const SpecificTopicPath = () => {
       fetchPreviousPaths();
     } catch (error) {
       console.error("Error generating path:", error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  return (
-    <div style={styles.container}>
-      <h2 style={styles.heading}>Generate Specific Topic Path</h2>
-      <div style={styles.inputContainer}>
-        <input
-          type="text"
-          placeholder="Enter Topic"
-          value={topic}
-          onChange={(e) => setTopic(e.target.value)}
-          style={styles.input}
-        />
-        <textarea
-          placeholder="Details about what you want to master"
-          value={details}
-          onChange={(e) => setDetails(e.target.value)}
-          style={styles.textarea}
-        />
-        <button onClick={generatePath} style={styles.button}>
-          Generate Path
-        </button>
-      </div>
+  const renderTimeline = (path) => (
+    <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
+      {path.learningPath.map((step, index) => (
+        <div
+          key={index}
+          className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active"
+        >
+          <div
+            className={`flex items-center justify-center w-10 h-10 rounded-full border border-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 bg-emerald-500 text-white font-bold`}
+          >
+            {index + 1}
+          </div>
 
-      {generatedPath ? (
-        <div style={styles.section}>
-          <h3 style={styles.subheading}>Generated Path for {generatedPath.topic}</h3>
-          {generatedPath.learningPath?.length > 0 ? (
-            <ul style={styles.list}>
-              {generatedPath.learningPath.map((step) => (
-                <li key={step.id} style={styles.listItem}>
-                  <h4 style={styles.stepTitle}>{step.title}</h4>
-                  <p>{step.description}</p>
-                  <strong>Milestone:</strong> {step.milestone}
-                  <ul style={styles.resourceList}>
-                    {step.resources?.map((resource, index) => (
-                      <li key={index} style={styles.resourceItem}>
-                        <a href={resource.url} target="_blank" rel="noopener noreferrer">
-                          {resource.title}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p style={styles.message}>No learning path available.</p>
-          )}
+          <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-4 rounded border border-slate-200 shadow">
+            <div className="flex items-center justify-between space-x-2 mb-1">
+              <div className="font-bold text-slate-900">
+                Step {index + 1}: {step.title}
+              </div>
+              <time className="text-xs font-medium text-indigo-500">
+                {step.milestone}
+              </time>
+            </div>
+            <div className="text-slate-500">{step.description}</div>
+            <div className="text-sm text-gray-700 mt-2">
+              <span className="font-medium">Resources:</span>
+              <ul>
+                {step.resources.map((resource, i) => (
+                  <li key={i}>
+                    <a
+                      href={resource.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
+                      {resource.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
-      ) : (
-        <p style={styles.message}>No path generated yet.</p>
-      )}
-
-      {previousPaths.length > 0 && (
-        <div style={styles.section}>
-          <h3 style={styles.subheading}>Your Previous Paths</h3>
-          <ul style={styles.list}>
-            {previousPaths.map((path) => (
-              <li key={path.id} style={styles.listItem}>
-                <strong>{path.topic}</strong>
-                <button
-                  onClick={() => setGeneratedPath(path)}
-                  style={styles.secondaryButton}
-                >
-                  View
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      ))}
     </div>
   );
-};
 
-const styles = {
-  container: {
-    maxWidth: "800px",
-    margin: "0 auto",
-    padding: "20px",
-    fontFamily: "'Arial', sans-serif",
-    backgroundColor: "#f9f9f9",
-    borderRadius: "8px",
-    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-  },
-  heading: {
-    textAlign: "center",
-    color: "#333",
-    marginBottom: "20px",
-  },
-  inputContainer: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-  },
-  input: {
-    padding: "10px",
-    fontSize: "16px",
-    border: "1px solid #ccc",
-    borderRadius: "4px",
-  },
-  textarea: {
-    padding: "10px",
-    fontSize: "16px",
-    border: "1px solid #ccc",
-    borderRadius: "4px",
-    height: "100px",
-  },
-  button: {
-    padding: "10px 20px",
-    fontSize: "16px",
-    backgroundColor: "#007BFF",
-    color: "#fff",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-  },
-  section: {
-    marginTop: "30px",
-  },
-  subheading: {
-    color: "#007BFF",
-    marginBottom: "10px",
-  },
-  list: {
-    listStyleType: "none",
-    padding: "0",
-  },
-  listItem: {
-    backgroundColor: "#fff",
-    padding: "15px",
-    borderRadius: "4px",
-    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-    marginBottom: "10px",
-  },
-  stepTitle: {
-    marginBottom: "5px",
-    color: "#007BFF",
-  },
-  resourceList: {
-    listStyleType: "disc",
-    paddingLeft: "20px",
-  },
-  resourceItem: {
-    marginBottom: "5px",
-  },
-  secondaryButton: {
-    marginTop: "10px",
-    padding: "5px 10px",
-    fontSize: "14px",
-    backgroundColor: "#6c757d",
-    color: "#fff",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-  },
-  message: {
-    textAlign: "center",
-    color: "#555",
-  },
+  return (
+    <section className="relative flex flex-col justify-center" style={{overflow: "visible" }}>
+      <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-24">
+        <div className="flex flex-col justify-center divide-y divide-slate-200">
+          <div className="w-full max-w-3xl mx-auto">
+            <Typography variant="h4" className="text-center mb-8">
+              Generate Specific Topic Path
+            </Typography>
+            <div className="space-y-4">
+              <input
+                type="text"
+                placeholder="Enter Topic"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                className="p-3 w-full border border-gray-300 rounded-md"
+              />
+              <textarea
+                placeholder="Details about what you want to master"
+                value={details}
+                onChange={(e) => setDetails(e.target.value)}
+                className="p-3 w-full border border-gray-300 rounded-md"
+                rows="4"
+              ></textarea>
+              <button
+                onClick={generatePath}
+                className="bg-emerald-500 text-white p-3 rounded-md w-full"
+                disabled={loading}
+              >
+                {loading ? "Generating..." : "Generate Path"}
+              </button>
+            </div>
+            <div className="mt-12">
+              {loading ? (
+                <CircularProgress />
+              ) : generatedPath ? (
+                <>
+                  <Typography variant="h5" className="text-center mb-4">
+                    Generated Path for {generatedPath.topic}
+                  </Typography>
+                  {renderTimeline(generatedPath)}
+                </>
+              ) : (
+                <Typography variant="h6" className="text-center text-gray-500">
+                </Typography>
+              )}
+            </div>
+            {previousPaths.length > 0 && (
+              <div className="mt-12">
+                <Typography variant="h5" className="text-center mb-4">
+                  Your Previous Paths
+                </Typography>
+                <ul className="list-disc pl-5 space-y-2">
+                  {previousPaths.map((path) => (
+                    <li key={path.id} className="text-emerald-600">
+                      {path.topic}{" "}
+                      <button
+                        onClick={() => setGeneratedPath(path)}
+                        className="text-blue-500 hover:underline ml-2"
+                      >
+                        View
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 };
 
 export default SpecificTopicPath;
