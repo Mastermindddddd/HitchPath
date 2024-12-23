@@ -24,9 +24,12 @@ const Login = () => {
   };
 
   return (
-    <div class="flex items-center font-[sans-serif] h-full md:min-h-screen p-4 mt-40">
+    <div class="flex items-center font-[sans-serif] h-full p-4">
       <div class="grid justify-center max-w-md mx-auto">
-        
+          <img 
+            src="https://readymadeui.com/login-image.webp" 
+            class="w-full object-cover rounded-2xl" 
+            alt="login-image" />
         <form onSubmit={handleLogin} class="bg-white rounded-2xl p-6 -mt-24 relative z-10 shadow-[0_2px_16px_-3px_rgba(6,81,237,0.3)]">
           <div class="mb-12">
             <h3 class="text-3xl font-extrabold text-blue-600">Sign in</h3>
@@ -39,7 +42,7 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter email"
               required 
-              class="w-full text-sm border-b border-gray-300 focus:border-blue-600 px-2 py-3 outline-none" 
+              class="w-full text-sm border-b border-gray-300 focus:border-blue-600 px-2 py-3 outline-none bg-gray-800" 
                />
             <svg xmlns="http://www.w3.org/2000/svg" 
               fill="#bbb" 
@@ -76,7 +79,7 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password"
                 required 
-                class="w-full text-sm border-b border-gray-300 focus:border-blue-600 px-2 py-3 outline-none" 
+                class="w-full text-sm border-b border-gray-300 focus:border-blue-600 px-2 py-3 outline-none bg-gray-800" 
               />
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
@@ -125,7 +128,7 @@ const Login = () => {
             >
               Sign in
             </button>
-            <p class="text-gray-800 text-sm mt-6 text-center">Don't have an account? <a href="/register" class="text-blue-600 font-semibold hover:underline ml-1">Register here</a></p>
+            <p class="text-gray-800 text-sm mt-6 text-center">Don't have an account? <a href="/login" class="text-blue-600 font-semibold hover:underline ml-1">Register here</a></p>
           </div>
 
           <hr class="my-6 border-gray-300" />
