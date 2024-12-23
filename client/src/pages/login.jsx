@@ -31,7 +31,7 @@ const Login = () => {
             class="w-full object-cover rounded-2xl" 
             alt="login-image" />
         <form onSubmit={handleLogin} class="bg-white rounded-2xl p-6 -mt-24 relative z-10 shadow-[0_2px_16px_-3px_rgba(6,81,237,0.3)]">
-          <div class="mb-12">
+          <div class="mb-6">
             <h3 class="text-3xl font-extrabold text-blue-600">Sign in</h3>
           </div>
 
@@ -121,7 +121,7 @@ const Login = () => {
             </div>
           </div>
 
-          <div class="mt-12">
+          <div class="mt-6">
             <button 
               type="submit" 
               class="w-full py-2.5 px-4 text-sm font-semibold tracking-wider rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
