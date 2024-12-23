@@ -108,9 +108,10 @@ const Header = () => {
           )}
 
           {/* Hamburger/Cross Button */}
-          <button className="flex px-3" onClick={toggleNavigation}>
-            {openNavigation ? <FaTimes size={24} /> : "☰"}
-          </button>
+          <button className="flex text-xl" onClick={toggleNavigation} style={{ fontSize: "1.5rem" }}>
+  {openNavigation ? <FaTimes size={32} /> : "☰"}
+</button>
+
         </div>
       </div>
 
