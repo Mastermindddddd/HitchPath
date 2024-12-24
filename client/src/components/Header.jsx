@@ -157,20 +157,20 @@ const Header = () => {
               <span className="text-lg sm:text-base">GuideMate</span>
             </li>
           </Link>
-          <Link to="/dashboard" className="flex items-center gap-3 cursor-pointer">
+          {/*<Link to="/dashboard" className="flex items-center gap-3 cursor-pointer">
             <li className="flex items-center gap-3 cursor-pointer">
               <FaThLarge size={20} />
               <span className="text-lg sm:text-base">Dashboard</span>
             </li>
-          </Link>
-          <li className="flex items-center gap-3 cursor-pointer">
+          </Link>*/}
+          {/*<li className="flex items-center gap-3 cursor-pointer">
             <FaInfoCircle size={20} />
             <span className="text-lg sm:text-base">About</span>
-          </li>
-          <li className="flex items-center gap-3 cursor-pointer">
+          </li>*/}
+          {/*<li className="flex items-center gap-3 cursor-pointer">
             <FaTag size={20} />
             <span className="text-lg sm:text-base">Features</span>
-          </li>
+          </li>*/}
           <li className="flex items-center gap-3 cursor-pointer">
             <FaEnvelope size={20} />
             <span className="text-lg sm:text-base">Contact</span>

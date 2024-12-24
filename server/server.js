@@ -29,7 +29,7 @@ const mistral = new Mistral({
 // Middleware
 app.use(express.json());
 const allowedOrigins = [
-  'https://hitchpath.netlify.app', 'http://localhost:5173'
+  'https://hitchpath.com', 'http://localhost:5173'
 ];
 
 app.use(cors({
