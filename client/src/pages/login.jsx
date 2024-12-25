@@ -1,27 +1,36 @@
 import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(""); // Clear previous errors
+
     try {
       const apiUrl = import.meta.env.VITE_API_URL;
       const response = await axios.post(`${apiUrl}/login`, { email, password });
       const { token, user } = response.data;
+
+      // Save user data
       localStorage.setItem("token", token);
       localStorage.setItem("userName", user.name);
-      alert("Login successful!");
-      window.location.href = "/"; // Redirect after successful login
+
+      // Determine redirection path
+      const redirectPath = new URLSearchParams(location.search).get("redirect") || "/";
+      navigate(redirectPath);
     } catch (err) {
-      console.error("Login error:", err);
+      console.error("Login error response:", err.response?.data);
       setError(err.response?.data?.error || "An error occurred.");
     }
   };
+  
 
   return (
     <section>
@@ -31,7 +40,24 @@ const Login = () => {
             <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
               Log in to your account
             </h1>
-            {error && <p className="text-sm text-red-500">{error}</p>}
+            {error && (
+              <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg dark:bg-red-200 dark:text-red-800 animate-pulse" role="alert">
+                <svg
+                  aria-hidden="true"
+                  className="inline flex-shrink-0 w-5 h-5 mr-3"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 13a1 1 0 01-1 1H3a1 1 0 01-1-1V7a1 1 0 011-1h14a1 1 0 011 1v6zm-8 2a2 2 0 100-4 2 2 0 000 4zm0 1a3 3 0 100-6 3 3 0 000 6z"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+                 {error}
+              </div>
+            )}
             <form className="space-y-4 md:space-y-6" onSubmit={handleLogin}>
               <div>
                 <label
@@ -91,7 +117,7 @@ const Login = () => {
                 Log in
               </button>
               <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                Don’t have an account?{" "}
+                Don’t have an account?{' '}
                 <a
                   href="/register"
                   className="font-medium text-primary-600 hover:underline dark:text-primary-500"

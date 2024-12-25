@@ -1,11 +1,13 @@
 import { useRef, useState, useEffect } from "react";
 import { useScroll, useTransform, motion } from "framer-motion";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
+import axios from "axios";
 
 const Hero = () => {
   const parallaxRef = useRef(null);
   const heroRef = useRef(null);
   const [userName, setUserName] = useState("");
+  const navigate = useNavigate();
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ['start end', 'end start'],
@@ -24,6 +26,34 @@ const Hero = () => {
     localStorage.removeItem("userName");
     setUserName("");
   };
+
+  const handleLearningPathClick = async () => {
+    try {
+      const token = localStorage.getItem("token");
+  
+      // If the user is not logged in, redirect to the login page with the intended path
+      if (!token) {
+        navigate(`/login?redirect=${encodeURIComponent("/learning-path")}`);
+        return;
+      }
+  
+      // Check user info and redirect accordingly
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/user-info/completed`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      if (response.data.completed) {
+        navigate("/learning-path");
+      } else {
+        navigate("/user-info");
+      }
+    } catch (error) {
+      console.error("Error checking user info:", error);
+      navigate("/user-info"); // Redirect to user-info as a fallback
+    }
+  };  
 
 
   return (
@@ -45,13 +75,12 @@ const Hero = () => {
   Gain clarity and direction for your learning and career success like never before. Let AI recommend personalized learning paths tailored to your ambitions.
   </p>
   <div className="flex justify-center md:justify-start mt-4">
-    <Link to="/register">
       <button 
         className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition duration-300"
+        onClick={handleLearningPathClick}
       >
         Get Started
       </button>
-    </Link>
   </div>
 </div>
 
