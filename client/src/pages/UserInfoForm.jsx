@@ -7,28 +7,16 @@ const UserInfoForm = () => {
     name: "",
     email: "",
     dateOfBirth: "",
-    location: "",
     preferredLearningStyle: "",
     primaryLanguage: "",
-    preferredStudyHours: "",
     paceOfLearning: "",
-    shortTermGoals: "",
-    longTermGoals: "",
+    DesiredSkill: "",
     careerPath: "",
     currentSkillLevel: "",
-    certifications: "",
-    focusAreas: "",
-    dailyAvailability: "",
-    preferredResourceType: "",
-    feedbackOnResources: "",
-    rewardPreferences: "",
-    reminderTone: "",
-    devicePreference: "",
-    accessibilityNeeds: "",
   });
 
   const [step, setStep] = useState(1);
-  const totalSteps = 5;
+  const totalSteps = 3;
 
   const navigate = useNavigate(); 
 
@@ -72,7 +60,7 @@ const UserInfoForm = () => {
       case 1:
         return (
           <div>
-            <h3 className="text-xl font-bold text-purple-600 mb-4">
+            <h3>
               Step 1: Basic Information
             </h3>
             <label>
@@ -110,17 +98,6 @@ const UserInfoForm = () => {
 "
               />
             </label>
-            <label>
-              Location:
-              <input
-                type="text"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800
-"
-              />
-            </label>
           </div>
         );
       case 2:
@@ -145,12 +122,6 @@ const UserInfoForm = () => {
 "/>
             </label>
             <label>
-              Preferred Study Hours:
-              <input type="text" name="preferredStudyHours" value={formData.preferredStudyHours} onChange={handleChange} 
-                className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800
-"/>
-            </label>
-            <label>
               Pace of Learning:
               <select name="paceOfLearning" value={formData.paceOfLearning} onChange={handleChange} 
                 className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800">
@@ -166,14 +137,10 @@ const UserInfoForm = () => {
         return (
           <div>
             <h3>Step 3: Goals & Career</h3>
+            
             <label>
-              Short-Term Goals:
-              <textarea name="shortTermGoals" value={formData.shortTermGoals} onChange={handleChange} className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800">
-              </textarea>
-            </label>
-            <label>
-              Long-Term Goals:
-              <textarea name="longTermGoals" value={formData.longTermGoals} onChange={handleChange} className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800">
+              Desired skills:
+              <textarea name="DesiredSkill" value={formData.DesiredSkill} onChange={handleChange} className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800">
               </textarea>
             </label>
             <label>
@@ -192,65 +159,13 @@ const UserInfoForm = () => {
             </label>
           </div>
         );
-      case 4:
-        return (
-          <div>
-            <h3>Step 4: Availability & Focus</h3>
-            <label>
-              Certifications or Achievements:
-              <textarea name="certifications" value={formData.certifications} onChange={handleChange} className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800">
-              </textarea>
-            </label>
-            <label>
-              Preferred Focus Areas:
-              <input type="text" name="focusAreas" value={formData.focusAreas} onChange={handleChange} className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800"/>
-            </label>
-            <label>
-              Daily Availability:
-              <input type="text" name="dailyAvailability" value={formData.dailyAvailability} onChange={handleChange} className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800"/>
-            </label>
-          </div>
-        );
-      case 5:
-        return (
-          <div>
-            <h3>Step 5: Preferences & Feedback</h3>
-            <label>
-              Preferred Resource Type:
-              <input type="text" name="preferredResourceType" value={formData.preferredResourceType} onChange={handleChange} className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800"/>
-            </label>
-            <label>
-              Feedback on Resources:
-              <textarea name="feedbackOnResources" value={formData.feedbackOnResources} onChange={handleChange} className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800">
-              </textarea>
-            </label>
-            <label>
-              Reward Preferences:
-              <textarea name="rewardPreferences" value={formData.rewardPreferences} onChange={handleChange} className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800">
-              </textarea>
-            </label>
-            <label>
-              Reminder Tone:
-              <input type="text" name="reminderTone" value={formData.reminderTone} onChange={handleChange} className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800"/>
-            </label>
-            <label>
-              Device Preference:
-              <input type="text" name="devicePreference" value={formData.devicePreference} onChange={handleChange} className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800"/>
-            </label>
-            <label>
-              Accessibility Needs:
-              <textarea name="accessibilityNeeds" value={formData.accessibilityNeeds} onChange={handleChange} className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800">
-              </textarea>
-            </label>
-          </div>
-        );
       default:
         return null;
     }
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto bg-gradient-to-r from-blue-900 to-purple-700 rounded-lg shadow-xl text-white mb-20">
+    <div className="p-6 max-w-4xl mx-auto bg-gradient-to-r from-blue-900 to-blue-400 rounded-lg shadow-xl text-white mb-20">
       <h2 className="text-2xl font-bold text-center mb-6">
         Update Your Information
       </h2>
@@ -299,12 +214,12 @@ const UserInfoForm = () => {
 
       {step < totalSteps && (
         <div className="text-center mt-6">
-          🎉 <strong>Complete Step {step}</strong> to unlock more insights!
+          <strong>Complete Step {step}</strong> to unlock more insights!
         </div>
       )}
       {step === totalSteps && (
         <div className="text-center mt-6">
-          🎊 <strong>Congratulations!</strong> You're all set to save your information.
+          You're all set to save your information.
         </div>
       )}
     </div>
