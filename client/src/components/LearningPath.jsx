@@ -1,37 +1,40 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Box, Typography, CircularProgress } from "@mui/material";
+import { Box, Typography, CircularProgress, Button, Alert } from "@mui/material";
 
 const LearningPath = () => {
   const [loading, setLoading] = useState(true);
   const [learningPath, setLearningPath] = useState([]);
+  const [error, setError] = useState(null);
+
+  const fetchLearningPath = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("User not authenticated");
+
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/generate-learning-path`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setLearningPath(data.learningPath || []);
+    } catch (err) {
+      const errorMessage = err.response?.data?.error || "Failed to load your learning path.";
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchLearningPath = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) throw new Error("User not authenticated");
-
-        const { data } = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/generate-learning-path`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        setLearningPath(data.learningPath || []);
-      } catch (error) {
-        console.error("Error fetching learning path:", error.message);
-        alert(error.response?.data?.error || "Failed to load your learning path.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchLearningPath();
   }, []);
 
   const renderTimeline = () => (
-    <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
+    <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent mt-8">
       {learningPath.map((step, index) => (
         <div
           key={index}
@@ -84,10 +87,21 @@ const LearningPath = () => {
         <div className="flex flex-col justify-center divide-y divide-slate-200">
           <div className="w-full max-w-3xl mx-auto">
             {loading ? (
-              <CircularProgress />
+              <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+                <CircularProgress />
+              </Box>
+            ) : error ? (
+              <Box textAlign="center" py={4}>
+                <Alert severity="error" style={{ marginBottom: "16px" }}>
+                  {error}
+                </Alert>
+                <Button variant="contained" color="primary" onClick={fetchLearningPath}>
+                  Retry
+                </Button>
+              </Box>
             ) : learningPath.length > 0 ? (
               <div>
-                <Typography variant="h4" className="text-center mb-8">
+                <Typography variant="h4" className="text-center mb-20">
                   Your Personalized Learning Path
                 </Typography>
                 {renderTimeline()}
