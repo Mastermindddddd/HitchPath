@@ -33,7 +33,7 @@ const Hero = () => {
   
       // If the user is not logged in, redirect to the login page with the intended path
       if (!token) {
-        navigate(`/login?redirect=${encodeURIComponent("/learning-path")}`);
+        navigate(`/register?redirect=${encodeURIComponent("/learning-path")}`);
         return;
       }
   

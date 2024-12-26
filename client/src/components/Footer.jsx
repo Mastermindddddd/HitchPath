@@ -37,7 +37,7 @@ const Footer = () => {
 
       {/* Additional Footer Text */}
       <div className="mt-4 text-sm text-center">
-        Designed with ❤️ by the HitchPath Team.
+        Designed with ❤️ by the HitchHub Team.
       </div>
     </footer>
   );

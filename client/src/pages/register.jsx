@@ -31,7 +31,7 @@ const Register = () => {
         password,
       });
 
-      setSuccessMessage("Registration successful! Redirecting to login page...");
+      setSuccessMessage("Registration successful! You can now login...");
       setTimeout(() => {
         navigate("/login");
       }, 3000);
