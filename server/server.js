@@ -55,6 +55,28 @@ mongoose
     res.send('Hello, this is the root route of the HitchPath server!');
   });
 
+  // Middleware to authenticate token
+const authenticateToken = (req, res, next) => {
+  const token = req.header("Authorization")?.replace("Bearer ", "");
+
+  if (!token) {
+    return res.status(403).send("Access denied");
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      if (err.name === "TokenExpiredError") {
+        return res.status(401).send("Token expired, please log in again");
+      }
+      return res.status(403).send("Invalid token");
+    }
+
+    req.user = user;
+    next();
+  });
+};
+
+
 // Registration endpoint
 app.post(
   "/register",
@@ -92,7 +114,17 @@ app.post(
 
       await newUser.save();
 
-      res.status(201).json({ message: "User registered successfully." });
+      // Generate token with user details
+      const token = jwt.sign(
+        { id: newUser._id, name: newUser.name, email: newUser.email },
+        JWT_SECRET
+      );
+
+      res.status(201).json({
+        message: "User registered successfully.",
+        token,
+        user: { id: newUser._id, name: newUser.name, email: newUser.email },
+      });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Server error." });
@@ -100,7 +132,7 @@ app.post(
   }
 );
 
-// Login endpoint
+
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -117,10 +149,16 @@ app.post("/login", async (req, res) => {
       return res.status(400).json({ error: "Invalid email or password." });
     }
 
-    // Generate token without expiration
-    const token = jwt.sign({ id: user._id }, JWT_SECRET); // No 'expiresIn'
+    // Generate token with user details
+    const token = jwt.sign(
+      { id: user._id, name: user.name, email: user.email },
+      JWT_SECRET
+    );
 
-    res.json({ token, user: { name: user.name, email: user.email } });
+    res.json({ 
+      token, 
+      user: { id: user._id, name: user.name, email: user.email } 
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server error." });
@@ -128,26 +166,6 @@ app.post("/login", async (req, res) => {
 });
 
 
-// Middleware to authenticate token
-const authenticateToken = (req, res, next) => {
-  const token = req.header("Authorization")?.replace("Bearer ", "");
-
-  if (!token) {
-    return res.status(403).send("Access denied");
-  }
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      if (err.name === "TokenExpiredError") {
-        return res.status(401).send("Token expired, please log in again");
-      }
-      return res.status(403).send("Invalid token");
-    }
-
-    req.user = user;
-    next();
-  });
-};
 
 // Update user information endpoint
 app.post("/api/user/update", authenticateToken, async (req, res) => {
