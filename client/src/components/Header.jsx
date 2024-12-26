@@ -135,10 +135,12 @@ const Header = () => {
 
         {/* Navigation Tabs */}
         <ul className="space-y-6 text-lg font-medium">
-          <li className="flex items-center gap-3 cursor-pointer">
-            <FaHome size={20} />
-            <span className="text-lg sm:text-base">Home</span>
-          </li>
+          <Link to="/">
+            <li className="flex items-center gap-3 cursor-pointer">
+              <FaHome size={20} />
+              <span className="text-lg sm:text-base">Home</span>
+            </li>
+          </Link>
           <li className="flex items-center gap-3 cursor-pointer">
             <FaUser size={20} />
             <button onClick={handleLearningPathClick}>

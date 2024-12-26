@@ -8,20 +8,26 @@ export const AuthContext = createContext({
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true); // Add loading state
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       const decoded = jwt_decode(token);
-      setUser(decoded);
+      setUser({ name: decoded.name, email: decoded.email });
     }
+    setIsLoading(false); // Loading complete
   }, []);
 
   const logout = () => {
-    localStorage.removeItem("token"); // Remove the token from localStorage
-    setUser(null); // Clear the user state
-    window.location.href = "/login"; // Redirect to login page
+    localStorage.removeItem("token");
+    setUser(null);
+    window.location.href = "/login";
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>; // Show a loading spinner
+  }
 
   return (
     <AuthContext.Provider value={{ user, logout }}>

@@ -11,22 +11,23 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
-
+    setError("");
+  
     try {
       const apiUrl = import.meta.env.VITE_API_URL;
       const response = await axios.post(`${apiUrl}/login`, { email, password });
       const { token, user } = response.data;
-
-      // Save user data
+  
+      // Save token and user to local storage
       localStorage.setItem("token", token);
-      localStorage.setItem("userName", user.name);
-
-      // Determine redirection path
+  
+      // Update user state in AuthContext
+      setUser(user);
+  
+      // Redirect to home
       const redirectPath = new URLSearchParams(location.search).get("redirect") || "/";
       navigate(redirectPath);
     } catch (err) {
-      console.error("Login error response:", err.response?.data);
       setError(err.response?.data?.error || "An error occurred.");
     }
   };
