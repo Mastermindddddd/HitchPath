@@ -4,73 +4,58 @@ import cors from "cors";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import rateLimit from "express-rate-limit";
-import morgan from "morgan";
-import compression from "compression";
-import helmet from "helmet";
 import { check, validationResult } from "express-validator";
 import User from "./models/userModel.js";
 import OpenAI from "openai";
-import { Mistral } from "@mistralai/mistralai";
-
-dotenv.config();
+import { Mistral } from '@mistralai/mistralai';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET;
 const MONGO_URI = process.env.MONGO_URI;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
 
+// OpenAI API configuration
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY, // Ensure your API key is stored in an environment variable
+});
 
+// Configure Mistral AI
+const mistral = new Mistral({
+  apiKey: process.env.MISTRAL_API_KEY, // Ensure your Mistral API key is stored in an environment variable
+});
 
 // Middleware
 app.use(express.json());
-app.use(helmet());
-app.use(compression());
-app.use(morgan("tiny")); 
+const allowedOrigins = [
+  'https://hitchpath.com', 'http://localhost:5173'
+];
 
-const allowedOrigins = ["https://hitchpath.com", "http://localhost:5173"];
-app.use(
-  cors({
-    origin: (origin, callback) => {
+app.use(cors({
+  origin: (origin, callback) => {
       if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
+          callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"));
+          callback(new Error('Not allowed by CORS'));
       }
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
-// Rate limiter to prevent abuse
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: "Too many requests from this IP, please try again later.",
-});
-app.use(limiter);
 
 // MongoDB connection
 mongoose
-  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(MONGO_URI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("Error connecting to MongoDB:", err));
 
-  // OpenAI API configuration
-const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+  app.get('/', (req, res) => {
+    res.send('Hello, this is the root route of the HitchPath server!');
+  });
 
-// Mistral AI configuration
-const mistral = new Mistral({ apiKey: MISTRAL_API_KEY });
-
-// Root route
-app.get("/", (req, res) => {
-  res.send("Welcome to the HitchPath server!");
-});
-
-// Middleware to authenticate token
+  // Middleware to authenticate token
 const authenticateToken = (req, res, next) => {
   const token = req.header("Authorization")?.replace("Bearer ", "");
 
@@ -80,8 +65,10 @@ const authenticateToken = (req, res, next) => {
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) {
-      const message = err.name === "TokenExpiredError" ? "Token expired, please log in again" : "Invalid token";
-      return res.status(403).send(message);
+      if (err.name === "TokenExpiredError") {
+        return res.status(401).send("Token expired, please log in again");
+      }
+      return res.status(403).send("Invalid token");
     }
 
     req.user = user;
@@ -89,13 +76,16 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+
 // Registration endpoint
 app.post(
   "/register",
   [
     check("email").isEmail().withMessage("Invalid email address."),
-    check("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters long."),
-    check("name").notEmpty().withMessage("Name is required."),
+    check("password")
+      .isLength({ min: 6 })
+      .withMessage("Password must be at least 6 characters long."),
+    check("name").notEmpty().withMessage("Name is required.")
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -106,16 +96,29 @@ app.post(
     const { name, email, password } = req.body;
 
     try {
+      // Check if user already exists
       const existingUser = await User.findOne({ email });
       if (existingUser) {
         return res.status(400).json({ error: "Email already in use." });
       }
 
+      // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
-      const newUser = new User({ name, email, password: hashedPassword });
+
+      // Create new user
+      const newUser = new User({
+        name,
+        email,
+        password: hashedPassword,
+      });
+
       await newUser.save();
 
-      const token = jwt.sign({ id: newUser._id, name: newUser.name, email: newUser.email }, JWT_SECRET);
+      // Generate token with user details
+      const token = jwt.sign(
+        { id: newUser._id, name: newUser.name, email: newUser.email },
+        JWT_SECRET
+      );
 
       res.status(201).json({
         message: "User registered successfully.",
@@ -123,36 +126,45 @@ app.post(
         user: { id: newUser._id, name: newUser.name, email: newUser.email },
       });
     } catch (error) {
-      console.error("Error during registration:", error);
+      console.error(error);
       res.status(500).json({ error: "Server error." });
     }
   }
 );
 
 
-// Login endpoint
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // Find user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ error: "Invalid email or password." });
     }
 
+    // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(400).json({ error: "Invalid email or password." });
     }
 
-    const token = jwt.sign({ id: user._id, name: user.name, email: user.email }, JWT_SECRET);
+    // Generate token with user details
+    const token = jwt.sign(
+      { id: user._id, name: user.name, email: user.email },
+      JWT_SECRET
+    );
 
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
+    res.json({ 
+      token, 
+      user: { id: user._id, name: user.name, email: user.email } 
+    });
   } catch (error) {
-    console.error("Error during login:", error);
+    console.error(error);
     res.status(500).json({ error: "Server error." });
   }
 });
+
 
 
 // Update user information endpoint
@@ -419,12 +431,6 @@ app.get("/api/specific-paths", authenticateToken, async (req, res) => {
 // Example protected route
 app.get("/protected", authenticateToken, (req, res) => {
   res.json({ message: "This is a protected route.", user: req.user });
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: "Internal server error." });
 });
 
 // Start the server
