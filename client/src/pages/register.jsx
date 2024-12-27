@@ -49,14 +49,18 @@ const Register = () => {
       const { data } = await axios.post(`${apiUrl}/google-login`, {
         tokenId: response.credential, // Google token ID
       });
-
       localStorage.setItem("token", data.token); // Save token in localStorage
       navigate("/learning-path"); // Redirect to the dashboard or home page
     } catch (err) {
+      if (err.response && err.response.data) {
+        setError(err.response.data.error || "Google login failed. Please try again.");
+      } else {
+        setError("Google login failed. Please try again.");
+      }
       console.error("Google login error:", err);
-      setError("Google login failed. Please try again.");
     }
   };
+  
 
   return (
     <section>
