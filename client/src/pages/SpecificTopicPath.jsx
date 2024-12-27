@@ -180,28 +180,13 @@ const SpecificTopicPath = () => {
   return (
     <section className="flex flex-col justify-center" style={{ overflow: "visible" }}>
       <canvas id="cosmosCanvas" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}></canvas>
-      <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-8 relative z-10">
+      <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-24 relative z-10">
         <div className="flex flex-col justify-center divide-y divide-slate-200">
           <div className="w-full max-w-3xl mx-auto">
-            <Typography
-              variant="h4"
-              className="text-center mb-20"
-              sx={{
-                fontWeight: 700,  // Bold font weight for emphasis
-                fontFamily: "'Poppins', sans-serif", // A cleaner, modern font
-                fontSize: {
-                  xs: '1.5rem',  // For small screens (phones)
-                  sm: '2rem',    // For larger screens (small tablets)
-                  md: '2.5rem',  // For medium screens (tablets and up)
-                },
-                color: 'primary.main',  // Using the primary color of the theme for the text
-                letterSpacing: '0.5px',  // Slight spacing between letters for a more refined look
-                lineHeight: 1.2,  // Adjust line height for better readability
-              }}
-            >
-              Generate Path
+            <Typography variant="h4" className="text-center mb-8">
+              Generate Specific Topic Path
             </Typography>
-            <div className="space-y-4 mt-8">
+            <div className="space-y-4">
               <input
                 type="text"
                 placeholder="Enter Topic"
