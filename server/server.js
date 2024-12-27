@@ -183,6 +183,7 @@ app.post("/google-login", async (req, res) => {
         name: payload.name,
         email: payload.email,
         googleId: payload.sub, // Store the Google ID
+        password: null, // No password required for Google users
       });
       await user.save();
     }
@@ -203,6 +204,7 @@ app.post("/google-login", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
 // Update user information endpoint
 app.post("/api/user/update", authenticateToken, async (req, res) => {
   try {

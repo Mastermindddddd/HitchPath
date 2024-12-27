@@ -20,7 +20,7 @@ const specificPathSchema = new mongoose.Schema({
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  password: { type: String, required: false },
   dateOfBirth: { type: Date },
   preferredLearningStyle: { type: String, enum: ["visual", "auditory", "reading", "kinesthetic"], default: "visual" },
   primaryLanguage: { type: String },
