@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google"; // Import the GoogleLogin component
+import { Button } from "@mui/material"; // Import Button component from Material-UI
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -50,7 +51,7 @@ const Register = () => {
       });
 
       localStorage.setItem("token", data.token); // Save token in localStorage
-      navigate("/dashboard"); // Redirect to the dashboard or home page
+      navigate("/learning-path"); // Redirect to the dashboard or home page
     } catch (err) {
       console.error("Google login error:", err);
       setError("Google login failed. Please try again.");
@@ -137,16 +138,7 @@ const Register = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-3 flex items-center text-gray-500 dark:text-gray-400"
                 >
-                  {/*{showPassword ? (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 5C8.13 5 5.23 7.1 5.03 10H3C3.42 5.39 7.72 2 12 2C16.28 2 20.58 5.39 21 10H18.97C18.77 7.1 15.87 5 12 5ZM12 15C9.79 15 8 13.21 8 11C8 8.79 9.79 7 12 7C14.21 7 16 8.79 16 11C16 13.21 14.21 15 12 15ZM12 8.5C10.84 8.5 10 9.34 10 10.5C10 11.66 10.84 12.5 12 12.5C13.16 12.5 14 11.66 14 10.5C14 9.34 13.16 8.5 12 8.5Z" fill="black"/>
-  </svg>
-) : (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 5C8.13 5 5.23 7.1 5.03 10H3C3.42 5.39 7.72 2 12 2C16.28 2 20.58 5.39 21 10H18.97C18.77 7.1 15.87 5 12 5ZM12 15C9.79 15 8 13.21 8 11C8 8.79 9.79 7 12 7C14.21 7 16 8.79 16 11C16 13.21 14.21 15 12 15ZM12 8.5C10.84 8.5 10 9.34 10 10.5C10 11.66 10.84 12.5 12 12.5C13.16 12.5 14 11.66 14 10.5C14 9.34 13.16 8.5 12 8.5Z" fill="none" stroke="black" strokeWidth="2"/>
-  </svg>
-)}*/}
-
+                  {/* Show/hide password icon */}
                 </button>
               </div>
               <div className="relative">
@@ -170,7 +162,7 @@ const Register = () => {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute inset-y-0 right-3 flex items-center text-gray-500 dark:text-gray-400"
                 >
-                  {/*{showConfirmPassword ? "🙈" : "👁️"}*/}
+                  {/* Show/hide confirm password icon */}
                 </button>
               </div>
               <button
@@ -179,11 +171,22 @@ const Register = () => {
               >
                 Register
               </button>
-              <GoogleLogin
-                onSuccess={handleGoogleLogin}
-                onError={() => setError("Google login failed")}
-                useOneTap
-              />
+
+              {/* Google Button with Material-UI styling */}
+              <Button
+                fullWidth
+                variant="outlined"
+                sx={{ textTransform: "none" }}
+                onClick={handleGoogleLogin}
+              >
+                <img
+                  src="https://www.svgrepo.com/show/475656/google-color.svg"
+                  alt="Google"
+                  style={{ height: 18, marginRight: 8 }}
+                />
+                Continue with Google
+              </Button>
+
               <p className="text-sm font-light text-gray-500 dark:text-gray-400">
                 Already have an account?{" "}
                 <a
