@@ -53,7 +53,7 @@ const Register = () => {
       // Save token in localStorage
       localStorage.setItem("token", data.token);
       // Redirect to the dashboard
-      navigate("/dashboard");
+      navigate("/learning-path");
     } catch (err) {
       console.error("Google login error:", err);
       setError("Google login failed. Please try again.");
@@ -189,7 +189,7 @@ const Register = () => {
                 />
                 Continue with Google
               </Button>*/}
-              <GoogleLogin
+              {/*<GoogleLogin
         onSuccess={handleGoogleLogin}
         onError={() => {
           setError("Google login failed. Please try again.");
@@ -211,7 +211,7 @@ const Register = () => {
             Continue with Google
           </Button>
         )}
-      />
+      />*/}
               <p className="text-sm font-light text-gray-500 dark:text-gray-400">
                 Already have an account?{" "}
                 <a

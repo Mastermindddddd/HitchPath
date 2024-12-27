@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -31,7 +32,27 @@ const Login = () => {
       setError(err.response?.data?.error || "An error occurred.");
     }
   };
-  
+
+  const handleGoogleLogin = async (credentialResponse) => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const response = await axios.post(`${apiUrl}/google-login`, { tokenId: credentialResponse.credential });
+
+      const { token, user } = response.data;
+
+      // Save user data
+      localStorage.setItem("token", token);
+      localStorage.setItem("userName", user.name);
+
+      // Redirect after login
+      const redirectPath = new URLSearchParams(location.search).get("redirect") || "/";
+      navigate(redirectPath);
+      window.location.reload();
+    } catch (err) {
+      console.error("Google login error response:", err.response?.data);
+      setError(err.response?.data?.error || "An error occurred during Google Sign-In.");
+    }
+  };
 
   return (
     <section>
@@ -56,7 +77,7 @@ const Login = () => {
                     clipRule="evenodd"
                   ></path>
                 </svg>
-                 {error}
+                {error}
               </div>
             )}
             <form className="space-y-4 md:space-y-6" onSubmit={handleLogin}>
@@ -94,39 +115,39 @@ const Login = () => {
                   required
                 />
               </div>
-              <div className="flex items-start">
-                <div className="flex items-center h-5">
-                  <input
-                    id="remember"
-                    type="checkbox"
-                    className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800"
-                  />
-                </div>
-                <div className="ml-3 text-sm">
-                  <label
-                    htmlFor="remember"
-                    className="text-gray-500 dark:text-gray-300"
-                  >
-                    Remember me
-                  </label>
-                </div>
-              </div>
               <button
                 type="submit"
                 className="w-full text-white bg-blue-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
               >
                 Log in
               </button>
-              <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                Don’t have an account?{' '}
-                <a
-                  href="/register"
-                  className="font-medium text-primary-600 hover:underline dark:text-primary-500"
-                >
-                  Register here
-                </a>
-              </p>
             </form>
+            <div className="mt-4">
+  <button
+    className="w-full text-white bg-white hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 flex items-center justify-center"
+    style={{
+      minWidth: "200px", // Minimum width to prevent shrinking
+      whiteSpace: "nowrap", // Prevent text wrapping
+      textOverflow: "ellipsis", // Add ellipsis for long emails
+      overflow: "hidden", // Hide overflow
+    }}
+  >
+    <GoogleLogin
+      onSuccess={handleGoogleLogin}
+      onError={() => setError("Google Sign-In failed. Please try again.")}
+    />
+  </button>
+</div>
+
+            <p className="text-sm font-light text-gray-500 dark:text-gray-400">
+              Don’t have an account?{" "}
+              <a
+                href="/register"
+                className="font-medium text-primary-600 hover:underline dark:text-primary-500"
+              >
+                Register here
+              </a>
+            </p>
           </div>
         </div>
       </div>
