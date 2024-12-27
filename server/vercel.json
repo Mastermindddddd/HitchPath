@@ -2,8 +2,9 @@
   "version": 2,
   "builds": [{ "src": "server.js", "use": "@vercel/node" }],
   "functions": {
-    "server.js": {
-      "timeout": 30
+    "api/*.js": {
+      "memory": 3009,
+      "maxDuration": 30
     }
   },
   "routes": [{ "src": "/(.*)", "dest": "server.js" }]
