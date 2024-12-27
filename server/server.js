@@ -12,6 +12,7 @@ import { check, validationResult } from "express-validator";
 import User from "./models/userModel.js";
 import OpenAI from "openai";
 import { Mistral } from "@mistralai/mistralai";
+import { OAuth2Client } from 'google-auth-library';
 
 dotenv.config();
 
@@ -154,6 +155,51 @@ app.post("/login", async (req, res) => {
   }
 });
 
+app.post("/google-login", async (req, res) => {
+  const { tokenId } = req.body; // The Google token sent from the frontend
+
+  if (!tokenId) {
+    return res.status(400).json({ error: "Token is required" });
+  }
+
+  try {
+    // Verify the token
+    const ticket = await client.verifyIdToken({
+      idToken: tokenId,
+      audience: process.env.GOOGLE_CLIENT_ID, // Ensure the audience matches
+    });
+
+    const payload = ticket.getPayload();
+
+    // Check if the user already exists in the database
+    let user = await User.findOne({ email: payload.email });
+
+    if (!user) {
+      // If user doesn't exist, create a new one
+      user = new User({
+        name: payload.name,
+        email: payload.email,
+        googleId: payload.sub, // Store the Google ID
+      });
+      await user.save();
+    }
+
+    // Generate a JWT for the user
+    const token = jwt.sign(
+      { id: user._id, name: user.name, email: user.email },
+      JWT_SECRET
+    );
+
+    res.status(200).json({
+      message: "User logged in successfully",
+      token,
+      user: { id: user._id, name: user.name, email: user.email },
+    });
+  } catch (error) {
+    console.error("Google login error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 // Update user information endpoint
 app.post("/api/user/update", authenticateToken, async (req, res) => {

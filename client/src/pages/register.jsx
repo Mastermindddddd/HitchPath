@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { GoogleLogin } from "@react-oauth/google"; // Import the GoogleLogin component
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -38,6 +39,21 @@ const Register = () => {
     } catch (err) {
       console.error("Registration error response:", err.response?.data);
       setError(err.response?.data?.error || "An error occurred.");
+    }
+  };
+
+  const handleGoogleLogin = async (response) => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const { data } = await axios.post(`${apiUrl}/google-login`, {
+        tokenId: response.credential, // Google token ID
+      });
+
+      localStorage.setItem("token", data.token); // Save token in localStorage
+      navigate("/dashboard"); // Redirect to the dashboard or home page
+    } catch (err) {
+      console.error("Google login error:", err);
+      setError("Google login failed. Please try again.");
     }
   };
 
@@ -163,6 +179,11 @@ const Register = () => {
               >
                 Register
               </button>
+              <GoogleLogin
+                onSuccess={handleGoogleLogin}
+                onError={() => setError("Google login failed")}
+                useOneTap
+              />
               <p className="text-sm font-light text-gray-500 dark:text-gray-400">
                 Already have an account?{" "}
                 <a

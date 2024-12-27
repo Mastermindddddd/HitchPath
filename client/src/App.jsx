@@ -12,6 +12,7 @@ import LearningPathWithBackground from "./pages/LearningPathWithBackground";
 import Chatbot from "./pages/Chatbot";
 import SpecificTopicPath from "./pages/SpecificTopicPath";
 import { initializeGA, logPageView } from "./googleAnalytics";
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 const App = () => {
   useEffect(() => {
@@ -21,6 +22,7 @@ const App = () => {
 
   return (
     <AuthProvider>
+      <GoogleOAuthProvider clientId="16796464485-a6jj4o4ps6p2v5q35uslknlp469h3qid.apps.googleusercontent.com">
       <AnalyticsTracker />
         <Routes>
           <Route path="/" element={<Layout />}>
@@ -34,6 +36,7 @@ const App = () => {
           </Route>
         </Routes>
       <ButtonGradient />
+      </GoogleOAuthProvider>
     </AuthProvider>
   );
 };
