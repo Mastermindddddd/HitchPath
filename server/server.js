@@ -173,15 +173,17 @@ app.post("/google-login", async (req, res) => {
     });
 
     const payload = ticket.getPayload();
+    const email = payload.email;
+    const name = payload.name;
 
-    // Check if the user already exists in the database
-    let user = await User.findOne({ email: payload.email });
+    // Check if the user already exists
+    let user = await User.findOne({ email });
 
     if (!user) {
-      // If user doesn't exist, create a new one
+      // Create a new user if not exists
       user = new User({
-        name: payload.name,
-        email: payload.email,
+        name,
+        email,
         googleId: payload.sub, // Store the Google ID
         password: null, // No password required for Google users
       });
@@ -191,19 +193,17 @@ app.post("/google-login", async (req, res) => {
     // Generate a JWT for the user
     const token = jwt.sign(
       { id: user._id, name: user.name, email: user.email },
-      JWT_SECRET
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" } // Adjust token expiration as needed
     );
 
-    res.status(200).json({
-      message: "User logged in successfully",
-      token,
-      user: { id: user._id, name: user.name, email: user.email },
-    });
-  } catch (error) {
-    console.error("Google login error:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(200).json({ token, user });
+  } catch (err) {
+    console.error("Google login error:", err);
+    res.status(500).json({ error: "Google login failed. Please try again." });
   }
 });
+
 
 // Update user information endpoint
 app.post("/api/user/update", authenticateToken, async (req, res) => {

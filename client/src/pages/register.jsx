@@ -47,17 +47,16 @@ const Register = () => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL;
       const { data } = await axios.post(`${apiUrl}/google-login`, {
-        tokenId: response.credential, // Google token ID
+        tokenId: response.credential, // Pass the Google tokenId
       });
-      localStorage.setItem("token", data.token); // Save token in localStorage
-      navigate("/learning-path"); // Redirect to the dashboard or home page
+  
+      // Save token in localStorage
+      localStorage.setItem("token", data.token);
+      // Redirect to the dashboard
+      navigate("/dashboard");
     } catch (err) {
-      if (err.response && err.response.data) {
-        setError(err.response.data.error || "Google login failed. Please try again.");
-      } else {
-        setError("Google login failed. Please try again.");
-      }
       console.error("Google login error:", err);
+      setError("Google login failed. Please try again.");
     }
   };
   
@@ -177,7 +176,7 @@ const Register = () => {
               </button>
 
               {/* Google Button with Material-UI styling */}
-              <Button
+              {/*<Button
                 fullWidth
                 variant="outlined"
                 sx={{ textTransform: "none" }}
@@ -189,8 +188,30 @@ const Register = () => {
                   style={{ height: 18, marginRight: 8 }}
                 />
                 Continue with Google
-              </Button>
-
+              </Button>*/}
+              <GoogleLogin
+        onSuccess={handleGoogleLogin}
+        onError={() => {
+          setError("Google login failed. Please try again.");
+        }}
+        useOneTap
+        render={(renderProps) => (
+          <Button
+            fullWidth
+            variant="outlined"
+            sx={{ textTransform: "none" }}
+            onClick={renderProps.onClick}
+            disabled={renderProps.disabled}
+          >
+            <img
+              src="https://www.svgrepo.com/show/475656/google-color.svg"
+              alt="Google"
+              style={{ height: 18, marginRight: 8 }}
+            />
+            Continue with Google
+          </Button>
+        )}
+      />
               <p className="text-sm font-light text-gray-500 dark:text-gray-400">
                 Already have an account?{" "}
                 <a
