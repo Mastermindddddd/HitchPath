@@ -5,9 +5,6 @@ import { AuthContext } from "../AuthContext";
 
 const UserInfoForm = () => {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    dateOfBirth: "",
     preferredLearningStyle: "",
     primaryLanguage: "",
     paceOfLearning: "",
@@ -18,6 +15,7 @@ const UserInfoForm = () => {
 
   const [step, setStep] = useState(1);
   const totalSteps = 3;
+  const [loading, setLoading] = useState(false); // State for loading indicator
 
   const navigate = useNavigate(); 
   const { user } = useContext(AuthContext);
@@ -32,6 +30,7 @@ const UserInfoForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Show loading indicator
     try {
       const token = localStorage.getItem("token");
       console.log("Token:", token);
@@ -55,6 +54,8 @@ const UserInfoForm = () => {
       navigate("/learning-path");
     } catch (error) {
       console.error("Error updating user information:", error);
+    } finally {
+      setLoading(false); // Hide loading indicator
     }
   };
 
@@ -64,41 +65,24 @@ const UserInfoForm = () => {
         return (
           <div>
             <h3>Step 1: Basic Information</h3>
-
-            {/* Name Field */}
             <label>
               Name:
               <input
                 type="text"
                 name="name"
-                value={user?.name || formData.name} // Pre-fill with logged-in user's name
-                readOnly // Disable input
+                value={user?.name}
+                readOnly
                 className="w-full p-2 rounded-lg border-2 border-gray-300 bg-gray-200 text-gray-800 cursor-not-allowed"
               />
             </label>
-
-            {/* Email Field */}
             <label>
               Email:
               <input
                 type="email"
                 name="email"
-                value={user?.email || formData.email} // Pre-fill with logged-in user's email
-                readOnly // Disable input
+                value={user?.email}
+                readOnly
                 className="w-full p-2 rounded-lg border-2 border-gray-300 bg-gray-200 text-gray-800 cursor-not-allowed"
-              />
-            </label>
-
-            {/* Date of Birth Field */}
-            <label>
-              Date of Birth:
-              <input
-                type="date"
-                name="dateOfBirth"
-                value={formData.dateOfBirth}
-                onChange={handleChange}
-                required
-                className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800"
               />
             </label>
           </div>
@@ -139,7 +123,6 @@ const UserInfoForm = () => {
         return (
           <div>
             <h3>Step 3: Goals & Career</h3>
-            
             <label>
               Desired skills:
               <textarea name="DesiredSkill" value={formData.DesiredSkill} onChange={handleChange} className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800"></textarea>
@@ -194,7 +177,6 @@ const UserInfoForm = () => {
         this.x += Math.cos(this.angle) * this.speed;
         this.y += Math.sin(this.angle) * this.speed;
 
-        // Bounce off edges
         if (this.x < 0 || this.x > canvas.width) this.angle = Math.PI - this.angle;
         if (this.y < 0 || this.y > canvas.height) this.angle = -this.angle;
       }
@@ -207,7 +189,6 @@ const UserInfoForm = () => {
       }
     }
 
-    // Initialize particles
     for (let i = 0; i < numParticles; i++) {
       particles.push(
         new Particle(
@@ -219,7 +200,6 @@ const UserInfoForm = () => {
       );
     }
 
-    // Connect particles
     function connectParticles() {
       for (let a = 0; a < particles.length; a++) {
         for (let b = a + 1; b < particles.length; b++) {
@@ -240,7 +220,6 @@ const UserInfoForm = () => {
       }
     }
 
-    // Animation Loop
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       particles.forEach(particle => {
@@ -251,21 +230,16 @@ const UserInfoForm = () => {
       requestAnimationFrame(animate);
     }
 
-    // Start Animation
     animate();
   }, []);
 
   return (
     <div className="relative p-4 sm:p-6 bg-gradient-to-r from-blue-900 to-blue-400 rounded-lg shadow-xl text-white mb-20 mx-4 sm:mx-auto max-w-4xl">
-      {/* Cosmos Background */}
       <canvas id="cosmosCanvas" className="absolute top-0 left-0 z-0 w-full h-full"></canvas>
 
       <div className="relative z-10">
-        <h2 className="text-xl md:text-2xl font-bold text-center mb-4 sm:mb-6">
-          Update Your Information
-        </h2>
+        <h2 className="text-xl md:text-2xl font-bold text-center mb-4 sm:mb-6">Update Your Information</h2>
 
-        {/* Progress Bar */}
         <div className="relative h-3 sm:h-4 bg-gray-300 rounded-full mb-6 sm:mb-8">
           <div
             className="absolute top-0 left-0 h-full bg-purple-600 rounded-full transition-all duration-500"
@@ -277,37 +251,44 @@ const UserInfoForm = () => {
           Step {step} of {totalSteps}
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {renderStep()}
-          <div className="flex justify-between mt-4">
-            {step > 1 && (
-              <button
-                type="button"
-                onClick={handlePrev}
-                className="bg-gray-600 hover:bg-gray-700 text-white py-2 px-3 sm:px-4 rounded-lg"
-              >
-                Previous
-              </button>
-            )}
-            {step < totalSteps && (
-              <button
-                type="button"
-                onClick={handleNext}
-                className="bg-green-600 hover:bg-green-700 text-white py-2 px-3 sm:px-4 rounded-lg"
-              >
-                Next
-              </button>
-            )}
-            {step === totalSteps && (
-              <button
-                type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 sm:px-4 rounded-lg"
-              >
-                Submit
-              </button>
-            )}
+        {loading ? (
+          <div className="text-center text-white py-4">
+            <span>Saving your information...</span>
+            {/* You can use a spinner or a loading component here */}
           </div>
-        </form>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {renderStep()}
+            <div className="flex justify-between mt-4">
+              {step > 1 && (
+                <button
+                  type="button"
+                  onClick={handlePrev}
+                  className="bg-gray-600 hover:bg-gray-700 text-white py-2 px-3 sm:px-4 rounded-lg"
+                >
+                  Previous
+                </button>
+              )}
+              {step < totalSteps && (
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className="bg-green-600 hover:bg-green-700 text-white py-2 px-3 sm:px-4 rounded-lg"
+                >
+                  Next
+                </button>
+              )}
+              {step === totalSteps && (
+                <button
+                  type="submit"
+                  className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 sm:px-4 rounded-lg"
+                >
+                  Submit
+                </button>
+              )}
+            </div>
+          </form>
+        )}
 
         {step < totalSteps && (
           <div className="text-center mt-4 sm:mt-6">
