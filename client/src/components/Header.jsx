@@ -12,13 +12,13 @@ import {
   FaUser,
   FaThLarge,
 } from "react-icons/fa";
-import { brainwave } from "../assets";
 import { AuthContext } from "../AuthContext"; // Import AuthContext
 
 const Header = () => {
   const pathname = useLocation();
   const navigate = useNavigate();
   const [openNavigation, setOpenNavigation] = useState(false);
+  const [loading, setLoading] = useState(false); // Loading state
   const sidebarRef = useRef(null);
 
   // Get user and logout function from AuthContext
@@ -35,9 +35,37 @@ const Header = () => {
     }
   };
 
-  const handleSignIn = () => {
-    setOpenNavigation(false);
-    enablePageScroll();
+  const handleNavigation = (path) => {
+    setLoading(true); // Set loading state
+    setTimeout(() => {
+      navigate(path);
+      setOpenNavigation(false); // Close sidebar
+      enablePageScroll(); // Re-enable page scroll
+      setLoading(false); // Reset loading state
+    }, 200); // Add a small delay for smoother UX
+  };
+
+  const handleLearningPathClick = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/user-info/completed`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.data.completed) {
+        navigate("/learning-path");
+      } else {
+        navigate("/user-info");
+      }
+    } catch (error) {
+      console.error("Error checking user info:", error);
+      navigate("/user-info"); // Fallback
+    } finally {
+      setOpenNavigation(false); // Close sidebar
+      enablePageScroll(); // Re-enable page scroll
+      setLoading(false); // Reset loading
+    }
   };
 
   // Close Sidebar when clicking outside
@@ -45,26 +73,6 @@ const Header = () => {
     if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
       setOpenNavigation(false);
       enablePageScroll();
-    }
-  };
-
-  const handleLearningPathClick = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/user-info/completed`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.data.completed) {
-        navigate("/learning-path"); 
-      } else {
-        navigate("/user-info");
-      }
-    } catch (error) {
-      console.error("Error checking user info:", error);
-      navigate("/user-info"); // Redirect to user-info as a fallback
     }
   };
 
@@ -93,7 +101,6 @@ const Header = () => {
           <p className="text-lg font-semibold text-gray-400">hitchpath</p>
         </a>
 
-
         {/* Action Buttons */}
         <div className="flex items-center gap-4 ml-auto">
           {/* Conditional Rendering of Sign In / Sign Out */}
@@ -102,100 +109,112 @@ const Header = () => {
               Sign out
             </button>
           ) : (
-            <Link to="/login" onClick={handleSignIn}>
+            <Link to="/login" onClick={toggleNavigation}>
               <button className="hidden lg:flex">Sign in</button>
             </Link>
           )}
 
           {/* Hamburger/Cross Button */}
-          <button className="flex text-xl" onClick={toggleNavigation} style={{ fontSize: "1.5rem" }}>
-  {openNavigation ? <FaTimes size={32} /> : "☰"}
-</button>
-
+          <button
+            className="flex text-xl"
+            onClick={toggleNavigation}
+            style={{ fontSize: "1.5rem" }}
+          >
+            {openNavigation ? <FaTimes size={32} /> : "☰"}
+          </button>
         </div>
       </div>
 
       {/* Sidebar */}
       {openNavigation && (
-  <div
-    className={`fixed inset-0 z-40 bg-black bg-opacity-50 transition-opacity`}
-  >
-    <div
-      ref={sidebarRef}
-      className={`fixed top-0 right-0 h-full w-[60%] max-w-[300px] bg-[#001f3f] text-white z-50 shadow-lg transform translate-x-0 transition-transform duration-300 ease-in-out md:w-[60%] sm:w-[75%]`}
-    >
-      <div className="flex flex-col h-full p-6">
-        {/* Close Button */}
-        <button
-          className="text-white text-lg self-end mb-4"
-          onClick={toggleNavigation}
+        <div
+          className={`fixed inset-0 z-40 bg-black bg-opacity-50 transition-opacity`}
         >
-          <FaTimes />
-        </button>
+          <div
+            ref={sidebarRef}
+            className={`fixed top-0 right-0 h-full w-[60%] max-w-[300px] bg-[#001f3f] text-white z-50 shadow-lg transform translate-x-0 transition-transform duration-300 ease-in-out md:w-[60%] sm:w-[75%]`}
+          >
+            <div className="flex flex-col h-full p-6">
+              {/* Close Button */}
+              <button
+                className="text-white text-lg self-end mb-4"
+                onClick={toggleNavigation}
+              >
+                <FaTimes />
+              </button>
 
-        {/* Navigation Tabs */}
-        <ul className="space-y-6 text-lg font-medium">
-          <Link to="/">
-            <li className="flex items-center gap-3 cursor-pointer">
-              <FaHome size={20} />
-              <span className="text-lg sm:text-base">Home</span>
-            </li>
-          </Link>
-          <li className="flex items-center gap-3 cursor-pointer">
-            <FaUser size={20} />
-            <button onClick={handleLearningPathClick}>
-              <span className="text-lg sm:text-base">My Goal Path</span>
-            </button>
-          </li>
-          <Link to="/generate-path" className="flex items-center gap-3 cursor-pointer">
-            <li className="flex items-center gap-3 cursor-pointer">
-              <FaThLarge size={20} />
-              <span className="text-lg sm:text-base">Custom path</span>
-            </li>
-          </Link>
-          <Link to="/guidemate-AI" className="flex items-center gap-3 cursor-pointer">
-            <li className="flex items-center gap-3 cursor-pointer">
-              <FaRobot size={20} />
-              <span className="text-lg sm:text-base">GuideMate</span>
-            </li>
-          </Link>
-          <li className="flex items-center gap-3 cursor-pointer">
-            <FaEnvelope size={20} />
-            <span className="text-lg sm:text-base">Contact</span>
-          </li>
-        </ul>
-        
-        {/* Sign In / Sign Out Button */}
-        <div className="mt-auto">
-  {user && (
-    <div className="mb-6 text-center">
-      <span className="text-xs sm:text-[10px] md:text-sm text-gray-300">Logged in</span>
-      <p className="font-semibold text-sm sm:text-xs md:text-lg">{user.email}</p>
-    </div>
-  )}
-  {user ? (
-    <button
-      className="w-full bg-blue-500 text-white py-2 rounded-lg"
-      onClick={logout}
-    >
-      Sign Out
-    </button>
-  ) : (
-    <Link to="/login">
-      <button className="w-full bg-blue-500 text-white py-2 rounded-lg">
-        Sign In
-      </button>
-    </Link>
-  )}
-</div>
+              {/* Navigation Tabs */}
+              <ul className="space-y-6 text-lg font-medium">
+                <li
+                  className="flex items-center gap-3 cursor-pointer"
+                  onClick={() => handleNavigation("/")}
+                >
+                  <FaHome size={20} />
+                  <span className="text-lg sm:text-base">Home</span>
+                </li>
+                <li className="flex items-center gap-3 cursor-pointer">
+                  <FaUser size={20} />
+                  <button onClick={handleLearningPathClick}>
+                    <span className="text-lg sm:text-base">My Goal Path</span>
+                  </button>
+                </li>
+                <li
+                  className="flex items-center gap-3 cursor-pointer"
+                  onClick={() => handleNavigation("/generate-path")}
+                >
+                  <FaThLarge size={20} />
+                  <span className="text-lg sm:text-base">Custom path</span>
+                </li>
+                <li
+                  className="flex items-center gap-3 cursor-pointer"
+                  onClick={() => handleNavigation("/guidemate-AI")}
+                >
+                  <FaRobot size={20} />
+                  <span className="text-lg sm:text-base">GuideMate</span>
+                </li>
+                <li
+                  className="flex items-center gap-3 cursor-pointer"
+                  onClick={() => handleNavigation("/contact")}
+                >
+                  <FaEnvelope size={20} />
+                  <span className="text-lg sm:text-base">Contact</span>
+                </li>
+              </ul>
 
+              {/* Sign In / Sign Out */}
+              <div className="mt-auto">
+                {user && (
+                  <div className="mb-6 text-center">
+                    <span className="text-xs sm:text-[10px] md:text-sm text-gray-300">Logged in</span>
+                    <p className="font-semibold text-sm sm:text-xs md:text-lg">{user.email}</p>
+                  </div>
+                )}
+                {user ? (
+                  <button
+                    className="w-full bg-blue-500 text-white py-2 rounded-lg"
+                    onClick={logout}
+                  >
+                    Sign Out
+                  </button>
+                ) : (
+                  <Link to="/login">
+                    <button className="w-full bg-blue-500 text-white py-2 rounded-lg">
+                      Sign In
+                    </button>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
-      </div>
-    </div>
-  </div>
-)}
-
-
+      {/* Loading Indicator */}
+      {loading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="loader"></div>
+        </div>
+      )}
     </div>
   );
 };
