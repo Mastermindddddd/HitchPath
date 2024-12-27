@@ -262,21 +262,16 @@ app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
     }
 
     // If not, generate a new learning path
-    const {
-      careerPath = "General software development",
-      currentSkillLevel = "Beginner",
-      preferredLearningStyle = "Interactive",
-      shortTermGoals = "Learn basic coding",
-      longTermGoals = "Become a software engineer",
-    } = user;
+     // Fetch user preferences from the database (use defaults if necessary)
+     const careerPath = user.careerPath;
+     const currentSkillLevel = user.currentSkillLevel;
+     const preferredLearningStyle = user.preferredLearningStyle;
 
     const prompt = `
       Based on the following user preferences:
       - Career Path: ${careerPath}
       - Current Skill Level: ${currentSkillLevel}
       - Preferred Learning Style: ${preferredLearningStyle}
-      - Short-Term Goals: ${shortTermGoals}
-      - Long-Term Goals: ${longTermGoals}
 
       Generate a personalized learning path with actionable steps, tips, milestones, and recommended resources (with titles and URLs). Return the response in this JSON format:
 
