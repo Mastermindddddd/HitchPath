@@ -1,18 +1,20 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleLogin } from "@react-oauth/google";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false); // Loading state
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(""); // Clear previous errors
+    setLoading(true); // Start loading
 
     try {
       const apiUrl = import.meta.env.VITE_API_URL;
@@ -30,10 +32,13 @@ const Login = () => {
     } catch (err) {
       console.error("Login error response:", err.response?.data);
       setError(err.response?.data?.error || "An error occurred.");
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
   const handleGoogleLogin = async (credentialResponse) => {
+    setLoading(true); // Start loading
     try {
       const apiUrl = import.meta.env.VITE_API_URL;
       const response = await axios.post(`${apiUrl}/google-login`, { tokenId: credentialResponse.credential });
@@ -51,6 +56,8 @@ const Login = () => {
     } catch (err) {
       console.error("Google login error response:", err.response?.data);
       setError(err.response?.data?.error || "An error occurred during Google Sign-In.");
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
@@ -64,19 +71,6 @@ const Login = () => {
             </h1>
             {error && (
               <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg dark:bg-red-200 dark:text-red-800 animate-pulse" role="alert">
-                <svg
-                  aria-hidden="true"
-                  className="inline flex-shrink-0 w-5 h-5 mr-3"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18 13a1 1 0 01-1 1H3a1 1 0 01-1-1V7a1 1 0 011-1h14a1 1 0 011 1v6zm-8 2a2 2 0 100-4 2 2 0 000 4zm0 1a3 3 0 100-6 3 3 0 000 6z"
-                    clipRule="evenodd"
-                  ></path>
-                </svg>
                 {error}
               </div>
             )}
@@ -118,27 +112,17 @@ const Login = () => {
               <button
                 type="submit"
                 className="w-full text-white bg-blue-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                disabled={loading} // Disable button while loading
               >
-                Log in
+                {loading ? "Logging in..." : "Log in"} {/* Show loading text */}
               </button>
             </form>
             {/*<div className="mt-4">
-  <button
-    className="w-full text-white bg-white hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 flex items-center justify-center"
-    style={{
-      minWidth: "200px", // Minimum width to prevent shrinking
-      whiteSpace: "nowrap", // Prevent text wrapping
-      textOverflow: "ellipsis", // Add ellipsis for long emails
-      overflow: "hidden", // Hide overflow
-    }}
-  >
-    <GoogleLogin
-      onSuccess={handleGoogleLogin}
-      onError={() => setError("Google Sign-In failed. Please try again.")}
-    />
-  </button>
-</div>*/}
-
+              <GoogleLogin
+                onSuccess={handleGoogleLogin}
+                onError={() => setError("Google Sign-In failed. Please try again.")}
+              />
+            </div>*/}
             <p className="text-sm font-light text-gray-500 dark:text-gray-400">
               Don’t have an account?{" "}
               <a

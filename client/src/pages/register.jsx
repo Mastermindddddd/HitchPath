@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { GoogleLogin } from "@react-oauth/google"; // Import the GoogleLogin component
-import { Button } from "@mui/material"; // Import Button component from Material-UI
+import { GoogleLogin } from "@react-oauth/google";
+import { Button, CircularProgress } from "@mui/material";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -11,19 +11,22 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
-    setSuccessMessage(""); // Clear previous success messages
+    setError("");
+    setSuccessMessage("");
 
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
+
+    setLoading(true);
 
     try {
       const apiUrl = import.meta.env.VITE_API_URL;
@@ -40,26 +43,29 @@ const Register = () => {
     } catch (err) {
       console.error("Registration error response:", err.response?.data);
       setError(err.response?.data?.error || "An error occurred.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleGoogleLogin = async (response) => {
+    setLoading(true);
+
     try {
       const apiUrl = import.meta.env.VITE_API_URL;
       const { data } = await axios.post(`${apiUrl}/google-login`, {
-        tokenId: response.credential, // Pass the Google tokenId
+        tokenId: response.credential,
       });
-  
-      // Save token in localStorage
+
       localStorage.setItem("token", data.token);
-      // Redirect to the dashboard
       navigate("/learning-path");
     } catch (err) {
       console.error("Google login error:", err);
       setError("Google login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
-  
 
   return (
     <section>
@@ -171,56 +177,10 @@ const Register = () => {
               <button
                 type="submit"
                 className="w-full text-white bg-blue-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                disabled={loading}
               >
-                Register
+                {loading ? <CircularProgress size={24} color="inherit" /> : "Register"}
               </button>
-
-              {/* Google Button with Material-UI styling */}
-              {/*<Button
-                fullWidth
-                variant="outlined"
-                sx={{ textTransform: "none" }}
-                onClick={handleGoogleLogin}
-              >
-                <img
-                  src="https://www.svgrepo.com/show/475656/google-color.svg"
-                  alt="Google"
-                  style={{ height: 18, marginRight: 8 }}
-                />
-                Continue with Google
-              </Button>*/}
-              {/*<GoogleLogin
-        onSuccess={handleGoogleLogin}
-        onError={() => {
-          setError("Google login failed. Please try again.");
-        }}
-        useOneTap
-        render={(renderProps) => (
-          <Button
-            fullWidth
-            variant="outlined"
-            sx={{ textTransform: "none" }}
-            onClick={renderProps.onClick}
-            disabled={renderProps.disabled}
-          >
-            <img
-              src="https://www.svgrepo.com/show/475656/google-color.svg"
-              alt="Google"
-              style={{ height: 18, marginRight: 8 }}
-            />
-            Continue with Google
-          </Button>
-        )}
-      />*/}
-              <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                Already have an account?{" "}
-                <a
-                  href="/login"
-                  className="font-medium text-primary-600 hover:underline dark:text-primary-500"
-                >
-                  Log in here
-                </a>
-              </p>
             </form>
           </div>
         </div>
