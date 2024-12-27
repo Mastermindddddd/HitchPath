@@ -30,6 +30,7 @@ app.use(express.json());
 app.use(helmet());
 app.use(compression());
 app.use(morgan("tiny")); 
+app.set('trust proxy', 1);
 
 const allowedOrigins = ["https://hitchpath.com", "http://localhost:5173"];
 app.use(
@@ -45,6 +46,8 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Rate limiter to prevent abuse
 const limiter = rateLimit({
@@ -156,7 +159,7 @@ app.post("/login", async (req, res) => {
 });
 
 app.post("/google-login", async (req, res) => {
-  const { tokenId } = req.body; // The Google token sent from the frontend
+  const { tokenId } = req.body;
 
   if (!tokenId) {
     return res.status(400).json({ error: "Token is required" });
@@ -166,7 +169,7 @@ app.post("/google-login", async (req, res) => {
     // Verify the token
     const ticket = await client.verifyIdToken({
       idToken: tokenId,
-      audience: process.env.GOOGLE_CLIENT_ID, // Ensure the audience matches
+      audience: process.env.GOOGLE_CLIENT_ID,
     });
 
     const payload = ticket.getPayload();
@@ -200,7 +203,6 @@ app.post("/google-login", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
 // Update user information endpoint
 app.post("/api/user/update", authenticateToken, async (req, res) => {
   try {
