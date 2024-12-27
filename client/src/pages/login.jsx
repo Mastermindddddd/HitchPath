@@ -124,7 +124,7 @@ const Login = () => {
             </form>
             <div className="mt-4">
   <button
-    className="w-full text-white bg-white hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 flex items-center justify-center"
+    className="w-full text-white bg-gray-100 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 flex items-center justify-center"
     style={{
       minWidth: "200px", // Minimum width to prevent shrinking
       whiteSpace: "nowrap", // Prevent text wrapping
