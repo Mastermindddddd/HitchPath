@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom"; 
+import { AuthContext } from "../AuthContext";
 
 const UserInfoForm = () => {
   const [formData, setFormData] = useState({
@@ -19,6 +20,7 @@ const UserInfoForm = () => {
   const totalSteps = 3;
 
   const navigate = useNavigate(); 
+  const { user } = useContext(AuthContext);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,38 +57,39 @@ const UserInfoForm = () => {
       console.error("Error updating user information:", error);
     }
   };
+
   const renderStep = () => {
     switch (step) {
       case 1:
         return (
           <div>
-            <h3>
-              Step 1: Basic Information
-            </h3>
+            <h3>Step 1: Basic Information</h3>
+
+            {/* Name Field */}
             <label>
               Name:
               <input
                 type="text"
                 name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800
-"
+                value={user?.name || formData.name} // Pre-fill with logged-in user's name
+                readOnly // Disable input
+                className="w-full p-2 rounded-lg border-2 border-gray-300 bg-gray-200 text-gray-800 cursor-not-allowed"
               />
             </label>
+
+            {/* Email Field */}
             <label>
               Email:
               <input
                 type="email"
                 name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800
-"
+                value={user?.email || formData.email} // Pre-fill with logged-in user's email
+                readOnly // Disable input
+                className="w-full p-2 rounded-lg border-2 border-gray-300 bg-gray-200 text-gray-800 cursor-not-allowed"
               />
             </label>
+
+            {/* Date of Birth Field */}
             <label>
               Date of Birth:
               <input
@@ -94,8 +97,8 @@ const UserInfoForm = () => {
                 name="dateOfBirth"
                 value={formData.dateOfBirth}
                 onChange={handleChange}
-                className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800
-"
+                required
+                className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800"
               />
             </label>
           </div>
@@ -118,8 +121,7 @@ const UserInfoForm = () => {
             <label>
               Primary Language:
               <input type="text" name="primaryLanguage" value={formData.primaryLanguage} onChange={handleChange} 
-                className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800
-"/>
+                className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800" />
             </label>
             <label>
               Pace of Learning:
@@ -140,17 +142,17 @@ const UserInfoForm = () => {
             
             <label>
               Desired skills:
-              <textarea name="DesiredSkill" value={formData.DesiredSkill} onChange={handleChange} className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800">
-              </textarea>
+              <textarea name="DesiredSkill" value={formData.DesiredSkill} onChange={handleChange} className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800"></textarea>
             </label>
             <label>
               Desired Career Path:
-              <input type="text" name="careerPath" value={formData.careerPath} onChange={handleChange} className="w-full p-2 rounded-lg border-2 borde-gray-300 focus:border-purple-600 bg-white text-gray-800
-"/>
+              <input type="text" name="careerPath" value={formData.careerPath} onChange={handleChange} 
+                className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800" />
             </label>
             <label>
               Current Skill Level:
-              <select name="currentSkillLevel" value={formData.currentSkillLevel} onChange={handleChange} className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800">
+              <select name="currentSkillLevel" value={formData.currentSkillLevel} onChange={handleChange} 
+                className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800">
                 <option value="">Select</option>
                 <option value="beginner">Beginner</option>
                 <option value="intermediate">Intermediate</option>
@@ -164,65 +166,162 @@ const UserInfoForm = () => {
     }
   };
 
+  useEffect(() => {
+    const canvas = document.getElementById("cosmosCanvas");
+    const ctx = canvas.getContext("2d");
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    const particles = [];
+    const numParticles = 100;
+
+    class Particle {
+      constructor(x, y, radius, speed) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.speed = speed;
+        this.angle = Math.random() * Math.PI * 2;
+      }
+
+      update() {
+        this.x += Math.cos(this.angle) * this.speed;
+        this.y += Math.sin(this.angle) * this.speed;
+
+        // Bounce off edges
+        if (this.x < 0 || this.x > canvas.width) this.angle = Math.PI - this.angle;
+        if (this.y < 0 || this.y > canvas.height) this.angle = -this.angle;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.fill();
+      }
+    }
+
+    // Initialize particles
+    for (let i = 0; i < numParticles; i++) {
+      particles.push(
+        new Particle(
+          Math.random() * canvas.width,
+          Math.random() * canvas.height,
+          Math.random() * 4 + 1,
+          Math.random() * 0.5 + 0.2
+        )
+      );
+    }
+
+    // Connect particles
+    function connectParticles() {
+      for (let a = 0; a < particles.length; a++) {
+        for (let b = a + 1; b < particles.length; b++) {
+          const dist = Math.hypot(
+            particles[a].x - particles[b].x,
+            particles[a].y - particles[b].y
+          );
+
+          if (dist < 120) {
+            ctx.strokeStyle = `rgba(255, 255, 255, ${1 - dist / 120})`;
+            ctx.lineWidth = 0.7;
+            ctx.beginPath();
+            ctx.moveTo(particles[a].x, particles[a].y);
+            ctx.lineTo(particles[b].x, particles[b].y);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    // Animation Loop
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(particle => {
+        particle.update();
+        particle.draw();
+      });
+      connectParticles();
+      requestAnimationFrame(animate);
+    }
+
+    // Start Animation
+    animate();
+  }, []);
+
   return (
-    <div className="p-6 max-w-4xl mx-auto bg-gradient-to-r from-blue-900 to-blue-400 rounded-lg shadow-xl text-white mb-20">
-      <h2 className="text-2xl font-bold text-center mb-6">
-        Update Your Information
-      </h2>
+    <div className="relative p-4 sm:p-6 bg-gradient-to-r from-blue-900 to-blue-400 rounded-lg shadow-xl text-white mb-20 mx-4 sm:mx-auto max-w-4xl">
+      {/* Cosmos Background */}
+      <canvas id="cosmosCanvas" className="absolute top-0 left-0 z-0 w-full h-full"></canvas>
 
-      <div className="relative h-4 bg-gray-300 rounded-full mb-8">
-        <div
-          className="absolute top-0 left-0 h-full bg-purple-600 rounded-full transition-all duration-500"
-          style={{ width: `${(step / totalSteps) * 100}%` }}
-        ></div>
+      <div className="relative z-10">
+        <h2 className="text-xl md:text-2xl font-bold text-center mb-4 sm:mb-6">
+          Update Your Information
+        </h2>
+
+        {/* Progress Bar */}
+        <div className="relative h-3 sm:h-4 bg-gray-300 rounded-full mb-6 sm:mb-8">
+          <div
+            className="absolute top-0 left-0 h-full bg-purple-600 rounded-full transition-all duration-500"
+            style={{ width: `${(step / totalSteps) * 100}%` }}
+          ></div>
+        </div>
+
+        <p className="text-center font-semibold mb-4 text-sm sm:text-base">
+          Step {step} of {totalSteps}
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {renderStep()}
+          <div className="flex justify-between mt-4">
+            {step > 1 && (
+              <button
+                type="button"
+                onClick={handlePrev}
+                className="bg-gray-600 hover:bg-gray-700 text-white py-2 px-3 sm:px-4 rounded-lg"
+              >
+                Previous
+              </button>
+            )}
+            {step < totalSteps && (
+              <button
+                type="button"
+                onClick={handleNext}
+                className="bg-green-600 hover:bg-green-700 text-white py-2 px-3 sm:px-4 rounded-lg"
+              >
+                Next
+              </button>
+            )}
+            {step === totalSteps && (
+              <button
+                type="submit"
+                className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 sm:px-4 rounded-lg"
+              >
+                Submit
+              </button>
+            )}
+          </div>
+        </form>
+
+        {step < totalSteps && (
+          <div className="text-center mt-4 sm:mt-6">
+            <strong>Complete Step {step}</strong> to unlock more insights!
+          </div>
+        )}
+        {step === totalSteps && (
+          <div className="text-center mt-4 sm:mt-6">
+            You're all set to save your information.
+          </div>
+        )}
       </div>
-      <p className="text-center font-semibold mb-4">
-        Step {step} of {totalSteps}
-      </p>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {renderStep()}
-        <div className="flex justify-between mt-4">
-          {step > 1 && (
-            <button
-              type="button"
-              onClick={handlePrev}
-              className="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg"
-            >
-              Previous
-            </button>
-          )}
-          {step < totalSteps && (
-            <button
-              type="button"
-              onClick={handleNext}
-              className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg"
-            >
-              Next
-            </button>
-          )}
-          {step === totalSteps && (
-            <button
-              type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg"
-            >
-              Submit
-            </button>
-          )}
-        </div>
-      </form>
-
-      {step < totalSteps && (
-        <div className="text-center mt-6">
-          <strong>Complete Step {step}</strong> to unlock more insights!
-        </div>
-      )}
-      {step === totalSteps && (
-        <div className="text-center mt-6">
-          You're all set to save your information.
-        </div>
-      )}
     </div>
   );
 };
+
 export default UserInfoForm;

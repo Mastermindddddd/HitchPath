@@ -25,6 +25,7 @@ const Login = () => {
       // Determine redirection path
       const redirectPath = new URLSearchParams(location.search).get("redirect") || "/";
       navigate(redirectPath);
+      window.location.reload();
     } catch (err) {
       console.error("Login error response:", err.response?.data);
       setError(err.response?.data?.error || "An error occurred.");

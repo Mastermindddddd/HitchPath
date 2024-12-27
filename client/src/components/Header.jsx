@@ -116,7 +116,7 @@ const Header = () => {
       </div>
 
       {/* Sidebar */}
-{openNavigation && (
+      {openNavigation && (
   <div
     className={`fixed inset-0 z-40 bg-black bg-opacity-50 transition-opacity`}
   >
@@ -159,47 +159,42 @@ const Header = () => {
               <span className="text-lg sm:text-base">GuideMate</span>
             </li>
           </Link>
-          {/*<Link to="/dashboard" className="flex items-center gap-3 cursor-pointer">
-            <li className="flex items-center gap-3 cursor-pointer">
-              <FaThLarge size={20} />
-              <span className="text-lg sm:text-base">Dashboard</span>
-            </li>
-          </Link>*/}
-          {/*<li className="flex items-center gap-3 cursor-pointer">
-            <FaInfoCircle size={20} />
-            <span className="text-lg sm:text-base">About</span>
-          </li>*/}
-          {/*<li className="flex items-center gap-3 cursor-pointer">
-            <FaTag size={20} />
-            <span className="text-lg sm:text-base">Features</span>
-          </li>*/}
           <li className="flex items-center gap-3 cursor-pointer">
             <FaEnvelope size={20} />
             <span className="text-lg sm:text-base">Contact</span>
           </li>
         </ul>
-
+        
         {/* Sign In / Sign Out Button */}
         <div className="mt-auto">
-          {user ? (
-            <button
-              className="w-full bg-blue-500 text-white py-2 rounded-lg"
-              onClick={logout}
-            >
-              Sign Out
-            </button>
-          ) : (
-            <Link to="/login">
-              <button className="w-full bg-blue-500 text-white py-2 rounded-lg">
-                Sign In
-              </button>
-            </Link>
-          )}
-        </div>
+  {user && (
+    <div className="mb-6 text-center">
+      <span className="text-xs sm:text-[10px] md:text-sm text-gray-300">Logged in</span>
+      <p className="font-semibold text-sm sm:text-xs md:text-lg">{user.email}</p>
+    </div>
+  )}
+  {user ? (
+    <button
+      className="w-full bg-blue-500 text-white py-2 rounded-lg"
+      onClick={logout}
+    >
+      Sign Out
+    </button>
+  ) : (
+    <Link to="/login">
+      <button className="w-full bg-blue-500 text-white py-2 rounded-lg">
+        Sign In
+      </button>
+    </Link>
+  )}
+</div>
+
+
       </div>
     </div>
   </div>
 )}
+
 
     </div>
   );

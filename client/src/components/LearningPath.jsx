@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Box, Typography, CircularProgress, Button, Alert } from "@mui/material";
+import {Link} from "react-router-dom";
 
 const LearningPath = () => {
   const [loading, setLoading] = useState(true);
@@ -83,7 +84,16 @@ const LearningPath = () => {
 
   return (
     <section className="relative flex flex-col justify-center" style={{ minHeight: "100vh", overflow: "visible" }}>
-      <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-24">
+      {/* Buttons */}
+      <div className="flex justify-center gap-4 mt-20">
+        <Link to="/generate-path">
+          <Button variant="contained" color="primary">
+            Generate Custom Path
+          </Button>
+        </Link>
+      </div>
+
+      <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-8">
         <div className="flex flex-col justify-center divide-y divide-slate-200">
           <div className="w-full max-w-3xl mx-auto">
             {loading ? (
@@ -101,9 +111,25 @@ const LearningPath = () => {
               </Box>
             ) : learningPath.length > 0 ? (
               <div>
-                <Typography variant="h4" className="text-center mb-20">
-                  Your Personalized Learning Path
-                </Typography>
+                <Typography
+  variant="h4"
+  className="text-center mb-20"
+  sx={{
+    fontWeight: 700,  // Bold font weight for emphasis
+    fontFamily: "'Poppins', sans-serif", // A cleaner, modern font
+    fontSize: {
+      xs: '1.5rem',  // For small screens (phones)
+      sm: '2rem',    // For larger screens (small tablets)
+      md: '2.5rem',  // For medium screens (tablets and up)
+    },
+    color: 'primary.main',  // Using the primary color of the theme for the text
+    letterSpacing: '0.5px',  // Slight spacing between letters for a more refined look
+    lineHeight: 1.2,  // Adjust line height for better readability
+  }}
+>
+  Your Personalized Learning/Career Path
+</Typography>
+
                 {renderTimeline()}
               </div>
             ) : (

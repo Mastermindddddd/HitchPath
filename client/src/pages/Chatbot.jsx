@@ -40,11 +40,11 @@ const Chatbot = () => {
   };
 
   return (
-    <div className="relative text-white p-4">
+    <div className="relative text-white p-4" style={{marginTop: "-20px",}}>
       {/* 3D Model Background */}
       <Background3D />
 
-      <h1 className="text-4xl font-bold text-center mb-6">AssistMe</h1>
+      <h1 className="text-3xl font-bold text-center mb-6">AssistMe</h1>
       <div className="chat-window bg-[#181818] rounded-lg p-4 mx-auto h-[70vh] overflow-y-auto w-full max-w-screen-md">
         {chat.map((msg, index) => (
           <motion.div
