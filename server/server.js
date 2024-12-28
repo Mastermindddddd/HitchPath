@@ -78,17 +78,6 @@ const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 // Mistral AI configuration
 const mistral = new Mistral({ apiKey: MISTRAL_API_KEY });
 
-const retry = async (fn, retries = 3, delay = 1000) => {
-  for (let i = 0; i < retries; i++) {
-    try {
-      return await fn();
-    } catch (error) {
-      if (i === retries - 1) throw error;
-      await new Promise((res) => setTimeout(res, delay));
-    }
-  }
-};
-
 // Root route
 app.get("/", (req, res) => {
   res.send("Welcome to the HitchPath server!");
@@ -270,45 +259,74 @@ app.get("/api/user-info/completed", authenticateToken, async (req, res) => {
 app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
-    const user = await User.findById(userId).lean();
+    const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({ error: "User not found." });
     }
 
+    // If the user already has a saved learning path, return it
     if (user.hasSavedLearningPath) {
       return res.json({ learningPath: user.learningPath });
     }
 
+    // If not, generate a new learning path
+     // Fetch user preferences from the database (use defaults if necessary)
+     const careerPath = user.careerPath;
+     const currentSkillLevel = user.currentSkillLevel;
+     const preferredLearningStyle = user.preferredLearningStyle;
+
     const prompt = `
       Based on the following user preferences:
-      - Career Path: ${user.careerPath || "Unknown"}
-      - Current Skill Level: ${user.currentSkillLevel || "Unknown"}
-      - Preferred Learning Style: ${user.preferredLearningStyle || "Unknown"}
+      - Career Path: ${careerPath}
+      - Current Skill Level: ${currentSkillLevel}
+      - Preferred Learning Style: ${preferredLearningStyle}
 
-      Generate a personalized learning path in JSON format.
+      Generate a personalized learning path with actionable steps, tips, milestones, and recommended resources (with titles and URLs). Return the response in this JSON format:
+
+      {
+        "steps": [
+          {
+            "id": 1,
+            "title": "Step title",
+            "description": "Step description",
+            "milestone": "Step milestone",
+            "tips": ["Tip 1", "Tip 2"],
+            "resources": [
+              { "title": "Resource Title", "url": "https://example.com" }
+            ]
+          }
+        ]
+      }
     `;
 
-    const learningPath = await retry(() =>
-      mistral.chat.complete({
-        model: "open-mistral-nemo",
-        messages: [{ role: "user", content: prompt }],
-      }),
-      3,
-      2000
-    );
 
-    const jsonMatch = learningPath.choices[0]?.message?.content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("Failed to extract JSON from response.");
-
-    const parsedLearningPath = JSON.parse(jsonMatch[0]);
-
-    await User.findByIdAndUpdate(userId, {
-      learningPath: parsedLearningPath.steps,
-      hasSavedLearningPath: true,
+    const response = await mistral.chat.complete({
+      model: "open-mistral-nemo",
+      messages: [{ role: "user", content: prompt }],
+      timeout: 10000,
     });
 
-    res.json({ learningPath: parsedLearningPath.steps });
+    const rawResponse = response.choices[0]?.message?.content;
+    console.log("Raw response from Mistral:", rawResponse); // Log raw response
+
+    const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Failed to extract JSON from response.");
+    }
+
+    const learningPath = JSON.parse(jsonMatch[0]);
+    console.log("Parsed Learning Path:", learningPath);
+
+    // Save the learning path and mark hasSavedLearningPath as true
+    user.learningPath = learningPath.steps;
+    user.hasSavedLearningPath = true;
+
+    // Log before saving to ensure the data is correct
+    console.log("User data before saving:", user);
+
+    await user.save();
+    res.json({ learningPath: learningPath.steps });
   } catch (error) {
     console.error("Error generating learning path:", error.message);
     res.status(500).json({ error: "Failed to generate learning path." });
