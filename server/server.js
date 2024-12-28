@@ -31,15 +31,6 @@ app.use(helmet());
 app.use(compression());
 app.use(morgan("tiny")); 
 app.set('trust proxy', 1);
-app.use((req, res, next) => {
-  const start = Date.now();
-  res.on('finish', () => {
-    const duration = Date.now() - start;
-    console.log(`${req.method} ${req.originalUrl} took ${duration}ms`);
-  });
-  next();
-});
-
 
 const allowedOrigins = ["https://hitchpath.com", "http://localhost:5173"];
 app.use(
@@ -304,7 +295,6 @@ app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
     const response = await mistral.chat.complete({
       model: "open-mistral-nemo",
       messages: [{ role: "user", content: prompt }],
-      timeout: 10000,
     });
 
     const rawResponse = response.choices[0]?.message?.content;
@@ -363,7 +353,6 @@ app.post("/api/chatbot", authenticateToken, async (req, res) => {
     const response = await mistral.chat.complete({
       model: "open-mistral-nemo",
       messages: [{ role: "user", content: prompt }],
-      timeout: 10000, // Timeout after 10 seconds
     });
 
     const rawBotResponse = response.choices[0]?.message?.content || "I'm not sure how to respond to that.";
@@ -431,7 +420,6 @@ app.post("/api/specific-path/generate", authenticateToken, async (req, res) => {
     const response = await mistral.chat.complete({
       model: "open-mistral-nemo",
       messages: [{ role: "user", content: prompt }],
-      timeout: 10000, // Timeout after 10 seconds
     });
 
     const rawResponse = response.choices[0]?.message?.content;
@@ -490,4 +478,4 @@ app.listen(PORT, () => {
   console.log("JWT_SECRET:", JWT_SECRET);
   console.log("MONGO_URI:", MONGO_URI);
   console.log("OpenAI:", OPENAI_API_KEY);
-}).timeout = 120000;
+});
