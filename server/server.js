@@ -78,6 +78,17 @@ const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 // Mistral AI configuration
 const mistral = new Mistral({ apiKey: MISTRAL_API_KEY });
 
+const retry = async (fn, retries = 3, delay = 1000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      await new Promise((res) => setTimeout(res, delay));
+    }
+  }
+};
+
 // Root route
 app.get("/", (req, res) => {
   res.send("Welcome to the HitchPath server!");

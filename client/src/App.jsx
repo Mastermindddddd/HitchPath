@@ -28,7 +28,7 @@ const App = () => {
           <Route path="/" element={<Layout />}>
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
+            {/*<Route path="/dashboard" element={<DashboardPage />} />*/}
             <Route path="/user-info" element={<UserInfoForm />} />
             <Route path="/learning-path" element={<LearningPathWithBackground />} />
             <Route path="/guidemate-AI" element={<Chatbot />} />
