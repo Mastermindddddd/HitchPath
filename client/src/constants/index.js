@@ -280,7 +280,7 @@ export const socials = [
     id: "1",
     title: "Twitter",
     iconUrl: twitter,
-    url: "#",
+    url: "https://x.com/HitchPathAI",
   },
   {
     id: "2",
@@ -292,12 +292,12 @@ export const socials = [
     id: "3",
     title: "Telegram",
     iconUrl: telegram,
-    url: "#",
+    url: "https://www.linkedin.com/company/hitch-path",
   },
   {
     id: "4",
     title: "Facebook",
     iconUrl: facebook,
-    url: "#",
+    url: "https://www.facebook.com/profile.php?id=61571475860932",
   },
 ];
