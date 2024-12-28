@@ -31,6 +31,15 @@ app.use(helmet());
 app.use(compression());
 app.use(morgan("tiny")); 
 app.set('trust proxy', 1);
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(`${req.method} ${req.originalUrl} took ${duration}ms`);
+  });
+  next();
+});
+
 
 const allowedOrigins = ["https://hitchpath.com", "http://localhost:5173"];
 app.use(
@@ -250,73 +259,45 @@ app.get("/api/user-info/completed", authenticateToken, async (req, res) => {
 app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).lean();
 
     if (!user) {
       return res.status(404).json({ error: "User not found." });
     }
 
-    // If the user already has a saved learning path, return it
     if (user.hasSavedLearningPath) {
       return res.json({ learningPath: user.learningPath });
     }
 
-    // If not, generate a new learning path
-     // Fetch user preferences from the database (use defaults if necessary)
-     const careerPath = user.careerPath;
-     const currentSkillLevel = user.currentSkillLevel;
-     const preferredLearningStyle = user.preferredLearningStyle;
-
     const prompt = `
       Based on the following user preferences:
-      - Career Path: ${careerPath}
-      - Current Skill Level: ${currentSkillLevel}
-      - Preferred Learning Style: ${preferredLearningStyle}
+      - Career Path: ${user.careerPath || "Unknown"}
+      - Current Skill Level: ${user.currentSkillLevel || "Unknown"}
+      - Preferred Learning Style: ${user.preferredLearningStyle || "Unknown"}
 
-      Generate a personalized learning path with actionable steps, tips, milestones, and recommended resources (with titles and URLs). Return the response in this JSON format:
-
-      {
-        "steps": [
-          {
-            "id": 1,
-            "title": "Step title",
-            "description": "Step description",
-            "milestone": "Step milestone",
-            "tips": ["Tip 1", "Tip 2"],
-            "resources": [
-              { "title": "Resource Title", "url": "https://example.com" }
-            ]
-          }
-        ]
-      }
+      Generate a personalized learning path in JSON format.
     `;
 
+    const learningPath = await retry(() =>
+      mistral.chat.complete({
+        model: "open-mistral-nemo",
+        messages: [{ role: "user", content: prompt }],
+      }),
+      3,
+      2000
+    );
 
-    const response = await mistral.chat.complete({
-      model: "open-mistral-nemo",
-      messages: [{ role: "user", content: prompt }],
+    const jsonMatch = learningPath.choices[0]?.message?.content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("Failed to extract JSON from response.");
+
+    const parsedLearningPath = JSON.parse(jsonMatch[0]);
+
+    await User.findByIdAndUpdate(userId, {
+      learningPath: parsedLearningPath.steps,
+      hasSavedLearningPath: true,
     });
 
-    const rawResponse = response.choices[0]?.message?.content;
-    console.log("Raw response from Mistral:", rawResponse); // Log raw response
-
-    const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error("Failed to extract JSON from response.");
-    }
-
-    const learningPath = JSON.parse(jsonMatch[0]);
-    console.log("Parsed Learning Path:", learningPath);
-
-    // Save the learning path and mark hasSavedLearningPath as true
-    user.learningPath = learningPath.steps;
-    user.hasSavedLearningPath = true;
-
-    // Log before saving to ensure the data is correct
-    console.log("User data before saving:", user);
-
-    await user.save();
-    res.json({ learningPath: learningPath.steps });
+    res.json({ learningPath: parsedLearningPath.steps });
   } catch (error) {
     console.error("Error generating learning path:", error.message);
     res.status(500).json({ error: "Failed to generate learning path." });
@@ -353,6 +334,7 @@ app.post("/api/chatbot", authenticateToken, async (req, res) => {
     const response = await mistral.chat.complete({
       model: "open-mistral-nemo",
       messages: [{ role: "user", content: prompt }],
+      timeout: 10000, // Timeout after 10 seconds
     });
 
     const rawBotResponse = response.choices[0]?.message?.content || "I'm not sure how to respond to that.";
@@ -420,6 +402,7 @@ app.post("/api/specific-path/generate", authenticateToken, async (req, res) => {
     const response = await mistral.chat.complete({
       model: "open-mistral-nemo",
       messages: [{ role: "user", content: prompt }],
+      timeout: 10000, // Timeout after 10 seconds
     });
 
     const rawResponse = response.choices[0]?.message?.content;
@@ -478,4 +461,4 @@ app.listen(PORT, () => {
   console.log("JWT_SECRET:", JWT_SECRET);
   console.log("MONGO_URI:", MONGO_URI);
   console.log("OpenAI:", OPENAI_API_KEY);
-});
+}).timeout = 120000;
