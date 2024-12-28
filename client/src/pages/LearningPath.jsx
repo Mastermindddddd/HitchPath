@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Box, Typography, CircularProgress, Button, Alert } from "@mui/material";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const LearningPath = () => {
   const [loading, setLoading] = useState(true);
   const [learningPath, setLearningPath] = useState([]);
   const [error, setError] = useState(null);
+  const canvasRef = useRef(null);
 
   const fetchLearningPath = async () => {
     setLoading(true);
@@ -32,6 +33,92 @@ const LearningPath = () => {
 
   useEffect(() => {
     fetchLearningPath();
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    const particles = [];
+    const numParticles = 100;
+
+    class Particle {
+      constructor(x, y, radius, speed) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.speed = speed;
+        this.angle = Math.random() * Math.PI * 2;
+      }
+
+      update() {
+        this.x += Math.cos(this.angle) * this.speed;
+        this.y += Math.sin(this.angle) * this.speed;
+
+        if (this.x < 0 || this.x > canvas.width) this.angle = Math.PI - this.angle;
+        if (this.y < 0 || this.y > canvas.height) this.angle = -this.angle;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < numParticles; i++) {
+      particles.push(
+        new Particle(
+          Math.random() * canvas.width,
+          Math.random() * canvas.height,
+          Math.random() * 4 + 1,
+          Math.random() * 0.5 + 0.2
+        )
+      );
+    }
+
+    const connectParticles = () => {
+      for (let a = 0; a < particles.length; a++) {
+        for (let b = a + 1; b < particles.length; b++) {
+          const dist = Math.hypot(
+            particles[a].x - particles[b].x,
+            particles[a].y - particles[b].y
+          );
+
+          if (dist < 120) {
+            ctx.strokeStyle = `rgba(255, 255, 255, ${1 - dist / 120})`;
+            ctx.lineWidth = 0.7;
+            ctx.beginPath();
+            ctx.moveTo(particles[a].x, particles[a].y);
+            ctx.lineTo(particles[b].x, particles[b].y);
+            ctx.stroke();
+          }
+        }
+      }
+    };
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((particle) => {
+        particle.update();
+        particle.draw();
+      });
+      connectParticles();
+      requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      window.removeEventListener("resize", resizeCanvas);
+    };
   }, []);
 
   const renderTimeline = () => (
@@ -83,8 +170,22 @@ const LearningPath = () => {
   );
 
   return (
-    <section className="relative flex flex-col justify-center" style={{ minHeight: "100vh", overflow: "visible" }}>
-      {/* Buttons */}
+    <section
+      className="relative flex flex-col justify-center"
+      style={{ minHeight: "100vh", overflow: "visible" }}
+    >
+      <canvas
+  ref={canvasRef}
+  style={{
+    position: "fixed", // Use "fixed" to cover the whole viewport even when scrolling
+    top: 0,
+    left: 0,
+    width: "100%", // Ensure the canvas fills horizontally
+    height: "100%", // Ensure the canvas fills vertically
+    zIndex: -1, // Place it behind other content
+  }}
+></canvas>
+
       <div className="flex justify-center gap-4 mt-20">
         <Link to="/generate-path">
           <Button variant="contained" color="primary">
@@ -92,7 +193,6 @@ const LearningPath = () => {
           </Button>
         </Link>
       </div>
-
       <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-8">
         <div className="flex flex-col justify-center divide-y divide-slate-200">
           <div className="w-full max-w-3xl mx-auto">
@@ -112,24 +212,23 @@ const LearningPath = () => {
             ) : learningPath.length > 0 ? (
               <div>
                 <Typography
-  variant="h4"
-  className="text-center mb-20"
-  sx={{
-    fontWeight: 700,  // Bold font weight for emphasis
-    fontFamily: "'Poppins', sans-serif", // A cleaner, modern font
-    fontSize: {
-      xs: '1.5rem',  // For small screens (phones)
-      sm: '2rem',    // For larger screens (small tablets)
-      md: '2.5rem',  // For medium screens (tablets and up)
-    },
-    color: 'primary.main',  // Using the primary color of the theme for the text
-    letterSpacing: '0.5px',  // Slight spacing between letters for a more refined look
-    lineHeight: 1.2,  // Adjust line height for better readability
-  }}
->
-  Your Personalized Learning/Career Path
-</Typography>
-
+                  variant="h4"
+                  className="text-center mb-20"
+                  sx={{
+                    fontWeight: 700,
+                    fontFamily: "'Poppins', sans-serif",
+                    fontSize: {
+                      xs: "1.5rem",
+                      sm: "2rem",
+                      md: "2.5rem",
+                    },
+                    color: "primary.main",
+                    letterSpacing: "0.5px",
+                    lineHeight: 1.2,
+                  }}
+                >
+                  Your Personalized Learning/Career Path
+                </Typography>
                 {renderTimeline()}
               </div>
             ) : (

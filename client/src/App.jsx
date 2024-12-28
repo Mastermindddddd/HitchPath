@@ -8,7 +8,7 @@ import Login from "./pages/login";
 import Layout from "./layout";
 import DashboardPage from "./pages/dashboard";
 import UserInfoForm from "./pages/UserInfoForm";
-import LearningPathWithBackground from "./pages/LearningPathWithBackground";
+import LearningPath from "./pages/LearningPath";
 import Chatbot from "./pages/Chatbot";
 import SpecificTopicPath from "./pages/SpecificTopicPath";
 import { initializeGA, logPageView } from "./googleAnalytics";
@@ -30,7 +30,7 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             {/*<Route path="/dashboard" element={<DashboardPage />} />*/}
             <Route path="/user-info" element={<UserInfoForm />} />
-            <Route path="/learning-path" element={<LearningPathWithBackground />} />
+            <Route path="/learning-path" element={<LearningPath />} />
             <Route path="/guidemate-AI" element={<Chatbot />} />
             <Route path="/generate-path" element={<SpecificTopicPath />} />
           </Route>
