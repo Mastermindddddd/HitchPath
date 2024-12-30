@@ -10,6 +10,7 @@ import compression from "compression";
 import helmet from "helmet";
 import { check, validationResult } from "express-validator";
 import User from "./models/userModel.js";
+import Contact from "./models/Contact.js";
 import OpenAI from "openai";
 import { Mistral } from "@mistralai/mistralai";
 import { OAuth2Client } from 'google-auth-library';
@@ -204,6 +205,16 @@ app.post("/google-login", async (req, res) => {
   }
 });
 
+app.post('/api/contact', async (req, res) => {
+  const { name, email, message } = req.body;
+  try {
+    const newContact = new Contact({ name, email, message });
+    await newContact.save();
+    res.status(201).json({ message: 'Contact saved successfully!' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to save contact data.' });
+  }
+});
 
 // Update user information endpoint
 app.post("/api/user/update", authenticateToken, async (req, res) => {
