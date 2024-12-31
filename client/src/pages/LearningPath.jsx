@@ -79,7 +79,7 @@ const LearningPath = () => {
           Math.random() * canvas.width,
           Math.random() * canvas.height,
           Math.random() * 4 + 1,
-          Math.random() * 0.5 + 0.2
+          Math.random() * 0.1 + 0.05
         )
       );
     }

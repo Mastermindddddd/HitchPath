@@ -174,10 +174,10 @@ const Header = () => {
                 </li>
                 <li
                   className="flex items-center gap-3 cursor-pointer"
-                  onClick={() => handleNavigation("/contact")}
+                  onClick={() => handleNavigation("/contact-us")}
                 >
                   <FaEnvelope size={20} />
-                  <span className="text-lg sm:text-base">Contact</span>
+                  <span className="text-lg sm:text-base">Contact Us</span>
                 </li>
               </ul>
 

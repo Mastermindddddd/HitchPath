@@ -2,12 +2,11 @@ import {
   benefitIcon1,
   benefitIcon2,
   benefitIcon3,
-  benefitIcon4,
   benefitImage2,
   chromecast,
   disc02,
   discord,
-  discordBlack,
+  linkedin,
   facebook,
   figma,
   file02,
@@ -31,7 +30,6 @@ import {
   searchMd,
   slack,
   sliders04,
-  telegram,
   twitter,
   yourlogo,
 } from "../assets";
@@ -272,8 +270,8 @@ export const benefits = [
 export const socials = [
   {
     id: "0",
-    title: "Discord",
-    iconUrl: discordBlack,
+    title: "Linkedin",
+    iconUrl: linkedin,
     url: "#",
   },
   {
@@ -288,14 +286,9 @@ export const socials = [
     iconUrl: instagram,
     url: "#",
   },
+  
   {
     id: "3",
-    title: "Telegram",
-    iconUrl: telegram,
-    url: "https://www.linkedin.com/company/hitch-path",
-  },
-  {
-    id: "4",
     title: "Facebook",
     iconUrl: facebook,
     url: "https://www.facebook.com/profile.php?id=61571475860932",

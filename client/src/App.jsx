@@ -13,6 +13,7 @@ import Chatbot from "./pages/Chatbot";
 import SpecificTopicPath from "./pages/SpecificTopicPath";
 import { initializeGA, logPageView } from "./googleAnalytics";
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import Contact from "./pages/ContactUs";
 
 const App = () => {
   useEffect(() => {
@@ -33,6 +34,7 @@ const App = () => {
             <Route path="/learning-path" element={<LearningPath />} />
             <Route path="/guidemate-AI" element={<Chatbot />} />
             <Route path="/generate-path" element={<SpecificTopicPath />} />
+            <Route path="/contact-us" element={<Contact />} />
           </Route>
         </Routes>
       <ButtonGradient />

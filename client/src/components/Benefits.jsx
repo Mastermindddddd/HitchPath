@@ -2,6 +2,7 @@ import { benefits } from "../constants";
 import Heading from "./Heading";
 import { GradientLight } from "./design/Benefits";
 import ClipPath from "../assets/svg/ClipPath";
+import FAQ from "./FAQ";
 
 const Benefits = () => {
   return (
@@ -52,6 +53,7 @@ const Benefits = () => {
           ))}
         </div>
       </div>
+      <FAQ />
     </section>
   );
 };
