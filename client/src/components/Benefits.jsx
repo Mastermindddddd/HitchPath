@@ -53,7 +53,6 @@ const Benefits = () => {
           ))}
         </div>
       </div>
-      <FAQ />
     </section>
   );
 };

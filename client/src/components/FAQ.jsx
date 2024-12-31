@@ -79,10 +79,10 @@ const FAQ = () => {
         {/* 3D Model Viewer */}
         <div className="lg:w-1/2 mt-10 lg:mt-0 w-full flex justify-center relative">
           <img
-            src={"/pixel.png"}
+            src={"/pixel.webp"}
             width={190}
             height={40}
-            alt="learnado"
+            alt="pixel"
             className="h-[300px] w-auto max-w-xs md:max-w-md lg:max-w-lg"
           />
         </div>

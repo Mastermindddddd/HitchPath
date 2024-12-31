@@ -7,6 +7,7 @@ import {
 } from "./design/Services";
 
 import Generating from "./Generating";
+import FAQ from "./FAQ";
 
 const Services = () => {
   return (
@@ -80,6 +81,7 @@ const Services = () => {
           <Gradient />
         </div>
       </div>
+      <FAQ />
     </section>
   );
 };
