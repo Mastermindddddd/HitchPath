@@ -21,7 +21,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET;
 const MONGO_URI = process.env.MONGO_URI;
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+//const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
 
 
@@ -65,7 +65,7 @@ mongoose
   .catch((err) => console.error("Error connecting to MongoDB:", err));
 
   // OpenAI API configuration
-const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+//const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
 // Mistral AI configuration
 const mistral = new Mistral({ apiKey: MISTRAL_API_KEY });
@@ -258,58 +258,79 @@ app.get("/api/user-info/completed", authenticateToken, async (req, res) => {
 });
 
 
-async function generateLearningPath(user, mistral, prompt, retries = 3) {
-  while (retries > 0) {
-    try {
-      const response = await mistral.chat.complete({
-        model: "open-mistral-nemo",
-        messages: [{ role: "user", content: prompt }],
-      });
-
-      const rawResponse = response.choices[0]?.message?.content;
-      const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error("Failed to extract JSON from response.");
-
-      const learningPath = JSON.parse(jsonMatch[0]);
-      return learningPath;
-    } catch (error) {
-      console.error(`Attempt failed with error: ${error.message}`);
-      retries -= 1;
-      if (retries === 0) throw error;
-    }
-  }
-}
-
 app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const user = await User.findById(userId);
 
-    if (!user) return res.status(404).json({ error: "User not found." });
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
 
+    // If the user already has a saved learning path, return it
     if (user.hasSavedLearningPath) {
       return res.json({ learningPath: user.learningPath });
     }
 
+    // If not, generate a new learning path
+     // Fetch user preferences from the database (use defaults if necessary)
+     const careerPath = user.careerPath;
+     const currentSkillLevel = user.currentSkillLevel;
+     const preferredLearningStyle = user.preferredLearningStyle;
+
     const prompt = `
       Based on the following user preferences:
-      - Career Path: ${user.careerPath}
-      - Current Skill Level: ${user.currentSkillLevel}
-      - Preferred Learning Style: ${user.preferredLearningStyle}
+      - Career Path: ${careerPath}
+      - Current Skill Level: ${currentSkillLevel}
+      - Preferred Learning Style: ${preferredLearningStyle}
 
-      Generate a personalized learning path in JSON format with actionable steps, milestones, and resources.
+      Generate a personalized learning path with actionable steps, tips, milestones, and recommended resources (with titles and URLs). Return the response in this JSON format:
+
+      {
+        "steps": [
+          {
+            "id": 1,
+            "title": "Step title",
+            "description": "Step description",
+            "milestone": "Step milestone",
+            "tips": ["Tip 1", "Tip 2"],
+            "resources": [
+              { "title": "Resource Title", "url": "https://example.com" }
+            ]
+          }
+        ]
+      }
     `;
 
-    const learningPath = await generateLearningPath(user, mistral, prompt);
 
+    const response = await mistral.chat.complete({
+      model: "open-mistral-nemo",
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const rawResponse = response.choices[0]?.message?.content;
+    console.log("Raw response from Mistral:", rawResponse); // Log raw response
+
+    const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Failed to extract JSON from response.");
+    }
+
+    const learningPath = JSON.parse(jsonMatch[0]);
+    console.log("Parsed Learning Path:", learningPath);
+
+    // Save the learning path and mark hasSavedLearningPath as true
     user.learningPath = learningPath.steps;
     user.hasSavedLearningPath = true;
-    await user.save();
 
+    // Log before saving to ensure the data is correct
+    console.log("User data before saving:", user);
+
+    await user.save();
     res.json({ learningPath: learningPath.steps });
   } catch (error) {
-    console.error("Failed to generate learning path:", error.message);
-    res.status(500).json({ error: "Failed to generate learning path. Please try again later." });
+    console.error("Error generating learning path:", error.message);
+    res.status(500).json({ error: "Failed to generate learning path." });
   }
 });
 
