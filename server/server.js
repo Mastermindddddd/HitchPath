@@ -11,7 +11,6 @@ import helmet from "helmet";
 import { check, validationResult } from "express-validator";
 import User from "./models/userModel.js";
 import Contact from "./models/Contact.js";
-import OpenAI from "openai";
 import { Mistral } from "@mistralai/mistralai";
 import { OAuth2Client } from 'google-auth-library';
 
@@ -21,7 +20,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET;
 const MONGO_URI = process.env.MONGO_URI;
-//const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
 
 
@@ -466,5 +464,4 @@ app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   console.log("JWT_SECRET:", JWT_SECRET);
   console.log("MONGO_URI:", MONGO_URI);
-  console.log("OpenAI:", OPENAI_API_KEY);
 });
