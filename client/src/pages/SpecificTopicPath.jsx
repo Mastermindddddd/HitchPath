@@ -42,7 +42,7 @@ const SpecificTopicPath = () => {
   };
 
   const renderTimeline = (path) => (
-    <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
+    <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent mt-8">
       {path.learningPath.map((step, index) => (
         <div
           key={index}
@@ -214,7 +214,16 @@ const SpecificTopicPath = () => {
                 <CircularProgress />
               ) : generatedPath ? (
                 <>
-                  <Typography variant="h5" className="text-center mb-4">
+                  <Typography 
+                    variant="h5" 
+                    className="text-center mb-4"
+                    sx={{
+                      fontWeight: 700,
+                      fontFamily: "'Poppins', sans-serif",
+                      color: "primary.main",
+                      letterSpacing: "0.5px",
+                      lineHeight: 1.2,
+                    }}>
                     Generated Path for {generatedPath.topic}
                   </Typography>
                   {renderTimeline(generatedPath)}
