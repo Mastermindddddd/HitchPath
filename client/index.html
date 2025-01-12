@@ -33,10 +33,20 @@
       height: 100vh;
       margin: 0;
       font-family: Arial, sans-serif;
-      background-color: #f8f9fa;
+      background-color: #03182e;
+      text-align: center; /* Ensures the message stays centered on small screens */
     }
     h1 {
-      color: #333;
+      color: #ffffff;
+      font-size: 2rem; /* Default font size for larger screens */
+      line-height: 1.5; /* Better spacing for readability */
+    }
+    /* Media query for smaller screens */
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.5rem; /* Adjust font size for small screens */
+        padding: 0 10px; /* Add padding for better appearance on narrow devices */
+      }
     }
   </style>
 </head>
