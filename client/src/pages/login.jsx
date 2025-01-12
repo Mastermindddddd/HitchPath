@@ -27,7 +27,7 @@ const Login = () => {
 
       // Determine redirection path
       const redirectPath = new URLSearchParams(location.search).get("redirect") || "/";
-      navigate(redirectPath);
+      navigate(redirectPath, { state: { fromLogin: true } });
       window.location.reload();
     } catch (err) {
       console.error("Login error response:", err.response?.data);
