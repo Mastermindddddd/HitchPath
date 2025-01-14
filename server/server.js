@@ -426,16 +426,40 @@ app.post("/api/specific-path/generate", authenticateToken, async (req, res) => {
     const { topic, details } = req.body;
 
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ error: "User not found." });
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
 
     const prompt = `
       The user wants to master the topic "${topic}".
       Details: ${details}
-      Generate a personalized learning path in JSON format with actionable steps, milestones, and recommended resources.
+      Generate a personalized learning path with actionable steps, milestones, and recommended resources (title and URL).
+      Return in this JSON format:
+      {
+        "steps": [
+          {
+            "id": 1,
+            "title": "Step title",
+            "description": "Step description",
+            "milestone": "Step milestone",
+            "resources": [{ "title": "Resource Title", "url": "https://example.com" }]
+          }
+        ]
+      }
     `;
 
-    const learningPath = await generateLearningPath(user, mistral, prompt);
+    const response = await mistral.chat.complete({
+      model: "open-mistral-nemo",
+      messages: [{ role: "user", content: prompt }],
+    });
 
+    const rawResponse = response.choices[0]?.message?.content;
+    const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("Failed to extract JSON from response.");
+
+    const learningPath = JSON.parse(jsonMatch[0]);
+
+    // Save the specific path
     const newPath = {
       id: user.specificPaths.length + 1,
       topic,
@@ -446,8 +470,8 @@ app.post("/api/specific-path/generate", authenticateToken, async (req, res) => {
     await user.save();
     res.json({ specificPath: newPath });
   } catch (error) {
-    console.error("Failed to generate specific topic path:", error.message);
-    res.status(500).json({ error: "Failed to generate the path. Please try again later." });
+    console.error("Error generating specific topic path:", error.message);
+    res.status(500).json({ error: "Failed to generate the path." });
   }
 });
 
