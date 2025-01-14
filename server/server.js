@@ -255,6 +255,27 @@ app.get("/api/user-info/completed", authenticateToken, async (req, res) => {
   }
 });
 
+async function generateLearningPath(user, mistral, prompt, retries = 3) {
+  while (retries > 0) {
+    try {
+      const response = await mistral.chat.complete({
+        model: "open-mistral-nemo",
+        messages: [{ role: "user", content: prompt }],
+      });
+
+      const rawResponse = response.choices[0]?.message?.content;
+      const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("Failed to extract JSON from response.");
+
+      const learningPath = JSON.parse(jsonMatch[0]);
+      return learningPath;
+    } catch (error) {
+      console.error(`Attempt failed with error: ${error.message}`);
+      retries -= 1;
+      if (retries === 0) throw error;
+    }
+  }
+}
 
 app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
   try {
