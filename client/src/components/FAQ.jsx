@@ -6,14 +6,15 @@ const FAQ = () => {
       <div className="flex flex-col lg:flex-row items-center lg:space-x-10 px-5">
         {/* FAQ Section */}
         <div className="lg:w-1/2">
-          <div className="flex flex-col items-center lg:items-start">
-            <h2 className="mt-5 text-center lg:text-left text-3xl font-bold tracking-tight md:text-5xl">
-              FAQ
-            </h2>
-            <p className="mt-3 text-lg text-neutral-500 md:text-xl text-center lg:text-left">
-              Frequently Asked Questions
-            </p>
-          </div>
+        <div className="flex flex-col items-center">
+  <h2 className="mt-5 text-center text-3xl font-bold tracking-tight md:text-5xl">
+    FAQ
+  </h2>
+  <p className="mt-3 text-lg text-neutral-500 md:text-xl text-center">
+    Frequently Asked Questions
+  </p>
+</div>
+
           <div className="mx-auto mt-8 grid max-w-xl divide-y divide-neutral-200">
             {[
               {
@@ -37,7 +38,7 @@ const FAQ = () => {
                   'While you can explore some features without logging in, creating a personalized learning or career path requires an account. This helps save your progress and preferences for future sessions.',
               },
               {
-                question: ' What should I do if I encounter errors while generating a path?',
+                question: 'What should I do if I encounter errors while generating a path?',
                 answer:
                   'If you experience issues, ensure you are logged in and your internet connection is stable. You can also retry by clicking the "Retry" button. For persistent issues, contact us through the Contact Us section.',
               },
@@ -76,8 +77,8 @@ const FAQ = () => {
           </div>
         </div>
 
-        {/* 3D Model Viewer */}
-        <div className="lg:w-1/2 mt-10 lg:mt-0 w-full flex justify-center relative">
+        {/* Pixel Image - Always Centered */}
+        <div className="lg:w-1/2 mt-10 lg:mt-0 w-full flex justify-center">
           <img
             src={"/pixel.webp"}
             width={190}

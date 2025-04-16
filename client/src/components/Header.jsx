@@ -167,6 +167,13 @@ const Header = () => {
                 </li>
                 <li
                   className="flex items-center gap-3 cursor-pointer"
+                  onClick={() => handleNavigation("/resume-builder")}
+                >
+                  <FaThLarge size={20} />
+                  <span className="text-lg sm:text-base">Generate resume</span>
+                </li>
+                <li
+                  className="flex items-center gap-3 cursor-pointer"
                   onClick={() => handleNavigation("/guidemate-AI")}
                 >
                   <FaRobot size={20} />

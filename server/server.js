@@ -13,6 +13,7 @@ import User from "./models/userModel.js";
 import Contact from "./models/Contact.js";
 import { Mistral } from "@mistralai/mistralai";
 import { OAuth2Client } from 'google-auth-library';
+import Resume from "./models/Resume.js";
 
 dotenv.config();
 
@@ -255,28 +256,6 @@ app.get("/api/user-info/completed", authenticateToken, async (req, res) => {
   }
 });
 
-async function generateLearningPath(user, mistral, prompt, retries = 3) {
-  while (retries > 0) {
-    try {
-      const response = await mistral.chat.complete({
-        model: "open-mistral-nemo",
-        messages: [{ role: "user", content: prompt }],
-      });
-
-      const rawResponse = response.choices[0]?.message?.content;
-      const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error("Failed to extract JSON from response.");
-
-      const learningPath = JSON.parse(jsonMatch[0]);
-      return learningPath;
-    } catch (error) {
-      console.error(`Attempt failed with error: ${error.message}`);
-      retries -= 1;
-      if (retries === 0) throw error;
-    }
-  }
-}
-
 app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -489,6 +468,85 @@ app.get("/api/specific-paths", authenticateToken, async (req, res) => {
   } catch (error) {
     console.error("Error fetching specific paths:", error.message);
     res.status(500).json({ error: "Failed to fetch paths." });
+  }
+});
+
+app.post("/api/save-resume", authenticateToken, async (req, res) => {
+  const { content } = req.body;
+  const userId = req.user.id;
+
+  if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const resume = await Resume.findOneAndUpdate(
+      { userId: user._id },
+      { content },
+      { new: true, upsert: true }
+    );
+
+    return res.status(200).json({ message: "Resume saved", resume });
+  } catch (error) {
+    console.error("Error saving resume:", error);
+    res.status(500).json({ error: "Failed to save resume" });
+  }
+});
+
+// Fetch resume content
+app.get("/get-resume", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+
+  if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+  try {
+    const user = await User.findOne({ clerkUserId: userId });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const resume = await Resume.findOne({ userId: user._id });
+    if (!resume) return res.status(404).json({ error: "Resume not found" });
+
+    return res.status(200).json(resume);
+  } catch (error) {
+    console.error("Error fetching resume:", error);
+    return res.status(500).json({ error: "Failed to fetch resume" });
+  }
+});
+
+// Improve resume section with Mistral AI
+app.post('/improve-with-ai', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { current, type } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const prompt = `As an expert resume writer, improve the following ${type} description for a ${user.careerPath} professional.
+Make it more impactful, quantifiable, and aligned with industry standards.
+Current content: "${current}"
+
+Requirements:
+1. Use action verbs
+2. Include metrics and results where possible
+3. Highlight relevant technical skills
+4. Keep it concise but detailed
+5. Focus on achievements over responsibilities
+6. Use industry-specific keywords
+
+Format the response as a single paragraph without any additional text or explanations.`;
+
+    const response = await mistral.chat.complete({
+      model: "open-mistral-nemo",
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const improvedContent = response.choices[0]?.message?.content?.trim();
+    return res.json({ content: improvedContent });
+  } catch (error) {
+    console.error("AI improvement failed:", error);
+    return res.status(500).json({ error: "Failed to improve content" });
   }
 });
 

@@ -37,29 +37,7 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLogin = async (credentialResponse) => {
-    setLoading(true); // Start loading
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL;
-      const response = await axios.post(`${apiUrl}/google-login`, { tokenId: credentialResponse.credential });
 
-      const { token, user } = response.data;
-
-      // Save user data
-      localStorage.setItem("token", token);
-      localStorage.setItem("userName", user.name);
-
-      // Redirect after login
-      const redirectPath = new URLSearchParams(location.search).get("redirect") || "/";
-      navigate(redirectPath);
-      window.location.reload();
-    } catch (err) {
-      console.error("Google login error response:", err.response?.data);
-      setError(err.response?.data?.error || "An error occurred during Google Sign-In.");
-    } finally {
-      setLoading(false); // Stop loading
-    }
-  };
 
   return (
     <section>

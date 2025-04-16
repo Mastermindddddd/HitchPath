@@ -272,7 +272,7 @@ export const socials = [
     id: "0",
     title: "Linkedin",
     iconUrl: linkedin,
-    url: "#",
+    url: "https://www.linkedin.com/company/hitch-path",
   },
   {
     id: "1",
