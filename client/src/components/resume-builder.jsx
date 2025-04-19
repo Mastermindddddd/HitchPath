@@ -6,6 +6,7 @@ import html2pdf from "html2pdf.js/dist/html2pdf.min.js";
 import { toast } from "sonner";
 import axios from "axios";
 import { AuthContext } from "../AuthContext"; 
+import SummarySection from "./ResumeComponents/SummarySection";
 
 // UI components (replace with your own if needed)
 import { Button } from "./ui/button";
@@ -18,6 +19,11 @@ import { entriesToMarkdown } from "./helper";
 
 // Forms
 import EntryForm from "./entry-form";
+import ExperienceSection from "./ResumeComponents/ExperienceSection";
+import Education from "./ResumeComponents/EducationSection";
+import Skills from "./ResumeComponents/SkillsSection";
+import Projects from "./ResumeComponents/ProjectsSection";
+import Certification from "./ResumeComponents/Certification";
 
 export default function ResumeBuilder({ initialContent }) {
   const [activeTab, setActiveTab] = useState("edit");
@@ -26,6 +32,8 @@ export default function ResumeBuilder({ initialContent }) {
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const { user } = useContext(AuthContext);
+  const [entries, setEntries] = useState([]);
+
 
   const {
     control,
@@ -60,34 +68,45 @@ export default function ResumeBuilder({ initialContent }) {
   const getContactMarkdown = () => {
     const { contactInfo } = formValues;
     const parts = [];
+  
     if (contactInfo.email) parts.push(`📧 ${contactInfo.email}`);
     if (contactInfo.mobile) parts.push(`📱 ${contactInfo.mobile}`);
     if (contactInfo.linkedin) parts.push(`💼 [LinkedIn](${contactInfo.linkedin})`);
     if (contactInfo.twitter) parts.push(`🐦 [Twitter](${contactInfo.twitter})`);
-
+    if (contactInfo.portfolio) parts.push(`🌐 [Portfolio](${contactInfo.portfolio})`);
+    if (contactInfo.location) parts.push(`📍 ${contactInfo.location}`);
+  
     return parts.length > 0
-      ? `## <div align="center">${user.name}</div>\n\n<div align="center">\n\n${parts.join(" | ")}\n\n</div>`
+      ? `# ${user?.name || "Your Name"}\n\n${parts.join("  \n")}`
       : "";
   };
-
+  
   const getCombinedContent = () => {
-    const { summary, skills, experience, education, projects } = formValues;
+    const { summary, skills, experience, education, projects, certifications } = formValues;
     return [
       getContactMarkdown(),
-      summary && `## Professional Summary\n\n${summary}`,
-      skills && `## Skills\n\n${skills}`,
-      entriesToMarkdown(experience, "Work Experience"),
-      entriesToMarkdown(education, "Education"),
-      entriesToMarkdown(projects, "Projects"),
+      summary && `## 💼 Professional Summary\n\n${summary}`,
+      skills && `## 🛠️ Skills\n\n${skills}`,
+      entriesToMarkdown(experience, "👔 Work Experience"),
+      entriesToMarkdown(education, "🎓 Education"),
+      entriesToMarkdown(projects, "📂 Projects"),
+      entriesToMarkdown(certifications, "📜 Certifications"),
     ]
       .filter(Boolean)
-      .join("\n\n");
+      .join("\n\n---\n\n");
   };
-
+  
   const generatePDF = async () => {
     setIsGenerating(true);
     try {
+      setActiveTab("preview");
+  
+      // Wait for the DOM to update
+      await new Promise((resolve) => setTimeout(resolve, 200));
+  
       const element = document.getElementById("resume-pdf");
+      if (!element) throw new Error("Resume content not found for PDF generation.");
+  
       const opt = {
         margin: [15, 15],
         filename: "resume.pdf",
@@ -95,6 +114,7 @@ export default function ResumeBuilder({ initialContent }) {
         html2canvas: { scale: 2 },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       };
+  
       await html2pdf().set(opt).from(element).save();
     } catch (error) {
       console.error("PDF generation error:", error);
@@ -102,6 +122,7 @@ export default function ResumeBuilder({ initialContent }) {
       setIsGenerating(false);
     }
   };
+  
 
   const onSubmit = async (data) => {
     setIsSaving(true);
@@ -153,66 +174,43 @@ export default function ResumeBuilder({ initialContent }) {
         </TabsList>
 
         <TabsContent value="edit">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-            {/* Contact Info */}
-            <div className="grid gap-4">
-              <Input {...register("contactInfo.email")} placeholder="Email" />
-              <Input {...register("contactInfo.mobile")} placeholder="Mobile" />
-              <Input {...register("contactInfo.linkedin")} placeholder="LinkedIn" />
-              <Input {...register("contactInfo.twitter")} placeholder="Twitter" />
-            </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+  {/* Contact Info */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <Input {...register("contactInfo.email")} placeholder="Email" />
+    <Input {...register("contactInfo.mobile")} placeholder="Mobile" />
+    <Input {...register("contactInfo.linkedin")} placeholder="LinkedIn" />
+    <Input {...register("contactInfo.twitter")} placeholder="Twitter" />
+    <Input {...register("contactInfo.portfolio")} placeholder="Portfolio (optional)" />
+    <Input {...register("contactInfo.location")} placeholder="Location (e.g. Cape Town, South Africa)" />
+  </div>
 
-            {/* Summary */}
-            <div>
-              <h3 className="font-semibold">Professional Summary</h3>
-              <Controller
-                name="summary"
-                control={control}
-                render={({ field }) => <Textarea {...field} className="h-24" />}
-              />
-            </div>
+  {/* Summary */}
+  <SummarySection control={control} />
 
-            {/* Skills */}
-            <div>
-              <h3 className="font-semibold">Skills</h3>
-              <Controller
-                name="skills"
-                control={control}
-                render={({ field }) => <Textarea {...field} className="h-24" />}
-              />
-            </div>
 
-            {/* Experience */}
-            <Controller
-              name="experience"
-              control={control}
-              render={({ field }) => (
-                <EntryForm type="Experience" entries={field.value} onChange={field.onChange} />
-              )}
-            />
+  {/* Skills */}
+  <Skills control={control}/>
 
-            {/* Education */}
-            <Controller
-              name="education"
-              control={control}
-              render={({ field }) => (
-                <EntryForm type="Education" entries={field.value} onChange={field.onChange} />
-              )}
-            />
+  {/* Work Experience */}
+  <ExperienceSection />
 
-            {/* Projects */}
-            <Controller
-              name="projects"
-              control={control}
-              render={({ field }) => (
-                <EntryForm type="Project" entries={field.value} onChange={field.onChange} />
-              )}
-            />
-          </form>
+  {/* Education */}
+  <Education />
+
+  {/* Projects */}
+  <Projects />
+
+  {/* Certifications */}
+  <Certification />
+</form>
+
         </TabsContent>
 
         <TabsContent value="preview">
-          <div id="resume-pdf" className="prose max-w-none p-4 bg-white">
+        <div
+          id="resume-pdf"
+          className="prose max-w-none p-6 bg-white rounded-md shadow-md print:shadow-none print:bg-white print:p-0">
             <MDEditor.Markdown source={previewContent} />
           </div>
         </TabsContent>

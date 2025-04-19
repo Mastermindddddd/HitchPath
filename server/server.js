@@ -1,19 +1,19 @@
-import express from "express";
-import mongoose from "mongoose";
-import cors from "cors";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-import rateLimit from "express-rate-limit";
-import morgan from "morgan";
-import compression from "compression";
-import helmet from "helmet";
-import { check, validationResult } from "express-validator";
-import User from "./models/userModel.js";
-import Contact from "./models/Contact.js";
-import { Mistral } from "@mistralai/mistralai";
-import { OAuth2Client } from 'google-auth-library';
-import Resume from "./models/Resume.js";
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
+const rateLimit = require("express-rate-limit");
+const morgan = require("morgan");
+const compression = require("compression");
+const helmet = require("helmet");
+const { check, validationResult } = require("express-validator");
+const User = require("./models/userModel.js");
+const Contact = require("./models/Contact.js");
+const { Mistral } = require("@mistralai/mistralai")
+const { OAuth2Client } = require("google-auth-library")
+const Resume = require("./models/Resume.js");
 
 dotenv.config();
 
@@ -472,7 +472,7 @@ app.get("/api/specific-paths", authenticateToken, async (req, res) => {
 });
 
 app.post("/api/save-resume", authenticateToken, async (req, res) => {
-  const { content } = req.body;
+  const { content, contactInfo, summary, skills, experience, education, projects } = req.body;
   const userId = req.user.id;
 
   if (!userId) return res.status(401).json({ error: "Unauthorized" });
@@ -483,7 +483,7 @@ app.post("/api/save-resume", authenticateToken, async (req, res) => {
 
     const resume = await Resume.findOneAndUpdate(
       { userId: user._id },
-      { content },
+      { content, contactInfo, summary, skills, experience, education, projects },
       { new: true, upsert: true }
     );
 
@@ -493,6 +493,7 @@ app.post("/api/save-resume", authenticateToken, async (req, res) => {
     res.status(500).json({ error: "Failed to save resume" });
   }
 });
+
 
 // Fetch resume content
 app.get("/get-resume", authenticateToken, async (req, res) => {
