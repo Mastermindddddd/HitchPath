@@ -39,6 +39,7 @@ export default function ResumeBuilder({ initialContent }) {
     control,
     register,
     handleSubmit,
+    setValue,
     watch,
     formState: { errors },
   } = useForm({
@@ -190,19 +191,22 @@ export default function ResumeBuilder({ initialContent }) {
 
 
   {/* Skills */}
-  <Skills control={control}/>
+  <Skills control={control} register={register} />
 
   {/* Work Experience */}
-  <ExperienceSection />
+  <ExperienceSection control={control} register={register} />
 
   {/* Education */}
-  <Education />
+  <Education control={control} register={register} />
+
 
   {/* Projects */}
-  <Projects />
+  <Projects control={control} register={register} />
+
 
   {/* Certifications */}
-  <Certification />
+  <Certification onChange={(certData) => setValue("certifications", certData)} />
+
 </form>
 
         </TabsContent>

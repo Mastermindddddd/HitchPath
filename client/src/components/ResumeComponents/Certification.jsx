@@ -2,9 +2,9 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Card } from '../ui/card';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-function Certification() {
+function Certification({ onChange }) {
   const [certifications, setCertifications] = useState([
     {
       name: '',
@@ -14,6 +14,10 @@ function Certification() {
       description: '',
     },
   ]);
+  useEffect(() => {
+    onChange(certifications);
+  }, [certifications]);
+
 
   const handleChange = (e, index) => {
     const { name, value } = e.target;
