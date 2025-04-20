@@ -13,7 +13,7 @@ function Education({ control, register }) {
 
   return (
     <Card>
-      <div className="p-5 mt-10">
+      <div className="p-5 mt-3">
         <h2 className="font-bold text-lg">🎓 Education</h2>
         <p>Add your educational details</p>
 
@@ -46,7 +46,7 @@ function Education({ control, register }) {
           </div>
         ))}
 
-        <div className="flex justify-between">
+        <div className="flex justify-between mt-10">
           <div className="flex gap-2">
             <Button
               type="button"

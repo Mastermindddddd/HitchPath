@@ -12,7 +12,7 @@ function Projects({ control, register }) {
 
   return (
     <Card>
-      <div className="p-5 mt-10">
+      <div className="p-5 mt-3">
         <h2 className="font-bold text-lg">Projects / Initiatives</h2>
         <p>Include relevant projects, campaigns, or initiatives you've been part of.</p>
 
@@ -43,7 +43,7 @@ function Projects({ control, register }) {
           ))}
         </div>
 
-        <div className="flex justify-between">
+        <div className="flex justify-between mt-10">
           <div className="flex gap-2">
             <Button
               type="button"

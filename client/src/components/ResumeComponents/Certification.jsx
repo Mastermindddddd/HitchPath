@@ -45,7 +45,7 @@ function Certification({ onChange }) {
 
   return (
     <Card>
-      <div className="p-5 mt-10">
+      <div className="p-5 mt-3">
         <h2 className="font-bold text-lg">Certifications</h2>
         <p>Add any certifications, licenses, or formal recognitions you've received.</p>
 
@@ -57,8 +57,8 @@ function Certification({ onChange }) {
                   <label>Certification Name</label>
                   <Input
                     name="name"
+                    value={item.name}
                     onChange={(e) => handleChange(e, index)}
-                    defaultValue={item?.name}
                   />
                 </div>
                 <div className="col-span-2">
@@ -66,7 +66,7 @@ function Certification({ onChange }) {
                   <Input
                     name="issuer"
                     onChange={(e) => handleChange(e, index)}
-                    defaultValue={item?.issuer}
+                    value={item.issuer}
                   />
                 </div>
                 <div>
@@ -75,7 +75,7 @@ function Certification({ onChange }) {
                     type="date"
                     name="issueDate"
                     onChange={(e) => handleChange(e, index)}
-                    defaultValue={item?.issueDate}
+                    value={item.issueDate}
                   />
                 </div>
                 <div>
@@ -84,7 +84,7 @@ function Certification({ onChange }) {
                     type="date"
                     name="expiryDate"
                     onChange={(e) => handleChange(e, index)}
-                    defaultValue={item?.expiryDate}
+                    value={item.expiryDate}
                   />
                 </div>
                 <div className="col-span-2">
@@ -92,7 +92,7 @@ function Certification({ onChange }) {
                   <Textarea
                     name="description"
                     onChange={(e) => handleChange(e, index)}
-                    defaultValue={item?.description}
+                    value={item.description}
                   />
                 </div>
               </div>
@@ -100,7 +100,7 @@ function Certification({ onChange }) {
           ))}
         </div>
 
-        <div className="flex justify-between">
+        <div className="flex justify-between mt-10">
           <div className="flex gap-2">
             <Button variant="outline" onClick={addNewCertification} className="text-primary">
               + Add Certification

@@ -22,9 +22,9 @@ function Skills({ control, register }) {
           {fields.map((field, index) => (
             <div
               key={field.id}
-              className="flex justify-between items-center mb-2 border rounded-lg p-3 mt-6"
+              className="flex items-center mb-2 border rounded-lg p-3 mt-6"
             >
-              <div className="w-full">
+              <div className="">
                 <label className="text-xs">Name</label>
                 <Input
                   {...register(`skills.${index}.name`)}
@@ -46,7 +46,7 @@ function Skills({ control, register }) {
           ))}
         </div>
 
-        <div className="flex justify-between mt-4">
+        <div className="flex justify-between mt-10">
           <div className="flex gap-2">
             <Button
               type="button"

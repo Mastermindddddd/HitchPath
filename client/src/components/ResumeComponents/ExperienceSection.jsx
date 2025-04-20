@@ -13,7 +13,7 @@ export default function ExperienceSection({ control, register }) {
 
   return (
     <Card>
-      <div className='p-5 mt-2'>
+      <div className='p-5 mt-3'>
         <h3 className="font-semibold text-lg">Professional Experience</h3>
         <p>Add your previous job experience</p>
 

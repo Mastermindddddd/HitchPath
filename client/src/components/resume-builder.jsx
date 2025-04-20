@@ -11,14 +11,12 @@ import SummarySection from "./ResumeComponents/SummarySection";
 // UI components (replace with your own if needed)
 import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
 
 // Custom functions
 import { entriesToMarkdown } from "./helper";
 
 // Forms
-import EntryForm from "./entry-form";
 import ExperienceSection from "./ResumeComponents/ExperienceSection";
 import Education from "./ResumeComponents/EducationSection";
 import Skills from "./ResumeComponents/SkillsSection";
@@ -28,11 +26,9 @@ import Certification from "./ResumeComponents/Certification";
 export default function ResumeBuilder({ initialContent }) {
   const [activeTab, setActiveTab] = useState("edit");
   const [previewContent, setPreviewContent] = useState(initialContent);
-  const [resumeMode, setResumeMode] = useState("preview");
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const { user } = useContext(AuthContext);
-  const [entries, setEntries] = useState([]);
 
 
   const {
@@ -50,6 +46,7 @@ export default function ResumeBuilder({ initialContent }) {
       experience: [],
       education: [],
       projects: [],
+      certifications: []
     },
   });
 
@@ -70,28 +67,107 @@ export default function ResumeBuilder({ initialContent }) {
     const { contactInfo } = formValues;
     const parts = [];
   
-    if (contactInfo.email) parts.push(`📧 ${contactInfo.email}`);
-    if (contactInfo.mobile) parts.push(`📱 ${contactInfo.mobile}`);
+    const name = user?.name || "Your Name";
+    const jobTitle = contactInfo?.jobTitle || ""; // Optional addition
+    const address = contactInfo?.location || "";
+  
+    if (contactInfo.mobile && contactInfo.email) {
+      parts.push(`${contactInfo.mobile} | ${contactInfo.email}`);
+    } else {
+      if (contactInfo.mobile) parts.push(`${contactInfo.mobile}`);
+      if (contactInfo.email) parts.push(`${contactInfo.email}`);
+    }
+  
     if (contactInfo.linkedin) parts.push(`💼 [LinkedIn](${contactInfo.linkedin})`);
     if (contactInfo.twitter) parts.push(`🐦 [Twitter](${contactInfo.twitter})`);
     if (contactInfo.portfolio) parts.push(`🌐 [Portfolio](${contactInfo.portfolio})`);
-    if (contactInfo.location) parts.push(`📍 ${contactInfo.location}`);
   
-    return parts.length > 0
-      ? `# ${user?.name || "Your Name"}\n\n${parts.join("  \n")}`
-      : "";
+    return `
+  # <div align="center"><strong>${name}</strong></div>
+  
+  <div align="center"><em>${jobTitle}</em></div>
+  
+  <div align="center">${address}</div>
+  
+  <div align="center">${parts[0] || ""}</div>
+  
+  ${parts.slice(1).map(p => `<div align="center">${p}</div>`).join("\n")}
+  
+  ---
+  
+  `.trim();
   };
+
+  const getSkillsMarkdown = () => {
+    const skills = formValues.skills;
+    if (!skills || skills.length === 0) return "";
+  
+    const stars = (rating) => "★".repeat(rating) + "☆".repeat(5 - rating);
+  
+    return `## 🛠️ Skills\n\n${skills
+      .map((skill) => `- **${skill.name}**: ${stars(skill.rating || 0)}`)
+      .join("\n")}`;
+  };  
+
+  function generateEducationMarkdown(educationArray) {
+    if (!educationArray || educationArray.length === 0) return "";
+  
+    return `## 🎓 Education\n\n${educationArray
+      .map((edu) => {
+        const university = edu.universityName || "University Name";
+        const degree = edu.degree || "Degree";
+        const major = edu.major || "Major";
+        const start = edu.startDate || "Start Date";
+        const end = edu.endDate || "End Date";
+        const description = edu.description || "";
+  
+        return `### ${university}\n**${degree} in ${major}**\n${start} – ${end}\n${description}`.trim();
+      })
+      .join("\n\n")}`;
+  }
+
+  const generateProjectsMarkdown = (projectsArray) => {
+    if (!projectsArray || projectsArray.length === 0) return "";
+  
+    return `## 📂 Projects & Initiatives\n\n${projectsArray
+      .map((project) => {
+        const title = project.title || "Project Title";
+        const organization = project.organization || "Organization";
+        const start = project.startDate || "Start Date";
+        const end = project.endDate || "End Date";
+        const description = project.description || "";
+  
+        return `### ${title}\n**${organization}**\n${start} – ${end}\n${description}`;
+      })
+      .join("\n\n")}`;
+  };
+
+  const generateCertificationsMarkdown = (certs) => {
+    if (!certs || certs.length === 0) return "";
+  
+    return `## 📜 Certifications\n\n${certs
+      .map((cert) => {
+        const name = cert.name || "Certification";
+        const issuer = cert.issuer || "Issuer";
+        const issueDate = cert.issueDate || "";
+        const expiryDate = cert.expiryDate ? ` – ${cert.expiryDate}` : "";
+        const description = cert.description || "";
+  
+        return `### ${name}\n**${issuer}**\n${issueDate}${expiryDate}\n${description}`.trim();
+      })
+      .join("\n\n")}`;
+  };  
   
   const getCombinedContent = () => {
     const { summary, skills, experience, education, projects, certifications } = formValues;
     return [
       getContactMarkdown(),
       summary && `## 💼 Professional Summary\n\n${summary}`,
-      skills && `## 🛠️ Skills\n\n${skills}`,
+      getSkillsMarkdown(),
       entriesToMarkdown(experience, "👔 Work Experience"),
-      entriesToMarkdown(education, "🎓 Education"),
-      entriesToMarkdown(projects, "📂 Projects"),
-      entriesToMarkdown(certifications, "📜 Certifications"),
+      generateEducationMarkdown(education),
+      generateProjectsMarkdown(projects),
+      generateCertificationsMarkdown(certifications),
     ]
       .filter(Boolean)
       .join("\n\n---\n\n");
@@ -108,6 +184,10 @@ export default function ResumeBuilder({ initialContent }) {
       const element = document.getElementById("resume-pdf");
       if (!element) throw new Error("Resume content not found for PDF generation.");
   
+      // 💡 Force white background temporarily
+      const originalBg = element.style.backgroundColor;
+      element.style.backgroundColor = "#ffffff";
+  
       const opt = {
         margin: [15, 15],
         filename: "resume.pdf",
@@ -117,6 +197,9 @@ export default function ResumeBuilder({ initialContent }) {
       };
   
       await html2pdf().set(opt).from(element).save();
+  
+      // ✅ Restore original background
+      element.style.backgroundColor = originalBg;
     } catch (error) {
       console.error("PDF generation error:", error);
     } finally {
