@@ -104,10 +104,19 @@ export default function ResumeBuilder({ initialContent }) {
   
     const stars = (rating) => "★".repeat(rating) + "☆".repeat(5 - rating);
   
-    return `## 🛠️ Skills\n\n${skills
-      .map((skill) => `- **${skill.name}**: ${stars(skill.rating || 0)}`)
-      .join("\n")}`;
-  };  
+    return `
+  ## 🛠️ Skills
+  
+  <div style="column-count: 2; column-gap: 40px;">
+  
+  ${skills
+    .map((skill) => `- <strong>${skill.name}</strong>: ${stars(skill.rating || 0)}`)
+    .join("<br/>")}
+  
+  </div>
+  `.trim();
+  };
+  
 
   function generateEducationMarkdown(educationArray) {
     if (!educationArray || educationArray.length === 0) return "";
@@ -121,10 +130,14 @@ export default function ResumeBuilder({ initialContent }) {
         const end = edu.endDate || "End Date";
         const description = edu.description || "";
   
-        return `### ${university}\n**${degree} in ${major}**\n${start} – ${end}\n${description}`.trim();
+        return `### ${university}
+  ***${degree} in ${major}*** - 
+  ***${start} – ${end}\n
+  ${description}`;
       })
       .join("\n\n")}`;
   }
+  
 
   const generateProjectsMarkdown = (projectsArray) => {
     if (!projectsArray || projectsArray.length === 0) return "";

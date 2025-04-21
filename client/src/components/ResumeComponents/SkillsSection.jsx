@@ -24,8 +24,8 @@ function Skills({ control, register }) {
               key={field.id}
               className="flex items-center mb-2 border rounded-lg p-3 mt-6"
             >
-              <div className="">
-                <label className="text-xs">Name</label>
+              <div className="mr-3 mb-4">
+                <label className="text-xs">Skill</label>
                 <Input
                   {...register(`skills.${index}.name`)}
                   className="w-full"

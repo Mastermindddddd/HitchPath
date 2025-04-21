@@ -20,7 +20,7 @@ function Education({ control, register }) {
         {fields.map((field, index) => (
           <div key={field.id} className="grid grid-cols-2 gap-3 border p-3 my-5 rounded-lg">
             <div className="col-span-2">
-              <label>University Name</label>
+              <label>Institution Name</label>
               <Input {...register(`education.${index}.universityName`)} />
             </div>
             <div>
