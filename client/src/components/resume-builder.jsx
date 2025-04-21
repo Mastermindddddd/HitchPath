@@ -178,35 +178,90 @@ export default function ResumeBuilder({ initialContent }) {
     try {
       setActiveTab("preview");
   
-      // Wait for the DOM to update
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 300));
   
       const element = document.getElementById("resume-pdf");
       if (!element) throw new Error("Resume content not found for PDF generation.");
   
-      // 💡 Force white background temporarily
-      const originalBg = element.style.backgroundColor;
-      element.style.backgroundColor = "#ffffff";
+      // Inject clean PDF styles
+      const styleTag = document.createElement("style");
+      styleTag.innerHTML = `
+        #resume-pdf {
+          font-family: 'Georgia', serif;
+          background-color: white !important;
+          color: black !important;
+          padding: 32px;
+          line-height: 1.6;
+        }
+
+        body {
+        background: white !important;
+        }
+
+        #resume-pdf h1, #resume-pdf h2, #resume-pdf h3 {
+          color: #333;
+          font-weight: 600;
+          margin-top: 24px;
+          margin-bottom: 12px;
+        }
+  
+        #resume-pdf h1 {
+          font-size: 24px;
+        }
+  z
+        #resume-pdf h2 {
+          font-size: 20px;
+        }
+  
+        #resume-pdf h3 {
+          font-size: 16px;
+        }
+  
+        #resume-pdf p, #resume-pdf li {
+          font-size: 14px;
+        }
+  
+        #resume-pdf ul {
+          padding-left: 20px;
+        }
+  
+        #resume-pdf hr {
+          border-top: 1px solid #ddd;
+          margin: 24px 0;
+        }
+  
+        #resume-pdf a {
+          color: #0046be;
+          text-decoration: none;
+        }
+  
+        #resume-pdf a:hover {
+          text-decoration: underline;
+        }
+      `;
+      document.head.appendChild(styleTag);
   
       const opt = {
         margin: [15, 15],
         filename: "resume.pdf",
         image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2 },
+        html2canvas: {
+          scale: 2,
+          backgroundColor: "#ffffff", // 👈 Critical
+        },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       };
   
       await html2pdf().set(opt).from(element).save();
   
-      // ✅ Restore original background
-      element.style.backgroundColor = originalBg;
+      // Clean up
+      document.head.removeChild(styleTag);
     } catch (error) {
       console.error("PDF generation error:", error);
     } finally {
       setIsGenerating(false);
     }
   };
-  
 
   const onSubmit = async (data) => {
     setIsSaving(true);
@@ -297,9 +352,16 @@ export default function ResumeBuilder({ initialContent }) {
         <TabsContent value="preview">
         <div
           id="resume-pdf"
-          className="prose max-w-none p-6 bg-white rounded-md shadow-md print:shadow-none print:bg-white print:p-0">
-            <MDEditor.Markdown source={previewContent} />
-          </div>
+          className="prose max-w-none p-6 bg-white rounded-md shadow-md print:shadow-none print:bg-white print:p-0"
+          style={{ backgroundColor: "white" }} // ✅ Inline style fallback
+        >
+          <MDEditor.Markdown 
+            source={previewContent}
+            style={{
+              background: "white",
+              color: "black",
+            }} />
+        </div>
         </TabsContent>
       </Tabs>
     </div>
