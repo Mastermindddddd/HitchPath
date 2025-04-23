@@ -122,7 +122,7 @@ const LearningPath = () => {
   }, []);
 
   const renderTimeline = () => (
-    <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:w-1 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:from-cyan-500 before:via-purple-500 before:to-blue-500 before:to-transparent glow-line mt-8">
+    <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:w-1 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-blue-500 before:to-transparent mt-8">
       {learningPath.map((step, index) => (
         <div
           key={index}
@@ -130,7 +130,7 @@ const LearningPath = () => {
         >
           {/* Icon with Step Number */}
           <div
-            className={`flex items-center justify-center w-10 h-10 rounded-full border border-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 bg-emerald-500 text-white font-bold`}
+            className={`flex items-center justify-center w-10 h-10 rounded-full border border-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 bg-blue-600 text-white font-bold`}
           >
             {index + 1}
           </div>
