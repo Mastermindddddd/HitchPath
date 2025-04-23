@@ -42,19 +42,19 @@ const SpecificTopicPath = () => {
   };
 
   const renderTimeline = (path) => (
-    <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent mt-8">
+    <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-1 before:bg-gradient-to-b before:from-transparent before:via-blue-500 before:to-transparent mt-8">
       {path.learningPath.map((step, index) => (
         <div
           key={index}
           className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active"
         >
           <div
-            className={`flex items-center justify-center w-10 h-10 rounded-full border border-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 bg-emerald-500 text-white font-bold`}
+            className={`flex items-center justify-center w-10 h-10 rounded-full border border-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 bg-blue-600 text-white font-bold`}
           >
             {index + 1}
           </div>
 
-          <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-cyan-900/40 p-4 rounded border border-slate-200 shadow">
+          <div className="w-full sm:w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-slate-800/80 p-3 sm:p-4 rounded border border-slate-200 shadow text-sm sm:text-base mt-4 sm:mt-0">
             <div className="flex items-center justify-between space-x-2 mb-1">
               <div className="font-semibold text-white">
                 Step {index + 1}: {step.title}
@@ -64,7 +64,7 @@ const SpecificTopicPath = () => {
               </time>
             </div>
             <div className="text-slate-500">{step.description}</div>
-            <div className="text-sm text-gray-700 mt-2">
+            <div className="text-sm text-gray-300 mt-2">
               <span className="font-medium">Resources:</span>
               <ul>
                 {step.resources.map((resource, i) => (
@@ -73,7 +73,7 @@ const SpecificTopicPath = () => {
                       href={resource.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-500 hover:underline"
+                      className="text-blue-500 underline"
                     >
                       {resource.title}
                     </a>
@@ -180,13 +180,16 @@ const SpecificTopicPath = () => {
   return (
     <section className="flex flex-col justify-center" style={{ overflow: "visible" }}>
       <canvas id="cosmosCanvas" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}></canvas>
-      <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-24 relative z-10">
+      <div className="w-full max-w-6xl mx-auto px-4 pb-20 md:px-6 relative z-10">
         <div className="flex flex-col justify-center divide-y divide-slate-200">
           <div className="w-full max-w-3xl mx-auto">
             <Typography variant="h4" className="text-center mb-8">
+            <div className="inline-block mb-4 px-4 py-1 rounded-full bg-cyan-900/30 border border-cyan-700/50 text-cyan-400 text-sm sm:text-base font-medium text-center break-words">
+                    AI-POWERED
+                  </div><br/>
               Generate Specific Topic Path
             </Typography>
-            <div className="space-y-4">
+            <div className="space-y-4 mt-8 md:mt-20">
               <input
                 type="text"
                 placeholder="Enter Topic"
