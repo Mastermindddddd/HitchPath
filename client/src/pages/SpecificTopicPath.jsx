@@ -54,9 +54,9 @@ const SpecificTopicPath = () => {
             {index + 1}
           </div>
 
-          <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-4 rounded border border-slate-200 shadow">
+          <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-cyan-900/40 p-4 rounded border border-slate-200 shadow">
             <div className="flex items-center justify-between space-x-2 mb-1">
-              <div className="font-bold text-slate-900">
+              <div className="font-semibold text-white">
                 Step {index + 1}: {step.title}
               </div>
               <time className="text-xs font-medium text-indigo-500">

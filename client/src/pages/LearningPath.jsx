@@ -122,7 +122,7 @@ const LearningPath = () => {
   }, []);
 
   const renderTimeline = () => (
-    <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent mt-8">
+    <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:w-1 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:from-cyan-500 before:via-purple-500 before:to-blue-500 before:to-transparent glow-line mt-8">
       {learningPath.map((step, index) => (
         <div
           key={index}
@@ -136,9 +136,9 @@ const LearningPath = () => {
           </div>
 
           {/* Card */}
-          <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-4 rounded border border-slate-200 shadow">
+          <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-slate-800/80 p-4 rounded border border-slate-200 shadow">
             <div className="flex items-center justify-between space-x-2 mb-1">
-              <div className="font-bold text-slate-900">
+              <div className="font-semibold text-white">
                 Step {index + 1}: {step.title}
               </div>
               <time className="text-xs font-medium text-indigo-500">

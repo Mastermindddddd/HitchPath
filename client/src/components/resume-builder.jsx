@@ -65,39 +65,51 @@ export default function ResumeBuilder({ initialContent }) {
 
   const getContactMarkdown = () => {
     const { contactInfo } = formValues;
-    const parts = [];
-  
     const name = user?.name || "Your Name";
-    const jobTitle = contactInfo?.jobTitle || ""; // Optional addition
+    const jobTitle = contactInfo?.jobTitle || "";
     const address = contactInfo?.location || "";
   
-    if (contactInfo.mobile && contactInfo.email) {
-      parts.push(`${contactInfo.mobile} | ${contactInfo.email}`);
-    } else {
-      if (contactInfo.mobile) parts.push(`${contactInfo.mobile}`);
-      if (contactInfo.email) parts.push(`${contactInfo.email}`);
+    const mobile = contactInfo?.mobile ? `📞 ${contactInfo.mobile}` : "";
+    const email = contactInfo?.email ? `✉️ ${contactInfo.email}` : "";
+  
+    const contactLine =
+      email && mobile
+        ? `${email} | ${mobile}`
+        : email || mobile;
+  
+    const links = [];
+  
+    // Use a small PNG icon for LinkedIn
+    if (contactInfo.linkedin) {
+      links.push(
+        `<img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn" width="16" style="vertical-align: middle;" /> ${contactInfo.linkedin}`
+      );
     }
   
-    if (contactInfo.linkedin) parts.push(`💼 [LinkedIn](${contactInfo.linkedin})`);
-    if (contactInfo.twitter) parts.push(`🐦 [Twitter](${contactInfo.twitter})`);
-    if (contactInfo.portfolio) parts.push(`🌐 [Portfolio](${contactInfo.portfolio})`);
+    if (contactInfo.portfolio) {
+      links.push(`🌐 ${contactInfo.portfolio}`);
+    }
   
     return `
   # <div align="center"><strong>${name}</strong></div>
   
-  <div align="center"><em>${jobTitle}</em></div>
+  ${jobTitle ? `<div align="center"><em>${jobTitle}</em></div>` : ""}
   
-  <div align="center">${address}</div>
+  ${address ? `<div align="center">${address}</div>` : ""}
   
-  <div align="center">${parts[0] || ""}</div>
+  ${contactLine ? `<div align="center">${contactLine}</div>` : ""}
   
-  ${parts.slice(1).map(p => `<div align="center">${p}</div>`).join("\n")}
+  ${
+    links.length > 0
+      ? `<div align="center">${links.join(" &nbsp;&nbsp;•&nbsp;&nbsp; ")}</div>`
+      : ""
+  }
   
   ---
-  
   `.trim();
   };
-
+  
+  
   const getSkillsMarkdown = () => {
     const skills = formValues.skills;
     if (!skills || skills.length === 0) return "";
@@ -110,12 +122,16 @@ export default function ResumeBuilder({ initialContent }) {
   <div style="column-count: 2; column-gap: 40px;">
   
   ${skills
-    .map((skill) => `- <strong>${skill.name}</strong>: ${stars(skill.rating || 0)}`)
-    .join("<br/>")}
+    .map(
+      (skill) =>
+        `<p><strong>- ${skill.name}</strong>: ${stars(skill.rating || 0)}</p>`
+    )
+    .join("")}
   
   </div>
-  `.trim();
+    `.trim();
   };
+  
   
 
   function generateEducationMarkdown(educationArray) {
@@ -131,8 +147,8 @@ export default function ResumeBuilder({ initialContent }) {
         const description = edu.description || "";
   
         return `### ${university}
-  ***${degree} in ${major}*** - 
-  ***${start} – ${end}\n
+  ***${degree} in ${major} -*** 
+  ${start} – ${end}\n
   ${description}`;
       })
       .join("\n\n")}`;
@@ -175,7 +191,7 @@ export default function ResumeBuilder({ initialContent }) {
     const { summary, skills, experience, education, projects, certifications } = formValues;
     return [
       getContactMarkdown(),
-      summary && `## 💼 Professional Summary\n\n${summary}`,
+      summary && `## Professional Summary\n\n${summary}`,
       getSkillsMarkdown(),
       entriesToMarkdown(experience, "👔 Work Experience"),
       generateEducationMarkdown(education),
@@ -332,7 +348,7 @@ export default function ResumeBuilder({ initialContent }) {
     <Input {...register("contactInfo.email")} placeholder="Email" />
     <Input {...register("contactInfo.mobile")} placeholder="Mobile" />
     <Input {...register("contactInfo.linkedin")} placeholder="LinkedIn" />
-    <Input {...register("contactInfo.twitter")} placeholder="Twitter" />
+    {/*<Input {...register("contactInfo.twitter")} placeholder="Twitter" />*/}
     <Input {...register("contactInfo.portfolio")} placeholder="Portfolio (optional)" />
     <Input {...register("contactInfo.location")} placeholder="Location (e.g. Cape Town, South Africa)" />
   </div>
