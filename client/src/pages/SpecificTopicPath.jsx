@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Typography, CircularProgress } from "@mui/material";
+import { Card, CardContent } from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
+import { Button } from "../components/ui/button";
+import { Sparkles } from "lucide-react";
+
 
 const SpecificTopicPath = () => {
   const [topic, setTopic] = useState("");
@@ -53,8 +59,8 @@ const SpecificTopicPath = () => {
           >
             {index + 1}
           </div>
-
-          <div className="w-full sm:w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-slate-800/80 p-3 sm:p-4 rounded border border-slate-200 shadow text-sm sm:text-base mt-4 sm:mt-0">
+          
+          <div className="w-full sm:w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-slate-800/50 backdrop-blur-md  p-3 sm:p-4 rounded border border-slate-200 shadow text-sm sm:text-base mt-4 sm:mt-0">
             <div className="flex items-center justify-between space-x-2 mb-1">
               <div className="font-semibold text-white">
                 Step {index + 1}: {step.title}
@@ -94,8 +100,9 @@ const SpecificTopicPath = () => {
 
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      canvas.height = Math.max(document.body.scrollHeight, window.innerHeight);
     };
+    
 
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
@@ -178,76 +185,72 @@ const SpecificTopicPath = () => {
   }, []);
 
   return (
-    <section className="flex flex-col justify-center" style={{ overflow: "visible" }}>
-      <canvas id="cosmosCanvas" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}></canvas>
-      <div className="w-full max-w-6xl mx-auto px-4 pb-20 md:px-6 relative z-10">
-        <div className="flex flex-col justify-center divide-y divide-slate-200">
-          <div className="w-full max-w-3xl mx-auto">
-            <Typography variant="h4" className="text-center mb-8">
-            <div className="inline-block mb-4 px-4 py-1 rounded-full bg-cyan-900/30 border border-cyan-700/50 text-cyan-400 text-sm sm:text-base font-medium text-center break-words">
-                    AI-POWERED
-                  </div><br/>
-              Generate Specific Topic Path
-            </Typography>
-            <div className="space-y-4 mt-8 md:mt-20">
-              <input
+    <section className="relative z-10">
+      <canvas
+  id="cosmosCanvas"
+  className="fixed inset-0 w-full h-full -z-10"
+/>
+
+      <div className="w-full max-w-6xl mx-auto px-4 py-20 relative z-10">
+        <Card className="border border-cyan-700/30 bg-slate-800/50 backdrop-blur-md shadow-[0_0_15px_rgba(0,200,255,0.1)]">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center justify-center text-center mb-6">
+              <div className="inline-block mb-2 px-4 py-1 rounded-full bg-cyan-900/30 border border-cyan-700/50 text-cyan-400 text-sm sm:text-base font-medium">
+                AI-POWERED
+              </div>
+              <h2 className="text-xl md:text-2xl font-semibold text-white mt-2">
+                Generate Specific Topic Path
+              </h2>
+            </div>
+
+            <div className="space-y-6 mt-6">
+              <Input
                 type="text"
                 placeholder="Enter Topic"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
-                className="p-3 w-full border border-gray-300 rounded-md"
+                className="bg-slate-900/50 border-cyan-700/30 text-white placeholder:text-slate-500 focus:border-cyan-500"
               />
-              <textarea
+              <Textarea
                 placeholder="Details about what you want to master"
                 value={details}
                 onChange={(e) => setDetails(e.target.value)}
-                className="p-3 w-full border border-gray-300 rounded-md"
-                rows="4"
-              ></textarea>
-              <button
+                rows={4}
+                className="bg-slate-900/50 border-cyan-700/30 text-white placeholder:text-slate-500 focus:border-cyan-500"
+              />
+
+              <Button
                 onClick={generatePath}
-                className="bg-emerald-500 text-white p-3 rounded-md w-full"
+                className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-blue-500 hover:to-cyan-500 text-white border-none"
                 disabled={loading}
               >
-                {loading ? "Generating..." : "Generate Path"}
-              </button>
+                {loading ? (
+                  <>
+                    <div className="mr-2 h-4 w-4 animate-pulse rounded-full bg-white" />
+                    <div className="mr-2 h-4 w-4 animate-pulse rounded-full bg-white animation-delay-150" />
+                    <div className="mr-2 h-4 w-4 animate-pulse rounded-full bg-white animation-delay-300" />
+                    <span className="ml-2">Generating...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Generate Path
+                  </>
+                )}
+              </Button>
             </div>
-            <div className="mt-12">
-              {loading ? (
-                <CircularProgress />
-              ) : generatedPath ? (
-                <>
-                  <Typography 
-                    variant="h5" 
-                    className="text-center mb-4"
-                    sx={{
-                      fontWeight: 700,
-                      fontFamily: "'Poppins', sans-serif",
-                      color: "primary.main",
-                      letterSpacing: "0.5px",
-                      lineHeight: 1.2,
-                    }}>
-                    Generated Path for {generatedPath.topic}
-                  </Typography>
-                  {renderTimeline(generatedPath)}
-                </>
-              ) : (
-                <Typography variant="h6" className="text-center text-gray-500">
-                </Typography>
-              )}
-            </div>
+
+            
             {previousPaths.length > 0 && (
               <div className="mt-12">
-                <Typography variant="h5" className="text-center mb-4">
-                  Your Previous Paths
-                </Typography>
-                <ul className="list-disc pl-5 space-y-2">
+                <h4 className="text-lg font-semibold text-white text-center mb-4">Your Previous Paths</h4>
+                <ul className="list-disc pl-5 space-y-2 text-slate-300">
                   {previousPaths.map((path) => (
-                    <li key={path.id} className="text-emerald-600">
-                      {path.topic}{" "}
+                    <li key={path.id} className="text-emerald-500">
+                      {path.topic}
                       <button
                         onClick={() => setGeneratedPath(path)}
-                        className="text-blue-500 hover:underline ml-2"
+                        className="text-blue-400 hover:underline ml-2"
                       >
                         View
                       </button>
@@ -256,8 +259,23 @@ const SpecificTopicPath = () => {
                 </ul>
               </div>
             )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
+        <div className="mt-12">
+              {loading ? (
+                <div className="flex justify-center">
+                  <CircularProgress />
+                </div>
+              ) : generatedPath ? (
+                <>
+                  <h3 className="text-lg font-bold text-cyan-400 text-center mb-4">
+                    Generated Path for {generatedPath.topic}
+                  </h3>
+                  {renderTimeline(generatedPath)}
+                </>
+              ) : null}
+            </div>
+
       </div>
     </section>
   );

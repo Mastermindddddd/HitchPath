@@ -136,7 +136,7 @@ const LearningPath = () => {
           </div>
 
           {/* Card */}
-          <div className="w-full sm:w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-slate-800/80 p-3 sm:p-4 rounded border border-slate-200 shadow text-sm sm:text-base mt-4 sm:mt-0">
+          <div className="w-full sm:w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-slate-800/50 backdrop-blur-md p-3 sm:p-4 rounded border border-slate-200 shadow text-sm sm:text-base mt-4 sm:mt-0">
 
             <div className="flex items-center justify-between space-x-2 mb-1">
               <div className="font-semibold text-white">
