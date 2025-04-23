@@ -136,7 +136,8 @@ const LearningPath = () => {
           </div>
 
           {/* Card */}
-          <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-slate-800/80 p-4 rounded border border-slate-200 shadow">
+          <div className="w-full sm:w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-slate-800/80 p-3 sm:p-4 rounded border border-slate-200 shadow text-sm sm:text-base mt-4 sm:mt-0">
+
             <div className="flex items-center justify-between space-x-2 mb-1">
               <div className="font-semibold text-white">
                 Step {index + 1}: {step.title}
@@ -146,7 +147,7 @@ const LearningPath = () => {
               </time>
             </div>
             <div className="text-slate-500">{step.description}</div>
-            <div className="text-sm text-gray-700 mt-2">
+            <div className="text-sm text-gray-300 mt-2">
               <span className="font-medium">Resources:</span>
               <ul>
                 {step.resources.map((resource, i) => (
@@ -155,7 +156,7 @@ const LearningPath = () => {
                       href={resource.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-500 hover:underline"
+                      className="text-blue-500 underline"
                     >
                       {resource.title}
                     </a>
@@ -186,13 +187,13 @@ const LearningPath = () => {
   }}
 ></canvas>
 
-      <div className="flex justify-center gap-4 mt-20">
+      {/*<div className="flex justify-center gap-4 mt-20">
         <Link to="/generate-path">
           <Button variant="contained" color="primary">
             Generate Custom Path
           </Button>
         </Link>
-      </div>
+      </div>*/}
       <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-8">
         <div className="flex flex-col justify-center divide-y divide-slate-200">
           <div className="w-full max-w-3xl mx-auto">
@@ -211,6 +212,7 @@ const LearningPath = () => {
               </Box>
             ) : learningPath.length > 0 ? (
               <div>
+                
                 <Typography
                   variant="h4"
                   className="text-center mb-20"
@@ -227,6 +229,9 @@ const LearningPath = () => {
                     lineHeight: 1.2,
                   }}
                 >
+                  <div className="inline-block mb-4 px-4 py-1 rounded-full bg-cyan-900/30 border border-cyan-700/50 text-cyan-400 text-sm sm:text-base font-medium text-center break-words">
+                    AI-POWERED
+                  </div><br/>
                   Your Personalized Learning/Career Path
                 </Typography>
                 {renderTimeline()}
