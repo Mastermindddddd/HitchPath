@@ -14,6 +14,7 @@ const Contact = require("./models/Contact.js");
 const { Mistral } = require("@mistralai/mistralai")
 const { OAuth2Client } = require("google-auth-library")
 const Resume = require("./models/Resume.js");
+const adminCourseRoutes = require("./routes/adminCourses.js");
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.use(helmet());
 app.use(compression());
 app.use(morgan("tiny")); 
 app.set('trust proxy', 1);
+app.use('/api/admin', adminCourseRoutes);
 
 const allowedOrigins = ["https://hitchpath.com", "http://localhost:5173"];
 app.use(

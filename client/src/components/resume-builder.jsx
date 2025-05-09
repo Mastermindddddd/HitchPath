@@ -119,12 +119,12 @@ export default function ResumeBuilder({ initialContent }) {
     return `
   ## 🛠️ Skills
   
-  <div style="column-count: 2; column-gap: 40px;">
+  <div style="column-count: 3; column-gap: 40px;">
   
   ${skills
     .map(
       (skill) =>
-        `<p><strong>- ${skill.name}</strong>: ${stars(skill.rating || 0)}</p>`
+        `<p><strong>${skill.name}</strong>: ${stars(skill.rating || 0)}</p>`
     )
     .join("")}
   
@@ -134,7 +134,7 @@ export default function ResumeBuilder({ initialContent }) {
   
   
 
-  function generateEducationMarkdown(educationArray) {
+  function generateEducationMarkdown(educationArray) { 
     if (!educationArray || educationArray.length === 0) return "";
   
     return `## 🎓 Education\n\n${educationArray
