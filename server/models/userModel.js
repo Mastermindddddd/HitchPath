@@ -22,6 +22,7 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: false },
+  isAdmin: { type: Boolean, default: false },
   preferredLearningStyle: { type: String, enum: ["visual", "auditory", "reading", "kinesthetic"], default: "visual" },
   primaryLanguage: { type: String },
   paceOfLearning: { type: String, enum: ["fast", "moderate", "slow"], default: "moderate" },

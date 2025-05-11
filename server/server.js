@@ -32,7 +32,7 @@ app.use(helmet());
 app.use(compression());
 app.use(morgan("tiny")); 
 app.set('trust proxy', 1);
-app.use('/api/admin', adminCourseRoutes);
+
 
 const allowedOrigins = ["https://hitchpath.com", "http://localhost:5173"];
 app.use(
@@ -48,6 +48,8 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+app.use('/api/admin', adminCourseRoutes);
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -121,7 +123,7 @@ app.post(
       const newUser = new User({ name, email, password: hashedPassword });
       await newUser.save();
 
-      const token = jwt.sign({ id: newUser._id, name: newUser.name, email: newUser.email }, JWT_SECRET);
+      const token = jwt.sign({ id: newUser._id, name: newUser.name, email: newUser.email, isAdmin: newUser.isAdmin }, JWT_SECRET);
 
       res.status(201).json({
         message: "User registered successfully.",
@@ -151,9 +153,9 @@ app.post("/login", async (req, res) => {
       return res.status(400).json({ error: "Invalid email or password." });
     }
 
-    const token = jwt.sign({ id: user._id, name: user.name, email: user.email }, JWT_SECRET);
+    const token = jwt.sign({ id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin }, JWT_SECRET);
 
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin } });
   } catch (error) {
     console.error("Error during login:", error);
     res.status(500).json({ error: "Server error." });

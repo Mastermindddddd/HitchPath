@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const courseSchema = new mongoose.Schema({
-    _id: mongoose.Types.ObjectId,
     title: { type: String, required: true },
     description: String,
     image: String, // URL to thumbnail
