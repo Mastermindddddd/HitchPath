@@ -72,7 +72,7 @@ const Hero = () => {
     </span>
   </h1>
   <p className="body-1 max-w-xl mx-auto md:mx-0 mb-6 text-n-2 text-center md:text-left text-base sm:text-lg lg:text-xl leading-relaxed">
-  Gain clarity and direction for your learning and career success like never before. Let AI recommend personalized learning paths tailored to your ambitions.
+  Impact-Site-Verification: 014fdb9c-7eb9-4026-9264-be651fd110ff
   </p>
   <div className="flex justify-center md:justify-start mt-4">
       <button 
