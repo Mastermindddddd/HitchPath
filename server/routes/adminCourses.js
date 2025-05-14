@@ -5,7 +5,7 @@ const { adminAuth } = require('../middleware/adminAuth.js');
 const router = express.Router();
 
 // Get all courses
-router.get('/courses', adminAuth, async (req, res) => {
+router.get('/courses', async (req, res) => {
   try {
     const courses = await Course.find().sort({ createdAt: -1 });
     res.json(courses);

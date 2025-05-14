@@ -15,6 +15,7 @@ const { Mistral } = require("@mistralai/mistralai")
 const { OAuth2Client } = require("google-auth-library")
 const Resume = require("./models/Resume.js");
 const adminCourseRoutes = require("./routes/adminCourses.js");
+const adminWorkEssentials = require("./routes/adminWorkEssentials.js");
 
 dotenv.config();
 
@@ -50,6 +51,7 @@ app.use(
 );
 
 app.use('/api/admin', adminCourseRoutes);
+app.use('/api/admin/work-essentials', adminWorkEssentials);
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
