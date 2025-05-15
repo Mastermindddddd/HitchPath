@@ -41,7 +41,7 @@ const Layout = () => {
           <Benefits />
           <Collaboration />
           <CTA />
-          <CareerInvestmentShop />
+          {/*<CareerInvestmentShop />*/}
           <Services />
           <Footer />
         </>

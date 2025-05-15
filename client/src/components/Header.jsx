@@ -165,13 +165,13 @@ const Header = () => {
                   <FaThLarge size={20} />
                   <span className="text-lg sm:text-base">Custom path</span>
                 </li>
-                <li
+                {/*<li
                   className="flex items-center gap-3 cursor-pointer"
                   onClick={() => handleNavigation("/resume-builder")}
                 >
                   <FaThLarge size={20} />
                   <span className="text-lg sm:text-base">Generate resume</span>
-                </li>
+                </li>*/}
                 <li
                   className="flex items-center gap-3 cursor-pointer"
                   onClick={() => handleNavigation("/guidemate-AI")}
