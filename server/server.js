@@ -10,6 +10,7 @@ const compression = require("compression");
 const helmet = require("helmet");
 const { check, validationResult } = require("express-validator");
 const User = require("./models/userModel.js");
+const Chat = require("./models/Chat.js");
 const Contact = require("./models/Contact.js");
 const { Mistral } = require("@mistralai/mistralai")
 const { OAuth2Client } = require("google-auth-library")
@@ -50,8 +51,8 @@ app.use(
   })
 );
 
-app.use('/api/admin', adminCourseRoutes);
-app.use('/api/admin/work-essentials', adminWorkEssentials);
+{/*app.use('/api/admin', adminCourseRoutes);
+app.use('/api/admin/work-essentials', adminWorkEssentials);*/}
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -341,69 +342,240 @@ app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
 
 app.post("/api/chatbot", authenticateToken, async (req, res) => {
   try {
+     const userId = req.user.id;
+     const { message, chatId } = req.body;
+     const user = await User.findById(userId);
+     if (!user) {
+       return res.status(404).json({ error: "User not found." });
+     }
+     // Prepare prompt with user data
+     const prompt = `
+     You are a personalized AI assistant for learning and career guidance.
+     The user has the following information:
+     - Name: ${user.name}
+     - Career Path: ${user.careerPath || "Not specified"}
+     - Current Skill Level: ${user.currentSkillLevel}
+     - Preferred Learning Style: ${user.preferredLearningStyle}
+     - Short-Term Goals: ${user.shortTermGoals || "Not specified"}
+     - Long-Term Goals: ${user.longTermGoals || "Not specified"}
+     The user asked: "${message}".
+     Please provide a helpful response in short, concise points with headings where appropriate. Focus on being straight to the point.
+     `;
+     const response = await mistral.chat.complete({
+       model: "open-mistral-nemo",
+       messages: [{ role: "user", content: prompt }],
+     });
+     const rawBotResponse = response.choices[0]?.message?.content || "I'm not sure how to respond to that.";
+     // Format bot response into sections with headings and bullet points
+     const formattedResponse = formatBotResponse(rawBotResponse);
+     // Save or update the chat
+     let chat;
+     if (chatId) {
+       // Find existing chat and add messages
+       chat = await Chat.findOne({ _id: chatId, userId });
+       if (!chat) {
+         return res.status(404).json({ error: "Chat not found" });
+       }
+       // Add new messages
+       chat.messages.push(
+         { sender: 'user', text: message },
+         { sender: 'bot', text: formattedResponse }
+       );
+       chat.updatedAt = Date.now();
+     } else {
+       // Create new chat
+       chat = new Chat({
+         userId,
+         messages: [
+           { sender: 'user', text: message },
+           { sender: 'bot', text: formattedResponse }
+         ]
+       });
+     }
+     await chat.save();
+     res.json({
+       response: formattedResponse,
+       chatId: chat._id
+     });
+   } catch (error) {
+     console.error("Error in chatbot endpoint:", error.message);
+     res.status(500).json({ error: "Failed to process request." });
+   }
+ });
+ 
+ /**
+  * Format the bot response to enhance readability
+  * @param {string} rawResponse - The raw text response from the AI
+  * @returns {string} - Formatted response with proper markdown
+  */
+ function formatBotResponse(rawResponse) {
+   // Basic formatting - you can enhance this based on your needs
+   // This example preserves headings and ensures bullet points are properly formatted
+   
+   if (!rawResponse) return '';
+   
+   // Split the response into lines
+   const lines = rawResponse.split('\n');
+   let formattedLines = [];
+   
+   for (let line of lines) {
+     // Trim whitespace
+     line = line.trim();
+     
+     // Skip empty lines
+     if (!line) {
+       formattedLines.push('');
+       continue;
+     }
+     
+     // Ensure headings have proper markdown
+     if (line.startsWith('#')) {
+       // Already a proper markdown heading
+       formattedLines.push(line);
+     } else if (/^[A-Z][A-Za-z\s]+:/.test(line)) {
+       // Convert "Heading:" format to markdown heading
+       const heading = line.replace(':', '');
+       formattedLines.push(`## ${heading}`);
+     }
+     // Ensure bullet points are properly formatted
+     else if (line.startsWith('-') || line.startsWith('*')) {
+       formattedLines.push(line);
+     } 
+     // Format numbered lists
+     else if (/^\d+\./.test(line)) {
+       formattedLines.push(line);
+     }
+     // Regular text
+     else {
+       formattedLines.push(line);
+     }
+   }
+   
+   return formattedLines.join('\n');
+ }
+
+// Route to save or update a chat
+app.post("/api/chats", authenticateToken, async (req, res) => {
+  try {
     const userId = req.user.id;
-    const { message } = req.body;
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found." });
+    const { chatId, messages } = req.body;
+    
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({ error: "Messages must be provided as an array" });
     }
-
-    // Prepare prompt with user data
-    const prompt = `
-  You are a personalized AI assistant for learning and career guidance. 
-  The user has the following information:
-  - Name: ${user.name}
-  - Career Path: ${user.careerPath || "Not specified"}
-  - Current Skill Level: ${user.currentSkillLevel}
-  - Preferred Learning Style: ${user.preferredLearningStyle}
-  - Short-Term Goals: ${user.shortTermGoals || "Not specified"}
-  - Long-Term Goals: ${user.longTermGoals || "Not specified"}
-
-  The user asked: "${message}".
-  
-  Please provide a helpful response in short, concise points with headings where appropriate. Focus on being straight to the point.
-`;
-
-
-    const response = await mistral.chat.complete({
-      model: "open-mistral-nemo",
-      messages: [{ role: "user", content: prompt }],
+    
+    let chat;
+    
+    // If chatId is provided, update existing chat
+    if (chatId) {
+      chat = await Chat.findOne({ _id: chatId, userId });
+      
+      if (!chat) {
+        return res.status(404).json({ error: "Chat not found" });
+      }
+      
+      chat.messages = messages;
+      chat.updatedAt = Date.now();
+    } else {
+      // Create a new chat
+      chat = new Chat({
+        userId,
+        messages,
+      });
+    }
+    
+    await chat.save();
+    
+    res.status(200).json({ 
+      success: true, 
+      chat: {
+        id: chat._id,
+        title: chat.title,
+        messages: chat.messages,
+        createdAt: chat.createdAt,
+        updatedAt: chat.updatedAt
+      } 
     });
-
-    const rawBotResponse = response.choices[0]?.message?.content || "I'm not sure how to respond to that.";
-
-    // Format bot response into sections with headings and bullet points
-    const formattedResponse = formatBotResponse(rawBotResponse);
-
-    res.json({ response: formattedResponse });
   } catch (error) {
-    console.error("Error in chatbot endpoint:", error.message);
-    res.status(500).json({ error: "Failed to process request." });
+    console.error("Error saving chat:", error);
+    res.status(500).json({ error: "Failed to save chat" });
   }
 });
 
-// Utility function to format bot responses
-function formatBotResponse(response) {
-  // Split by new lines to identify sections
-  const sections = response.split("\n").filter((line) => line.trim() !== "");
-  let formatted = "";
+// Route to get all chats for a user
+app.get("/api/chats", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    // Get all chats, sorted by most recent first
+    const chats = await Chat.find({ userId })
+      .sort({ updatedAt: -1 })
+      .select('_id title messages.sender messages.text createdAt updatedAt')
+      .lean();
+    
+    const formattedChats = chats.map(chat => ({
+      id: chat._id,
+      title: chat.title || (chat.messages[0]?.text.substring(0, 30) + "...") || "New Chat",
+      preview: chat.messages[0]?.text.substring(0, 60) + "...",
+      messageCount: chat.messages.length,
+      createdAt: chat.createdAt,
+      updatedAt: chat.updatedAt
+    }));
+    
+    res.status(200).json({ chats: formattedChats });
+  } catch (error) {
+    console.error("Error fetching chats:", error);
+    res.status(500).json({ error: "Failed to fetch chats" });
+  }
+});
 
-  sections.forEach((section) => {
-    if (section.startsWith("- ")) {
-      // Format as a bullet point
-      formatted += `\u2022 ${section.slice(2)}\n`;
-    } else if (section.endsWith(":")) {
-      // Format as a heading
-      formatted += `\n**${section}**\n`;
-    } else {
-      // Add regular text
-      formatted += `${section}\n`;
+// Route to get a specific chat by ID
+app.get("/api/chats/:chatId", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { chatId } = req.params;
+    
+    const chat = await Chat.findOne({ _id: chatId, userId })
+      .select('_id title messages createdAt updatedAt')
+      .lean();
+    
+    if (!chat) {
+      return res.status(404).json({ error: "Chat not found" });
     }
-  });
+    
+    res.status(200).json({
+      chat: {
+        id: chat._id,
+        title: chat.title,
+        messages: chat.messages,
+        createdAt: chat.createdAt,
+        updatedAt: chat.updatedAt
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching chat:", error);
+    res.status(500).json({ error: "Failed to fetch chat" });
+  }
+});
 
-  return formatted.trim();
-}
+// Route to delete a chat
+app.delete("/api/chats/:chatId", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { chatId } = req.params;
+    
+    const result = await Chat.deleteOne({ _id: chatId, userId });
+    
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: "Chat not found or already deleted" });
+    }
+    
+    res.status(200).json({ success: true, message: "Chat deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting chat:", error);
+    res.status(500).json({ error: "Failed to delete chat" });
+  }
+});
 
 app.post("/api/specific-path/generate", authenticateToken, async (req, res) => {
   try {

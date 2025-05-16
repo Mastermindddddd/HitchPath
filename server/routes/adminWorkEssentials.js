@@ -3,7 +3,7 @@ const router = express.Router();
 const WorkEssential = require('../models/WorkEssential');
 const { adminAuth } = require('../middleware/adminAuth.js');
 
-router.get('/', adminAuth, async (req, res) => {
+router.get('/', async (req, res) => {
   const items = await WorkEssential.find();
   res.json(items);
 });
