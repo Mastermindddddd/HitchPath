@@ -340,120 +340,270 @@ app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
 });
 
 
+// Enhanced chatbot endpoint with context awareness and broader capabilities
 app.post("/api/chatbot", authenticateToken, async (req, res) => {
   try {
-     const userId = req.user.id;
-     const { message, chatId } = req.body;
-     const user = await User.findById(userId);
-     if (!user) {
-       return res.status(404).json({ error: "User not found." });
-     }
-     // Prepare prompt with user data
-     const prompt = `
-     You are a personalized AI assistant for learning and career guidance.
-     The user has the following information:
-     - Name: ${user.name}
-     - Career Path: ${user.careerPath || "Not specified"}
-     - Current Skill Level: ${user.currentSkillLevel}
-     - Preferred Learning Style: ${user.preferredLearningStyle}
-     - Short-Term Goals: ${user.shortTermGoals || "Not specified"}
-     - Long-Term Goals: ${user.longTermGoals || "Not specified"}
-     The user asked: "${message}".
-     Please provide a helpful response in short, concise points with headings where appropriate. Focus on being straight to the point.
-     `;
-     const response = await mistral.chat.complete({
-       model: "open-mistral-nemo",
-       messages: [{ role: "user", content: prompt }],
-     });
-     const rawBotResponse = response.choices[0]?.message?.content || "I'm not sure how to respond to that.";
-     // Format bot response into sections with headings and bullet points
-     const formattedResponse = formatBotResponse(rawBotResponse);
-     // Save or update the chat
-     let chat;
-     if (chatId) {
-       // Find existing chat and add messages
-       chat = await Chat.findOne({ _id: chatId, userId });
-       if (!chat) {
-         return res.status(404).json({ error: "Chat not found" });
-       }
-       // Add new messages
-       chat.messages.push(
-         { sender: 'user', text: message },
-         { sender: 'bot', text: formattedResponse }
-       );
-       chat.updatedAt = Date.now();
-     } else {
-       // Create new chat
-       chat = new Chat({
-         userId,
-         messages: [
-           { sender: 'user', text: message },
-           { sender: 'bot', text: formattedResponse }
-         ]
-       });
-     }
-     await chat.save();
-     res.json({
-       response: formattedResponse,
-       chatId: chat._id
-     });
-   } catch (error) {
-     console.error("Error in chatbot endpoint:", error.message);
-     res.status(500).json({ error: "Failed to process request." });
-   }
- });
- 
- /**
-  * Format the bot response to enhance readability
-  * @param {string} rawResponse - The raw text response from the AI
-  * @returns {string} - Formatted response with proper markdown
-  */
- function formatBotResponse(rawResponse) {
-   // Basic formatting - you can enhance this based on your needs
-   // This example preserves headings and ensures bullet points are properly formatted
-   
-   if (!rawResponse) return '';
-   
-   // Split the response into lines
-   const lines = rawResponse.split('\n');
-   let formattedLines = [];
-   
-   for (let line of lines) {
-     // Trim whitespace
-     line = line.trim();
-     
-     // Skip empty lines
-     if (!line) {
-       formattedLines.push('');
-       continue;
-     }
-     
-     // Ensure headings have proper markdown
-     if (line.startsWith('#')) {
-       // Already a proper markdown heading
-       formattedLines.push(line);
-     } else if (/^[A-Z][A-Za-z\s]+:/.test(line)) {
-       // Convert "Heading:" format to markdown heading
-       const heading = line.replace(':', '');
-       formattedLines.push(`## ${heading}`);
-     }
-     // Ensure bullet points are properly formatted
-     else if (line.startsWith('-') || line.startsWith('*')) {
-       formattedLines.push(line);
-     } 
-     // Format numbered lists
-     else if (/^\d+\./.test(line)) {
-       formattedLines.push(line);
-     }
-     // Regular text
-     else {
-       formattedLines.push(line);
-     }
-   }
-   
-   return formattedLines.join('\n');
- }
+    const userId = req.user.id;
+    const { message, chatId } = req.body;
+    
+    // Get user data if available
+    const user = await User.findById(userId);
+    
+    // Get chat history for context if chatId is provided
+    let chatHistory = [];
+    let chat;
+    
+    if (chatId) {
+      // Find existing chat
+      chat = await Chat.findOne({ _id: chatId, userId });
+      if (chat) {
+        // Extract recent messages for context (limit to last 10 for efficiency)
+        chatHistory = chat.messages.slice(-10).map(msg => ({
+          role: msg.sender === 'user' ? 'user' : 'assistant',
+          content: msg.text
+        }));
+      }
+    }
+    
+    // Prepare system message based on available information
+    let systemMessage = `You are AssistMe, a helpful, friendly AI assistant that provides thoughtful responses.
+    
+Your primary strengths are in learning and career guidance, but you're capable of discussing virtually any topic.
 
+Respond in a conversational but concise manner, using appropriate formatting:
+- Use headings (starting with ##) for major sections
+- Use bullet points where lists are appropriate
+- Keep paragraphs brief and focused
+
+Always aim to be helpful, accurate, and respectful.`;
+
+    // Add user-specific context if available
+    if (user && (user.name || user.careerPath || user.currentSkillLevel || user.preferredLearningStyle)) {
+      systemMessage += `\n\nAdditional context about the user:`;
+      
+      if (user.name) systemMessage += `\n- Name: ${user.name}`;
+      if (user.careerPath) systemMessage += `\n- Career Path: ${user.careerPath}`;
+      if (user.currentSkillLevel) systemMessage += `\n- Current Skill Level: ${user.currentSkillLevel}`;
+      if (user.preferredLearningStyle) systemMessage += `\n- Preferred Learning Style: ${user.preferredLearningStyle}`;
+      if (user.shortTermGoals) systemMessage += `\n- Short-Term Goals: ${user.shortTermGoals}`;
+      if (user.longTermGoals) systemMessage += `\n- Long-Term Goals: ${user.longTermGoals}`;
+      
+      systemMessage += `\n\nUse this information when relevant, but don't focus on it exclusively. Respond naturally to the user's query.`;
+    }
+    
+    // Build messages array for the AI
+    const messages = [
+      { role: "system", content: systemMessage }
+    ];
+    
+    // Add chat history if available
+    if (chatHistory.length > 0) {
+      messages.push(...chatHistory);
+    }
+    
+    // Add the current user message
+    messages.push({ role: "user", content: message });
+    
+    // Get response from AI (using a more capable model if available)
+    const response = await mistral.chat.complete({
+      model: "open-mistral-nemo", // Consider using a more advanced model if available
+      messages: messages,
+      temperature: 0.7, // Adds a bit more creativity to responses
+      max_tokens: 1000, // Allow for more detailed responses
+    });
+    
+    const rawBotResponse = response.choices[0]?.message?.content || "I'm not sure how to respond to that.";
+    
+    // Format response for better readability
+    const formattedResponse = formatBotResponse(rawBotResponse);
+    
+    // Determine if we need to create a new chat or update existing
+    if (chatId && chat) {
+      // Add new messages to existing chat
+      chat.messages.push(
+        { sender: 'user', text: message },
+        { sender: 'bot', text: formattedResponse }
+      );
+      chat.updatedAt = Date.now();
+      
+      // Generate title for the chat if it doesn't exist
+      if (!chat.title) {
+        const titlePrompt = `Based on this message: "${message}", generate a very short title (3-5 words max) that summarizes the main topic.`;
+        try {
+          const titleResponse = await mistral.chat.complete({
+            model: "open-mistral-nemo",
+            messages: [{ role: "user", content: titlePrompt }],
+            temperature: 0.3,
+            max_tokens: 20,
+          });
+          
+          chat.title = titleResponse.choices[0]?.message?.content?.replace(/["""]/g, '').trim() || "Chat Session";
+          // Ensure title is not too long
+          if (chat.title.length > 30) {
+            chat.title = chat.title.substring(0, 30) + "...";
+          }
+        } catch (error) {
+          console.error("Error generating chat title:", error);
+          // Fall back to default title method if AI title generation fails
+          chat.title = message.substring(0, 30) + "...";
+        }
+      }
+    } else {
+      // Create new chat with both messages
+      const titlePrompt = `Based on this message: "${message}", generate a very short title (3-5 words max) that summarizes the main topic.`;
+      let chatTitle;
+      
+      try {
+        const titleResponse = await mistral.chat.complete({
+          model: "open-mistral-nemo",
+          messages: [{ role: "user", content: titlePrompt }],
+          temperature: 0.3,
+          max_tokens: 20,
+        });
+        
+        chatTitle = titleResponse.choices[0]?.message?.content?.replace(/["""]/g, '').trim() || "Chat Session";
+        // Ensure title is not too long
+        if (chatTitle.length > 30) {
+          chatTitle = chatTitle.substring(0, 30) + "...";
+        }
+      } catch (error) {
+        console.error("Error generating chat title:", error);
+        chatTitle = message.substring(0, 30) + "...";
+      }
+      
+      chat = new Chat({
+        userId,
+        title: chatTitle,
+        messages: [
+          { sender: 'user', text: message },
+          { sender: 'bot', text: formattedResponse }
+        ]
+      });
+    }
+    
+    await chat.save();
+    
+    // Add analytics or logging here if needed
+    
+    res.json({
+      response: formattedResponse,
+      chatId: chat._id
+    });
+  } catch (error) {
+    console.error("Error in chatbot endpoint:", error);
+    res.status(500).json({ error: "Failed to process request." });
+  }
+});
+
+/**
+ * Enhanced formatting for bot responses to improve readability
+ * @param {string} rawResponse - The raw text response from the AI
+ * @returns {string} - Formatted response with proper markdown
+ */
+function formatBotResponse(rawResponse) {
+  if (!rawResponse) return '';
+  
+  // Split the response into lines
+  const lines = rawResponse.split('\n');
+  let formattedLines = [];
+  
+  // Variables to track formatting state
+  let inCodeBlock = false;
+  
+  for (let line of lines) {
+    // Handle code blocks
+    if (line.trim().startsWith('```')) {
+      inCodeBlock = !inCodeBlock;
+      formattedLines.push(line);
+      continue;
+    }
+    
+    // If we're in a code block, don't modify formatting
+    if (inCodeBlock) {
+      formattedLines.push(line);
+      continue;
+    }
+    
+    // Trim whitespace
+    line = line.trim();
+    
+    // Skip empty lines but preserve them
+    if (!line) {
+      formattedLines.push('');
+      continue;
+    }
+    
+    // Format headings
+    if (line.startsWith('#')) {
+      // Keep proper markdown headings as is
+      formattedLines.push(line);
+    } 
+    // Convert "Heading:" format to markdown heading
+    else if (/^[A-Z][A-Za-z\s]+:/.test(line) && !line.includes(' ') && line.endsWith(':')) {
+      const heading = line.replace(':', '');
+      formattedLines.push(`## ${heading}`);
+    }
+    // Enhance bullet points
+    else if (line.startsWith('-') || line.startsWith('*')) {
+      // Check if it's already well-formatted
+      if (line.startsWith('- ') || line.startsWith('* ')) {
+        formattedLines.push(line);
+      } else {
+        // Fix spacing after bullet point
+        formattedLines.push(line.replace(/^(-|\*)/, '$1 '));
+      }
+    }
+    // Format numbered lists
+    else if (/^\d+\./.test(line)) {
+      // Check if it's already well-formatted
+      if (/^\d+\. /.test(line)) {
+        formattedLines.push(line);
+      } else {
+        // Fix spacing after number
+        formattedLines.push(line.replace(/^(\d+\.)/, '$1 '));
+      }
+    }
+    // Add emphasis to important phrases
+    else if (line.includes(':') && !line.startsWith(':')) {
+      const parts = line.split(':');
+      if (parts.length === 2 && parts[0].length < 30) {
+        // Only format if it looks like a key-value pair
+        formattedLines.push(`**${parts[0]}:** ${parts[1]}`);
+      } else {
+        formattedLines.push(line);
+      }
+    }
+    // Regular text
+    else {
+      formattedLines.push(line);
+    }
+  }
+  
+  return formattedLines.join('\n');
+}
+
+// Enhanced function to determine if content is safe
+async function isSafeContent(text) {
+  try {
+    // Basic filtering - can be expanded or replaced with proper content moderation API
+    const unsafePatterns = [
+      /\b(hack|steal|exploit|attack)\b/i,
+      /\b(porn|xxx|nude)\b/i,
+      // Add more patterns as needed
+    ];
+    
+    for (const pattern of unsafePatterns) {
+      if (pattern.test(text)) {
+        return false;
+      }
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Error in content safety check:", error);
+    return true; // Default to allowing content if check fails
+  }
+}
 // Route to save or update a chat
 app.post("/api/chats", authenticateToken, async (req, res) => {
   try {

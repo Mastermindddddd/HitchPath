@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { IoSend } from "react-icons/io5";
-import { Cpu, Bot, User, Plus, MessageSquare, Trash2, ArrowLeftCircle, X, Menu } from "lucide-react";
+import { Cpu, Bot, User, Plus, MessageSquare, Trash2, ArrowLeftCircle, X, Menu, Settings } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import useMediaQuery from "../components/hooks/useMediaQuery"; // We'll create this custom hook
+import useMediaQuery from "../components/hooks/useMediaQuery";
+import ReactMarkdown from "react-markdown"; // Add this dependency for markdown support
 
 const Chatbot = () => {
   // State
@@ -13,6 +14,8 @@ const Chatbot = () => {
   const [currentChatId, setCurrentChatId] = useState(null);
   const [recentChats, setRecentChats] = useState([]);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
+  const [showUserProfile, setShowUserProfile] = useState(false);
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
   
@@ -28,10 +31,24 @@ const Chatbot = () => {
     }
   }, [isDesktop]);
 
-  // Fetch recent chats on component mount
+  // Fetch user profile and recent chats on component mount
   useEffect(() => {
+    fetchUserProfile();
     fetchRecentChats();
   }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/user/profile`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setUserProfile(response.data.user);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
 
   const fetchRecentChats = async () => {
     try {
@@ -69,6 +86,9 @@ const Chatbot = () => {
         setCurrentChatId(response.data.chatId);
       }
       
+      // Calculate typing time based on response length with min/max constraints
+      const typingTime = Math.min(Math.max(800, botResponse.length * 8), 2500);
+      
       // Add typing effect
       setTimeout(() => {
         setChat([...newChat, { sender: "bot", text: botResponse }]);
@@ -76,7 +96,7 @@ const Chatbot = () => {
         
         // Refresh recent chats after interaction
         fetchRecentChats();
-      }, Math.min(1000, botResponse.length * 10)); // Cap the typing time to 1 second max
+      }, typingTime);
     } catch (error) {
       console.error("Error sending message:", error);
       setChat([...newChat, { sender: "bot", text: "Sorry, I couldn't process your request." }]);
@@ -154,9 +174,10 @@ const Chatbot = () => {
       if (chatId === currentChatId) {
         startNewChat();
       }
-      setIsTyping(false)
+      setIsTyping(false);
     } catch (error) {
       console.error("Error deleting chat:", error);
+      setIsTyping(false);
     }
   };
 
@@ -206,6 +227,28 @@ const Chatbot = () => {
     }
   };
 
+  // Custom renderer for markdown message content
+  const MessageContent = ({ text }) => {
+    // For user messages, use simple formatting
+    if (!text.includes('##') && !text.includes('```') && !text.includes('*')) {
+      return (
+        <div 
+          className="message-content"
+          dangerouslySetInnerHTML={{ __html: formatSimpleMessage(text) }}
+        />
+      );
+    }
+    
+    // For messages with markdown, use ReactMarkdown
+    return (
+      <div className="message-content markdown-content">
+        <ReactMarkdown>
+          {text}
+        </ReactMarkdown>
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col items-center justify-center p-4 relative h-screen">
       <div className="absolute inset-0 bg-[url('/placeholder.svg?height=800&width=800')] opacity-5 bg-repeat z-0 fixed" />
@@ -248,6 +291,72 @@ const Chatbot = () => {
                 )}
               </div>
               
+              {/* User profile summary */}
+              {userProfile && (
+                <div className="p-3 border-b border-purple-500/30 bg-blue-900/20">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="h-8 w-8 rounded-full bg-gradient-to-r from-green-500 to-teal-500 flex items-center justify-center mr-2">
+                        <span className="text-white font-medium">
+                          {userProfile.name ? userProfile.name.charAt(0).toUpperCase() : "U"}
+                        </span>
+                      </div>
+                      <div className="overflow-hidden">
+                        <h3 className="font-medium text-white text-sm truncate">
+                          {userProfile.name || "User"}
+                        </h3>
+                        <p className="text-xs text-gray-300 truncate">
+                          {userProfile.careerPath || "Set your profile"}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setShowUserProfile(!showUserProfile)}
+                      className="text-gray-300 hover:text-white transition-colors"
+                    >
+                      <Settings className="h-4 w-4" />
+                    </button>
+                  </div>
+                  
+                  {/* Expanded profile details (toggle visibility) */}
+                  <AnimatePresence>
+                    {showUserProfile && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="mt-3 overflow-hidden"
+                      >
+                        <div className="p-2 bg-gray-800 rounded-lg text-xs space-y-2">
+                          {userProfile.currentSkillLevel && (
+                            <div>
+                              <span className="text-gray-400">Skill Level:</span>
+                              <span className="text-gray-200 ml-1">{userProfile.currentSkillLevel}</span>
+                            </div>
+                          )}
+                          {userProfile.preferredLearningStyle && (
+                            <div>
+                              <span className="text-gray-400">Learning Style:</span>
+                              <span className="text-gray-200 ml-1">{userProfile.preferredLearningStyle}</span>
+                            </div>
+                          )}
+                          {userProfile.shortTermGoals && (
+                            <div>
+                              <span className="text-gray-400">Short-term:</span>
+                              <span className="text-gray-200 ml-1">{userProfile.shortTermGoals}</span>
+                            </div>
+                          )}
+                          <button className="w-full p-1 rounded bg-blue-600 hover:bg-blue-500 text-white transition mt-2">
+                            Edit Profile
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+              
               <div className="p-2">
                 <button 
                   onClick={startNewChat}
@@ -258,7 +367,7 @@ const Chatbot = () => {
                 </button>
               </div>
               
-              <div className="flex-1 overflow-y-auto max-h-[calc(100%-125px)]">
+              <div className="flex-1 overflow-y-auto max-h-[calc(100%-205px)]">
                 {recentChats.length === 0 ? (
                   <div className="p-4 text-gray-400 text-center">
                     No recent chats
@@ -335,7 +444,16 @@ const Chatbot = () => {
                   <Bot className="h-8 w-8 text-white" />
                 </div>
                 <h2 className="text-xl font-semibold text-white">AssistMe is ready!</h2>
-                <p className="text-gray-400 max-w-md">Ask any question or share what's on your mind.</p>
+                <p className="text-gray-400 max-w-md">
+                  {userProfile?.name 
+                    ? `Hi ${userProfile.name}! Ask any question or share what's on your mind.` 
+                    : "Ask any question or share what's on your mind."}
+                </p>
+                {userProfile?.careerPath && (
+                  <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3 max-w-md">
+                    <p className="text-sm text-blue-300">Personalized for your career path: <span className="font-medium text-blue-200">{userProfile.careerPath}</span></p>
+                  </div>
+                )}
               </div>
             ) : (
               chat.map((msg, index) => (
@@ -367,10 +485,7 @@ const Chatbot = () => {
                           : "bg-gradient-to-r from-gray-800 to-gray-700 text-gray-100 rounded-tl-none border border-blue-500/30 shadow-md"
                       }`}
                     >
-                      <div 
-                        className="message-content"
-                        dangerouslySetInnerHTML={{ __html: formatMessage(msg.text) }}
-                      />
+                      <MessageContent text={msg.text} />
                     </div>
                   </div>
                 </motion.div>
@@ -404,7 +519,11 @@ const Chatbot = () => {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Write your message here..."
+                placeholder={
+                  userProfile?.preferredLearningStyle 
+                    ? `Ask anything in your preferred ${userProfile.preferredLearningStyle} learning style...` 
+                    : "Write your message here..."
+                }
                 rows={1}
                 className="flex-1 resize-none bg-gray-800 border border-gray-700 focus:border-purple-500 text-white p-3 rounded-lg outline-none transition-all min-h-10 max-h-32"
               />
@@ -433,7 +552,8 @@ const Chatbot = () => {
   );
 };
 
-function formatMessage(message) {
+// Helper function for basic message formatting (for user messages)
+function formatSimpleMessage(message) {
   return message
     .replace(/\*\*(.*?)\*\*/g, '<span class="text-blue-500 font-semibold">$1</span>')
     .replace(/\u2022/g, '<span class="text-blue-300">&bull;</span>')
