@@ -98,7 +98,7 @@ const Header = () => {
         {/* Logo */}
         <a className="block w-[12rem] xl:mr-8 flex items-center space-x-2" href="/">
           <img src={"/ai-platform.svg"} width={30} height={30} alt="Brainwave" />
-          <p className="text-lg font-semibold text-gray-400">hitchpath</p>
+          <p className="text-lg font-semibold text-gray-400">h!tchpath</p>
         </a>
 
         {/* Action Buttons */}
