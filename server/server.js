@@ -222,20 +222,17 @@ app.post('/api/contact', async (req, res) => {
   }
 });
 
-// Update user information endpoint
-app.post("/api/user/update", authenticateToken, async (req, res) => {
+// User profile endpoint
+app.get("/api/user/profile", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
-    const updatedData = req.body;
-
-    const user = await User.findByIdAndUpdate(userId, updatedData, { new: true });
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ error: "User not found." });
     }
-
-    res.json({ message: "User information updated successfully.", user });
+    res.json({ user });
   } catch (error) {
-    console.error("Error updating user:", error);
+    console.error("Error fetching user profile:", error);
     res.status(500).json({ error: "Internal server error." });
   }
 });
@@ -339,6 +336,170 @@ app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
   }
 });
 
+// User progress endpoint - Get user's completed steps and saved resources
+app.get("/api/user/progress", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+    
+    res.json({ 
+      completedSteps: user.completedSteps || [], 
+      savedResources: user.savedResources || []
+    });
+  } catch (error) {
+    console.error("Error fetching user progress:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+// Update user progress endpoint - Mark steps as complete/incomplete
+app.post("/api/user/progress", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { stepId, completed } = req.body;
+    
+    if (stepId === undefined) {
+      return res.status(400).json({ error: "Step ID is required." });
+    }
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+    
+    // Initialize completedSteps array if it doesn't exist
+    if (!user.completedSteps) {
+      user.completedSteps = [];
+    }
+    
+    if (completed) {
+      // Add stepId to completedSteps if not already there
+      if (!user.completedSteps.includes(stepId)) {
+        user.completedSteps.push(stepId);
+      }
+    } else {
+      // Remove stepId from completedSteps
+      user.completedSteps = user.completedSteps.filter(id => id !== stepId);
+    }
+    
+    await user.save();
+    res.json({ 
+      message: `Step ${completed ? 'marked as complete' : 'marked as incomplete'}.`,
+      completedSteps: user.completedSteps
+    });
+  } catch (error) {
+    console.error("Error updating user progress:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+// Save/unsave resource endpoint
+app.post("/api/user/save-resource", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { resourceId, saved } = req.body;
+    
+    if (resourceId === undefined) {
+      return res.status(400).json({ error: "Resource ID is required." });
+    }
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+    
+    // Initialize savedResources array if it doesn't exist
+    if (!user.savedResources) {
+      user.savedResources = [];
+    }
+    
+    if (saved) {
+      // Add resourceId to savedResources if not already there
+      if (!user.savedResources.includes(resourceId)) {
+        user.savedResources.push(resourceId);
+      }
+    } else {
+      // Remove resourceId from savedResources
+      user.savedResources = user.savedResources.filter(id => id !== resourceId);
+    }
+    
+    await user.save();
+    res.json({ 
+      message: `Resource ${saved ? 'saved' : 'unsaved'}.`,
+      savedResources: user.savedResources
+    });
+  } catch (error) {
+    console.error("Error updating saved resources:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+// Reset learning path endpoint
+app.post("/api/reset-learning-path", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+    
+    // Reset the learning path and flag
+    user.learningPath = [];
+    user.hasSavedLearningPath = false;
+    
+    await user.save();
+    res.json({ message: "Learning path reset successfully." });
+  } catch (error) {
+    console.error("Error resetting learning path:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+// Get saved resources with details
+app.get("/api/user/saved-resources", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+    
+    // If no saved resources or no learning path, return empty array
+    if (!user.savedResources || !user.learningPath || user.savedResources.length === 0) {
+      return res.json({ savedResources: [] });
+    }
+    
+    // Extract detailed information about saved resources
+    const savedResourcesDetails = [];
+    
+    // Format: "stepId-resourceIndex"
+    user.savedResources.forEach(resourceId => {
+      const [stepId, resourceIndex] = resourceId.split('-').map(Number);
+      
+      // Find the step in learning path
+      const step = user.learningPath.find(s => (s.id || s._id) == stepId);
+      
+      if (step && step.resources && step.resources[resourceIndex]) {
+        savedResourcesDetails.push({
+          id: resourceId,
+          stepTitle: step.title,
+          stepId: stepId,
+          resource: step.resources[resourceIndex]
+        });
+      }
+    });
+    
+    res.json({ savedResources: savedResourcesDetails });
+  } catch (error) {
+    console.error("Error fetching saved resources:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
 
 // Enhanced chatbot endpoint with context awareness and broader capabilities
 app.post("/api/chatbot", authenticateToken, async (req, res) => {
