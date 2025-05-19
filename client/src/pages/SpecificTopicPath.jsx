@@ -15,7 +15,8 @@ import {
   Video, 
   FileText, 
   Code, 
-  GraduationCap 
+  GraduationCap,
+  ArrowLeft
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -30,6 +31,7 @@ const SpecificTopicPath = () => {
   const [savedResources, setSavedResources] = useState([]);
   const [userInfo, setUserInfo] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [showPreviousPaths, setShowPreviousPaths] = useState(true);
   const canvasRef = useRef(null);
 
   // Get resource icon based on URL or title
@@ -211,6 +213,7 @@ const SpecificTopicPath = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setGeneratedPath(data.specificPath || null);
+      setShowPreviousPaths(false);
       fetchPreviousPaths();
     } catch (error) {
       console.error("Error generating path:", error.message);
@@ -363,6 +366,17 @@ const SpecificTopicPath = () => {
     if (!url) return "https://www.google.com/search?q=learning+resources";
     if (!url.startsWith("http")) url = "https://" + url;
     return isValidUrl(url) ? url : "https://www.google.com/search?q=" + encodeURIComponent(url);
+  };
+
+  // Handler to view a specific path
+  const viewPath = (path) => {
+    setGeneratedPath(path);
+    setShowPreviousPaths(false);
+  };
+
+  // Handler to go back to the list of paths
+  const goBackToList = () => {
+    setShowPreviousPaths(true);
   };
 
   const renderTimeline = (path) => {
@@ -621,7 +635,7 @@ const SpecificTopicPath = () => {
             )}
             
             {/* Previous Paths Quick Access */}
-            {previousPaths.length > 0 && !generatedPath && (
+            {previousPaths.length > 0 && showPreviousPaths && (
               <div className="bg-slate-800/50 backdrop-blur-md p-6 rounded-lg border border-slate-700 mb-8">
                 <h4 className="text-lg font-semibold text-white text-center mb-4">Your Previous Paths</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -629,7 +643,7 @@ const SpecificTopicPath = () => {
                     <div 
                       key={path.id} 
                       className="p-3 bg-slate-900/50 rounded border border-blue-700/30 cursor-pointer hover:border-blue-500/50 transition-all duration-300"
-                      onClick={() => setGeneratedPath(path)}
+                      onClick={() => viewPath(path)}
                     >
                       <div className="font-medium text-lg text-cyan-400 mb-1">{path.topic}</div>
                       <div className="text-xs text-slate-400">
@@ -642,12 +656,24 @@ const SpecificTopicPath = () => {
             )}
             
             {/* Generated Learning Path */}
-            {generatedPath && (
+            {generatedPath && !showPreviousPaths && (
               <div className="mt-6">
                 <div className="flex justify-between items-center mb-6">
-                  <Typography variant="h5" className="text-cyan-400 font-bold">
-                    {generatedPath.topic}
-                  </Typography>
+                  <div className="flex items-center">
+                    <Button 
+                      variant="outlined" 
+                      color="primary" 
+                      onClick={goBackToList}
+                      className="mr-4 text-slate-300 border-slate-400/30 hover:bg-slate-900/20"
+                      size="small"
+                    >
+                      <ArrowLeft size={16} className="mr-1" />
+                      Back to All Paths
+                    </Button>
+                    <Typography variant="h5" className="text-cyan-400 font-bold">
+                      {generatedPath.topic}
+                    </Typography>
+                  </div>
                   
                   <div className="flex gap-2">
                     <Tooltip title="Generate a new version">
