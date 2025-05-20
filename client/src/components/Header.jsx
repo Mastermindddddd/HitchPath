@@ -119,7 +119,7 @@ const Header = () => {
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
         scrolled ? "shadow-lg" : ""
       } ${
-        openNavigation ? "bg-gray-900" : "bg-gray-900/95 backdrop-blur-md"
+        openNavigation ? "bg-gray-900" : "bg-gray-900/75 backdrop-blur-md"
       }`}
     >
       <div className="mx-auto flex items-center justify-between px-5 lg:px-8 py-4">
