@@ -59,7 +59,7 @@ const Hero = () => {
   return (
     <section
       ref={heroRef}
-      className="pt-[12rem] -mt-[9rem]"
+      className="pt-[12rem] -mt-[7rem]"
       customPaddings
       id="hero"
     >
