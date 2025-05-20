@@ -209,6 +209,7 @@ const LearningPath = () => {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
+    // ...rest of the canvas code remains the same...
     const particles = [];
     const numParticles = 100;
 
@@ -389,7 +390,7 @@ const LearningPath = () => {
                   const resourceId = `${stepId}-${i}`;
                   const isSaved = savedResources.includes(resourceId);
                   return (
-                    <li key={i} className="flex items-start gap-2 group/resource">
+                    <li key={i} className="flex items-start gap-2">
                       <span className="mt-1">{getResourceIcon(resource)}</span>
                       <a
                         href={validateResourceUrl(resource.url)}
@@ -402,10 +403,12 @@ const LearningPath = () => {
                       <Tooltip title={isSaved ? "Unsave resource" : "Save for later"}>
                         <IconButton 
                           size="small" 
-                          className={`opacity-0 group-hover/resource:opacity-100 transition-opacity ${isSaved ? 'text-yellow-400' : 'text-gray-400'}`}
                           onClick={() => toggleSaveResource(resourceId)}
                         >
-                          <BookmarkIcon fontSize="small" />
+                          <BookmarkIcon 
+                            fontSize="small" 
+                            sx={{ color: isSaved ? '#FACC15' : '#FFFFFF' }}
+                          />
                         </IconButton>
                       </Tooltip>
                     </li>

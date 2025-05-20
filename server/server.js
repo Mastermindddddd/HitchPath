@@ -437,6 +437,27 @@ app.post("/api/user/save-resource", authenticateToken, async (req, res) => {
   }
 });
 
+// Get saved resources endpoint
+app.get("/api/user/saved-resources", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    // Find user and get their saved resources
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+    
+    // Return the list of saved resource IDs
+    res.json({
+      savedResources: user.savedResources || []
+    });
+  } catch (error) {
+    console.error("Error fetching saved resources:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
+
 // Reset learning path endpoint
 app.post("/api/reset-learning-path", authenticateToken, async (req, res) => {
   try {

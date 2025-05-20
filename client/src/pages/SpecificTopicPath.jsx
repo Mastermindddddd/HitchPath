@@ -4,6 +4,7 @@ import { Typography, CircularProgress, Alert, Chip, Tooltip, IconButton } from "
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
+import BookmarkIcon from "@mui/icons-material/Bookmark";            
 import { Button } from "../components/ui/button";
 import { 
   Sparkles, 
@@ -459,13 +460,16 @@ const SpecificTopicPath = () => {
                             {resource.title}
                           </a>
                           <Tooltip title={isSaved ? "Unsave resource" : "Save for later"}>
-                            <div 
-                              className={`opacity-0 group-hover/resource:opacity-100 transition-opacity cursor-pointer ${isSaved ? 'text-yellow-400' : 'text-gray-400'}`}
-                              onClick={() => toggleSaveResource(resourceId)}
-                            >
-                              <Bookmark size={16} />
-                            </div>
-                          </Tooltip>
+                        <IconButton 
+                          size="small" 
+                          onClick={() => toggleSaveResource(resourceId)}
+                        >
+                          <BookmarkIcon 
+                            fontSize="small" 
+                            sx={{ color: isSaved ? '#FACC15' : '#FFFFFF' }}
+                          />
+                        </IconButton>
+                      </Tooltip>
                         </li>
                       );
                     })}
@@ -732,15 +736,6 @@ const SpecificTopicPath = () => {
                       Join Study Groups
                     </Button>
                     
-                    <Button 
-                      variant="outlined" 
-                      component={Link}
-                      to="/generate-specific-topic"
-                      className="text-white border-white/30 hover:bg-white/5"
-                    >
-                      <Sparkles size={16} className="mr-2" />
-                      New Topic Path
-                    </Button>
                   </div>
                 </div>
               </div>
