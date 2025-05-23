@@ -30,6 +30,7 @@ const SpecificTopicPath = () => {
   const [error, setError] = useState(null);
   const [completedSteps, setCompletedSteps] = useState([]);
   const [savedResources, setSavedResources] = useState([]);
+  const [currentPathProgress, setCurrentPathProgress] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [showPreviousPaths, setShowPreviousPaths] = useState(true);
@@ -70,23 +71,25 @@ const SpecificTopicPath = () => {
     }
   };
 
-  const fetchCompletedSteps = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
+  // Replace the fetchCompletedSteps function:
+const fetchPathProgress = async (pathId) => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token || !pathId) return;
 
-      const { data } = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/user/progress`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setCompletedSteps(data.completedSteps || []);
-      setSavedResources(data.savedResources || []);
-    } catch (err) {
-      console.error("Failed to load progress:", err);
-    }
-  };
+    const { data } = await axios.get(
+      `${import.meta.env.VITE_API_URL}/api/user/progress/specific/${pathId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    setCompletedSteps(data.completedSteps || []);
+    setSavedResources(data.savedResources || []);
+    setCurrentPathProgress(pathId);
+  } catch (err) {
+    console.error("Failed to load path progress:", err);
+  }
+};
 
   const fetchPreviousPaths = async () => {
     try {
@@ -109,7 +112,6 @@ const SpecificTopicPath = () => {
   useEffect(() => {
     fetchPreviousPaths();
     fetchUserInfo();
-    fetchCompletedSteps();
 
     // Initialize canvas and particles
     const canvas = canvasRef.current;
@@ -201,28 +203,36 @@ const SpecificTopicPath = () => {
     };
   }, []);
 
-  const generatePath = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("User not authenticated");
+  // Replace the existing generatePath function:
+const generatePath = async () => {
+  setLoading(true);
+  setError(null);
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("User not authenticated");
 
-      const { data } = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/specific-path/generate`,
-        { topic, details },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setGeneratedPath(data.specificPath || null);
-      setShowPreviousPaths(false);
-      fetchPreviousPaths();
-    } catch (error) {
-      console.error("Error generating path:", error.message);
-      setError("Failed to generate your learning path. Please try again.");
-    } finally {
-      setLoading(false);
+    const { data } = await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/specific-path/generate`,
+      { topic, details },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const newPath = data.specificPath || null;
+    setGeneratedPath(newPath);
+    setShowPreviousPaths(false);
+    
+    // Fetch progress for the newly generated path
+    if (newPath) {
+      fetchPathProgress(newPath.id);
     }
-  };
+    
+    fetchPreviousPaths();
+  } catch (error) {
+    console.error("Error generating path:", error.message);
+    setError("Failed to generate your learning path. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const refreshPath = async () => {
     if (!generatedPath) return;
@@ -249,68 +259,77 @@ const SpecificTopicPath = () => {
   };
 
   const toggleStepCompletion = async (stepId) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("User not authenticated");
+  if (!generatedPath) return;
+  
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("User not authenticated");
 
-      const isCompleted = completedSteps.includes(stepId);
-      
-      // Optimistic UI update
-      if (isCompleted) {
-        setCompletedSteps(completedSteps.filter(id => id !== stepId));
-      } else {
-        setCompletedSteps([...completedSteps, stepId]);
-      }
-
-      // Send to server
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/user/progress`,
-        {
-          stepId,
-          completed: !isCompleted
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-    } catch (err) {
-      console.error("Failed to update progress:", err);
-      // Revert optimistic update on error
-      fetchCompletedSteps();
+    const isCompleted = completedSteps.includes(stepId);
+    
+    // Optimistic UI update
+    if (isCompleted) {
+      setCompletedSteps(completedSteps.filter(id => id !== stepId));
+    } else {
+      setCompletedSteps([...completedSteps, stepId]);
     }
-  };
+
+    // Send to server with path-specific endpoint
+    await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/user/progress/specific/${generatedPath.id}`,
+      {
+        stepId,
+        completed: !isCompleted
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+  } catch (err) {
+    console.error("Failed to update progress:", err);
+    // Revert optimistic update on error
+    if (generatedPath) {
+      fetchPathProgress(generatedPath.id);
+    }
+  }
+};
+
 
   const toggleSaveResource = async (resourceId) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("User not authenticated");
+  if (!generatedPath) return;
+  
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("User not authenticated");
 
-      const isSaved = savedResources.includes(resourceId);
-      
-      // Optimistic UI update
-      if (isSaved) {
-        setSavedResources(savedResources.filter(id => id !== resourceId));
-      } else {
-        setSavedResources([...savedResources, resourceId]);
-      }
-
-      // Send to server
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/user/save-resource`,
-        {
-          resourceId,
-          saved: !isSaved
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-    } catch (err) {
-      console.error("Failed to save resource:", err);
-      // Revert optimistic update on error
-      fetchCompletedSteps();
+    const isSaved = savedResources.includes(resourceId);
+    
+    // Optimistic UI update
+    if (isSaved) {
+      setSavedResources(savedResources.filter(id => id !== resourceId));
+    } else {
+      setSavedResources([...savedResources, resourceId]);
     }
-  };
+
+    // Send to server with path-specific endpoint
+    await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/user/save-resource/specific/${generatedPath.id}`,
+      {
+        resourceId,
+        saved: !isSaved
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+  } catch (err) {
+    console.error("Failed to save resource:", err);
+    // Revert optimistic update on error
+    if (generatedPath) {
+      fetchPathProgress(generatedPath.id);
+    }
+  }
+};
 
   // Calculate progress percentage
   const calculateProgress = () => {
@@ -371,9 +390,11 @@ const SpecificTopicPath = () => {
 
   // Handler to view a specific path
   const viewPath = (path) => {
-    setGeneratedPath(path);
-    setShowPreviousPaths(false);
-  };
+  setGeneratedPath(path);
+  setShowPreviousPaths(false);
+  // Fetch progress for this specific path
+  fetchPathProgress(path.id);
+};
 
   // Handler to go back to the list of paths
   const goBackToList = () => {

@@ -70,7 +70,12 @@ const userSchema = new mongoose.Schema({
     type: [String], 
     default: [] 
   },
-  
+
+  // Add this field to your userSchema, after savedResources:
+  pathProgress: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
 
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
