@@ -316,11 +316,13 @@ app.post("/api/user/progress", authenticateToken, async (req, res) => {
   }
 });
 
-// Save/unsave resource for main learning path (add this endpoint)
 app.post("/api/user/save-resource", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const { resourceId, saved } = req.body;
+    
+    // Ensure resourceId is a string
+    const resourceIdStr = String(resourceId);
     
     const user = await User.findById(userId);
     if (!user) {
@@ -328,11 +330,11 @@ app.post("/api/user/save-resource", authenticateToken, async (req, res) => {
     }
     
     if (saved) {
-      if (!user.savedResources.includes(resourceId)) {
-        user.savedResources.push(resourceId);
+      if (!user.savedResources.includes(resourceIdStr)) {
+        user.savedResources.push(resourceIdStr);
       }
     } else {
-      user.savedResources = user.savedResources.filter(id => id !== resourceId);
+      user.savedResources = user.savedResources.filter(id => String(id) !== resourceIdStr);
     }
     
     await user.save();
@@ -567,7 +569,6 @@ app.post("/api/reset-learning-path", authenticateToken, async (req, res) => {
   }
 });
 
-// Update the existing /api/user/saved-resources endpoint to use the correct field
 app.get("/api/user/saved-resources", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -577,29 +578,10 @@ app.get("/api/user/saved-resources", authenticateToken, async (req, res) => {
       return res.status(404).json({ error: "User not found." });
     }
     
-    // Use savedResources field instead of pathProgress
-    if (!user.savedResources || !user.learningPath || user.savedResources.length === 0) {
-      return res.json({ savedResources: [] });
-    }
+    // Ensure savedResources is an array of strings
+    const savedResourceIds = (user.savedResources || []).map(id => String(id));
     
-    const savedResourcesDetails = [];
-    
-    user.savedResources.forEach(resourceId => {
-      const [stepId, resourceIndex] = resourceId.split('-').map(Number);
-      
-      const step = user.learningPath.find(s => (s.id || s._id) == stepId);
-      
-      if (step && step.resources && step.resources[resourceIndex]) {
-        savedResourcesDetails.push({
-          id: resourceId,
-          stepTitle: step.title,
-          stepId: stepId,
-          resource: step.resources[resourceIndex]
-        });
-      }
-    });
-    
-    res.json({ savedResources: savedResourcesDetails });
+    res.json({ savedResources: savedResourceIds });
   } catch (error) {
     console.error("Error fetching saved resources:", error);
     res.status(500).json({ error: "Internal server error." });

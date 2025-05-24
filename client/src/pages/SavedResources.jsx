@@ -97,20 +97,22 @@ const SavedResources = () => {
       // Extract resource details based on saved IDs
       const details = [];
       savedResourceIds.forEach(savedId => {
-        const [stepId, resourceIndex] = savedId.split('-').map(part => 
-          isNaN(parseInt(part)) ? part : parseInt(part)
-        );
-        
-        const step = learningPath.find(s => (s.id || s.id === 0) ? s.id === stepId : false);
-        
-        if (step && step.resources && step.resources[resourceIndex]) {
-          details.push({
-            id: savedId,
-            ...step.resources[resourceIndex],
-            stepTitle: step.title,
-            stepId: step.id
-          });
-        }
+      // Convert savedId to string if it's not already
+      const savedIdStr = String(savedId);
+      const [stepId, resourceIndex] = savedIdStr.split('-').map(part => 
+        isNaN(parseInt(part)) ? part : parseInt(part)
+      );
+  
+      const step = learningPath.find(s => (s.id || s.id === 0) ? s.id === stepId : false);
+  
+      if (step && step.resources && step.resources[resourceIndex]) {
+        details.push({
+        id: savedIdStr, // Use the string version
+        ...step.resources[resourceIndex],
+        stepTitle: step.title,
+        stepId: step.id
+        });
+       }
       });
       
       setResourceDetails(details);
