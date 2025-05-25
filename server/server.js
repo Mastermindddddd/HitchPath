@@ -260,94 +260,6 @@ app.get("/api/user-info/completed", authenticateToken, async (req, res) => {
   }
 });
 
-// Get progress for main learning path (add this endpoint)
-app.get("/api/user/progress", authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const user = await User.findById(userId);
-    
-    if (!user) {
-      return res.status(404).json({ error: "User not found." });
-    }
-    
-    res.json({
-      completedSteps: user.completedSteps || [],
-      savedResources: user.savedResources || []
-    });
-  } catch (error) {
-    console.error("Error fetching progress:", error);
-    res.status(500).json({ error: "Internal server error." });
-  }
-});
-
-// Update progress for main learning path (add this endpoint)
-app.post("/api/user/progress", authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const { stepId, completed } = req.body;
-    
-    if (stepId === undefined) {
-      return res.status(400).json({ error: "Step ID is required." });
-    }
-    
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found." });
-    }
-    
-    if (completed) {
-      // Add stepId to completedSteps if not already there
-      if (!user.completedSteps.includes(stepId)) {
-        user.completedSteps.push(stepId);
-      }
-    } else {
-      // Remove stepId from completedSteps
-      user.completedSteps = user.completedSteps.filter(id => id !== stepId);
-    }
-    
-    await user.save();
-    res.json({ 
-      message: `Step ${completed ? 'marked as complete' : 'marked as incomplete'}.`,
-      completedSteps: user.completedSteps
-    });
-  } catch (error) {
-    console.error("Error updating progress:", error);
-    res.status(500).json({ error: "Internal server error." });
-  }
-});
-
-app.post("/api/user/save-resource", authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const { resourceId, saved } = req.body;
-    
-    // Ensure resourceId is a string
-    const resourceIdStr = String(resourceId);
-    
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found." });
-    }
-    
-    if (saved) {
-      if (!user.savedResources.includes(resourceIdStr)) {
-        user.savedResources.push(resourceIdStr);
-      }
-    } else {
-      user.savedResources = user.savedResources.filter(id => String(id) !== resourceIdStr);
-    }
-    
-    await user.save();
-    res.json({ 
-      message: `Resource ${saved ? 'saved' : 'unsaved'}.`,
-      savedResources: user.savedResources
-    });
-  } catch (error) {
-    console.error("Error saving resource:", error);
-    res.status(500).json({ error: "Internal server error." });
-  }
-});
-
 app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -424,125 +336,160 @@ app.get("/api/generate-learning-path", authenticateToken, async (req, res) => {
   }
 });
 
-// Get progress for a specific path
-app.get("/api/user/progress/:pathType/:pathId", authenticateToken, async (req, res) => {
+// User progress endpoint - Get user's completed steps and saved resources
+app.get("/api/user/progress", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
-    const { pathType, pathId } = req.params;
     const user = await User.findById(userId);
     
     if (!user) {
       return res.status(404).json({ error: "User not found." });
     }
     
-    // Initialize progress objects if they don't exist
-    if (!user.pathProgress) {
-      user.pathProgress = {};
-    }
-    
-    const pathKey = `${pathType}-${pathId}`;
-    const pathProgress = user.pathProgress[pathKey] || {
-      completedSteps: [],
-      savedResources: []
-    };
-    
-    res.json(pathProgress);
+    res.json({
+      completedSteps: user.completedSteps || [],
+      savedResources: user.savedResources || [],
+      // Also return path-specific progress for better tracking
+      pathProgress: user.pathProgress || {}
+    });
   } catch (error) {
-    console.error("Error fetching path progress:", error);
+    console.error("Error fetching user progress:", error);
     res.status(500).json({ error: "Internal server error." });
   }
 });
 
-// Update progress for a specific path
-app.post("/api/user/progress/:pathType/:pathId", authenticateToken, async (req, res) => {
+// Update user progress endpoint - Mark steps as complete/incomplete
+app.post("/api/user/progress", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
-    const { pathType, pathId } = req.params;
-    const { stepId, completed } = req.body;
+    const { stepId, completed, pathId } = req.body;
     
     if (stepId === undefined) {
       return res.status(400).json({ error: "Step ID is required." });
     }
     
     const user = await User.findById(userId);
+    
     if (!user) {
       return res.status(404).json({ error: "User not found." });
     }
     
-    // Initialize progress objects if they don't exist
-    if (!user.pathProgress) {
-      user.pathProgress = {};
+    // Initialize completedSteps array if it doesn't exist
+    if (!user.completedSteps) {
+      user.completedSteps = [];
     }
     
-    const pathKey = `${pathType}-${pathId}`;
-    if (!user.pathProgress[pathKey]) {
-      user.pathProgress[pathKey] = {
-        completedSteps: [],
-        savedResources: []
-      };
+    // Initialize pathProgress object if it doesn't exist
+    if (!user.pathProgress) {
+      user.pathProgress = {};
     }
     
     if (completed) {
       // Add stepId to completedSteps if not already there
-      if (!user.pathProgress[pathKey].completedSteps.includes(stepId)) {
-        user.pathProgress[pathKey].completedSteps.push(stepId);
+      if (!user.completedSteps.includes(stepId)) {
+        user.completedSteps.push(stepId);
+      }
+      
+      // Track path-specific progress
+      if (pathId) {
+        if (!user.pathProgress[pathId]) {
+          user.pathProgress[pathId] = { completedSteps: [] };
+        }
+        
+        // Extract the step number from the path-specific stepId (format: pathId-stepId)
+        const actualStepId = stepId.replace(`${pathId}-`, '');
+        
+        if (!user.pathProgress[pathId].completedSteps.includes(actualStepId)) {
+          user.pathProgress[pathId].completedSteps.push(actualStepId);
+        }
       }
     } else {
       // Remove stepId from completedSteps
-      user.pathProgress[pathKey].completedSteps = user.pathProgress[pathKey].completedSteps.filter(id => id !== stepId);
+      user.completedSteps = user.completedSteps.filter(id => id !== stepId);
+      
+      // Remove from path-specific progress
+      if (pathId && user.pathProgress[pathId]) {
+        const actualStepId = stepId.replace(`${pathId}-`, '');
+        user.pathProgress[pathId].completedSteps = user.pathProgress[pathId].completedSteps.filter(
+          id => id !== actualStepId
+        );
+      }
     }
     
     await user.save();
-    res.json({ 
+    
+    res.json({
       message: `Step ${completed ? 'marked as complete' : 'marked as incomplete'}.`,
-      completedSteps: user.pathProgress[pathKey].completedSteps
+      completedSteps: user.completedSteps,
+      pathProgress: user.pathProgress
     });
   } catch (error) {
-    console.error("Error updating path progress:", error);
+    console.error("Error updating user progress:", error);
     res.status(500).json({ error: "Internal server error." });
   }
 });
 
-// Save/unsave resource for a specific path
-app.post("/api/user/save-resource/:pathType/:pathId", authenticateToken, async (req, res) => {
+// Save/unsave resource endpoint
+app.post("/api/user/save-resource", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
-    const { pathType, pathId } = req.params;
     const { resourceId, saved } = req.body;
     
+    if (resourceId === undefined) {
+      return res.status(400).json({ error: "Resource ID is required." });
+    }
+    
     const user = await User.findById(userId);
+    
     if (!user) {
       return res.status(404).json({ error: "User not found." });
     }
     
-    // Initialize progress objects if they don't exist
-    if (!user.pathProgress) {
-      user.pathProgress = {};
-    }
-    
-    const pathKey = `${pathType}-${pathId}`;
-    if (!user.pathProgress[pathKey]) {
-      user.pathProgress[pathKey] = {
-        completedSteps: [],
-        savedResources: []
-      };
+    // Initialize savedResources array if it doesn't exist
+    if (!user.savedResources) {
+      user.savedResources = [];
     }
     
     if (saved) {
-      if (!user.pathProgress[pathKey].savedResources.includes(resourceId)) {
-        user.pathProgress[pathKey].savedResources.push(resourceId);
+      // Add resourceId to savedResources if not already there
+      if (!user.savedResources.includes(resourceId)) {
+        user.savedResources.push(resourceId);
       }
     } else {
-      user.pathProgress[pathKey].savedResources = user.pathProgress[pathKey].savedResources.filter(id => id !== resourceId);
+      // Remove resourceId from savedResources
+      user.savedResources = user.savedResources.filter(id => id !== resourceId);
     }
     
     await user.save();
-    res.json({ 
+    
+    res.json({
       message: `Resource ${saved ? 'saved' : 'unsaved'}.`,
-      savedResources: user.pathProgress[pathKey].savedResources
+      savedResources: user.savedResources
     });
   } catch (error) {
-    console.error("Error saving resource:", error);
+    console.error("Error updating saved resources:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+// Get saved resources endpoint
+app.get("/api/user/saved-resources", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    // Find user and get their saved resources
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+    
+    // Return the list of saved resource IDs
+    res.json({
+      savedResources: user.savedResources || []
+    });
+  } catch (error) {
+    console.error("Error fetching saved resources:", error);
     res.status(500).json({ error: "Internal server error." });
   }
 });
@@ -569,6 +516,7 @@ app.post("/api/reset-learning-path", authenticateToken, async (req, res) => {
   }
 });
 
+// Update this existing endpoint
 app.get("/api/user/saved-resources", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -578,12 +526,96 @@ app.get("/api/user/saved-resources", authenticateToken, async (req, res) => {
       return res.status(404).json({ error: "User not found." });
     }
     
-    // Ensure savedResources is an array of strings
-    const savedResourceIds = (user.savedResources || []).map(id => String(id));
+    // Get main learning path saved resources
+    const mainSavedResources = (user.savedResources || []).map(id => String(id));
     
-    res.json({ savedResources: savedResourceIds });
+    // Get path-specific saved resources
+    const pathSpecificResources = [];
+    if (user.pathProgress) {
+      Object.keys(user.pathProgress).forEach(pathKey => {
+        const pathProgress = user.pathProgress[pathKey];
+        if (pathProgress.savedResources) {
+          pathSpecificResources.push(...pathProgress.savedResources);
+        }
+      });
+    }
+    
+    // Combine all saved resources
+    const allSavedResources = [...mainSavedResources, ...pathSpecificResources];
+    
+    res.json({ 
+      savedResources: allSavedResources,
+      mainPathResources: mainSavedResources,
+      pathSpecificResources: pathSpecificResources
+    });
   } catch (error) {
     console.error("Error fetching saved resources:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+app.get("/api/user/path-progress/:pathId", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { pathId } = req.params;
+    
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+    
+    const pathProgress = user.pathProgress?.[pathId] || { completedSteps: [] };
+    
+    res.json({
+      pathId,
+      progress: pathProgress
+    });
+  } catch (error) {
+    console.error("Error fetching path progress:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+app.post("/api/user/save-resource/specific/:pathId", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { pathId } = req.params;
+    const { resourceId, saved } = req.body;
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+    
+    // Initialize progress objects if they don't exist
+    if (!user.pathProgress) {
+      user.pathProgress = {};
+    }
+    
+    const pathKey = `specific-${pathId}`;
+    if (!user.pathProgress[pathKey]) {
+      user.pathProgress[pathKey] = {
+        completedSteps: [],
+        savedResources: []
+      };
+    }
+    
+    if (saved) {
+      if (!user.pathProgress[pathKey].savedResources.includes(resourceId)) {
+        user.pathProgress[pathKey].savedResources.push(resourceId);
+      }
+    } else {
+      user.pathProgress[pathKey].savedResources = user.pathProgress[pathKey].savedResources.filter(id => id !== resourceId);
+    }
+    
+    await user.save();
+    res.json({ 
+      message: `Resource ${saved ? 'saved' : 'unsaved'}.`,
+      savedResources: user.pathProgress[pathKey].savedResources
+    });
+  } catch (error) {
+    console.error("Error saving specific path resource:", error);
     res.status(500).json({ error: "Internal server error." });
   }
 });

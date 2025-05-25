@@ -30,7 +30,6 @@ const SpecificTopicPath = () => {
   const [error, setError] = useState(null);
   const [completedSteps, setCompletedSteps] = useState([]);
   const [savedResources, setSavedResources] = useState([]);
-  const [currentPathProgress, setCurrentPathProgress] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [showPreviousPaths, setShowPreviousPaths] = useState(true);
@@ -71,25 +70,23 @@ const SpecificTopicPath = () => {
     }
   };
 
-  // Replace the fetchCompletedSteps function:
-const fetchPathProgress = async (pathId) => {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token || !pathId) return;
+  const fetchCompletedSteps = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
-    const { data } = await axios.get(
-      `${import.meta.env.VITE_API_URL}/api/user/progress/specific/${pathId}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    setCompletedSteps(data.completedSteps || []);
-    setSavedResources(data.savedResources || []);
-    setCurrentPathProgress(pathId);
-  } catch (err) {
-    console.error("Failed to load path progress:", err);
-  }
-};
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/user/progress`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setCompletedSteps(data.completedSteps || []);
+      setSavedResources(data.savedResources || []);
+    } catch (err) {
+      console.error("Failed to load progress:", err);
+    }
+  };
 
   const fetchPreviousPaths = async () => {
     try {
@@ -112,6 +109,7 @@ const fetchPathProgress = async (pathId) => {
   useEffect(() => {
     fetchPreviousPaths();
     fetchUserInfo();
+    fetchCompletedSteps();
 
     // Initialize canvas and particles
     const canvas = canvasRef.current;
@@ -203,36 +201,28 @@ const fetchPathProgress = async (pathId) => {
     };
   }, []);
 
-  // Replace the existing generatePath function:
-const generatePath = async () => {
-  setLoading(true);
-  setError(null);
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) throw new Error("User not authenticated");
+  const generatePath = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("User not authenticated");
 
-    const { data } = await axios.post(
-      `${import.meta.env.VITE_API_URL}/api/specific-path/generate`,
-      { topic, details },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    const newPath = data.specificPath || null;
-    setGeneratedPath(newPath);
-    setShowPreviousPaths(false);
-    
-    // Fetch progress for the newly generated path
-    if (newPath) {
-      fetchPathProgress(newPath.id);
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/specific-path/generate`,
+        { topic, details },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setGeneratedPath(data.specificPath || null);
+      setShowPreviousPaths(false);
+      fetchPreviousPaths();
+    } catch (error) {
+      console.error("Error generating path:", error.message);
+      setError("Failed to generate your learning path. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    
-    fetchPreviousPaths();
-  } catch (error) {
-    console.error("Error generating path:", error.message);
-    setError("Failed to generate your learning path. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const refreshPath = async () => {
     if (!generatedPath) return;
@@ -259,117 +249,111 @@ const generatePath = async () => {
   };
 
   const toggleStepCompletion = async (stepId) => {
-  if (!generatedPath) return;
-  
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) throw new Error("User not authenticated");
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("User not authenticated");
 
-    const isCompleted = completedSteps.includes(stepId);
-    
-    // Optimistic UI update
-    if (isCompleted) {
-      setCompletedSteps(completedSteps.filter(id => id !== stepId));
-    } else {
-      setCompletedSteps([...completedSteps, stepId]);
-    }
-
-    // Send to server with path-specific endpoint
-    await axios.post(
-      `${import.meta.env.VITE_API_URL}/api/user/progress/specific/${generatedPath.id}`,
-      {
-        stepId,
-        completed: !isCompleted
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` },
+      const isCompleted = completedSteps.includes(stepId);
+      
+      // Optimistic UI update
+      if (isCompleted) {
+        setCompletedSteps(completedSteps.filter(id => id !== stepId));
+      } else {
+        setCompletedSteps([...completedSteps, stepId]);
       }
-    );
-  } catch (err) {
-    console.error("Failed to update progress:", err);
-    // Revert optimistic update on error
-    if (generatedPath) {
-      fetchPathProgress(generatedPath.id);
-    }
-  }
-};
 
+      // Send to server
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/user/progress`,
+        {
+          stepId,
+          completed: !isCompleted
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+    } catch (err) {
+      console.error("Failed to update progress:", err);
+      // Revert optimistic update on error
+      fetchCompletedSteps();
+    }
+  };
 
   const toggleSaveResource = async (resourceId) => {
-  if (!generatedPath) return;
-  
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) throw new Error("User not authenticated");
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("User not authenticated");
 
-    const isSaved = savedResources.includes(resourceId);
-    
-    // Optimistic UI update
-    if (isSaved) {
-      setSavedResources(savedResources.filter(id => id !== resourceId));
-    } else {
-      setSavedResources([...savedResources, resourceId]);
-    }
-
-    // Send to server with path-specific endpoint
-    await axios.post(
-      `${import.meta.env.VITE_API_URL}/api/user/save-resource/specific/${generatedPath.id}`,
-      {
-        resourceId,
-        saved: !isSaved
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` },
+      const isSaved = savedResources.includes(resourceId);
+      
+      // Optimistic UI update
+      if (isSaved) {
+        setSavedResources(savedResources.filter(id => id !== resourceId));
+      } else {
+        setSavedResources([...savedResources, resourceId]);
       }
-    );
-  } catch (err) {
-    console.error("Failed to save resource:", err);
-    // Revert optimistic update on error
-    if (generatedPath) {
-      fetchPathProgress(generatedPath.id);
+
+      // Send to server
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/user/save-resource`,
+        {
+          resourceId,
+          saved: !isSaved
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+    } catch (err) {
+      console.error("Failed to save resource:", err);
+      // Revert optimistic update on error
+      fetchCompletedSteps();
     }
-  }
-};
+  };
 
   // Calculate progress percentage
   const calculateProgress = () => {
-    if (!generatedPath || !generatedPath.learningPath.length) return 0;
-    
-    const pathStepIds = generatedPath.learningPath.map((step, index) => 
-      step.id || `special-${generatedPath.id}-${index + 1}`
-    );
-    
-    const completedPathSteps = completedSteps.filter(stepId => 
-      pathStepIds.includes(stepId)
-    );
-    
-    return Math.round((completedPathSteps.length / pathStepIds.length) * 100);
-  };
+  if (!generatedPath || !generatedPath.learningPath.length) return 0;
+  
+  // Create path-specific step IDs
+  const pathStepIds = generatedPath.learningPath.map((step, index) => 
+    `${generatedPath.id}-${step.id || index + 1}`
+  );
+  
+  const completedPathSteps = completedSteps.filter(stepId => 
+    pathStepIds.includes(stepId)
+  );
+  
+  return Math.round((completedPathSteps.length / pathStepIds.length) * 100);
+};
+
 
   // Estimate time to complete remaining steps
   const estimateTimeRemaining = () => {
-    if (!generatedPath || !generatedPath.learningPath.length) return "0";
-    
-    const pathStepIds = generatedPath.learningPath.map((step, index) => 
-      step.id || `special-${generatedPath.id}-${index + 1}`
-    );
-    
-    const completedPathSteps = completedSteps.filter(stepId => 
-      pathStepIds.includes(stepId)
-    );
-    
-    if (completedPathSteps.length === pathStepIds.length) return "0";
-    
-    // Assume average of 2 weeks per step, adjust based on pace
-    const weeksPerStep = userInfo?.paceOfLearning === 'fast' ? 1 : 
-                        userInfo?.paceOfLearning === 'slow' ? 3 : 2;
-    
-    const remainingSteps = pathStepIds.length - completedPathSteps.length;
-    const remainingWeeks = remainingSteps * weeksPerStep;
-    
-    return remainingWeeks <= 4 ? `${remainingWeeks} weeks` : 
-           `${Math.round(remainingWeeks / 4)} months`;
-  };
+  if (!generatedPath || !generatedPath.learningPath.length) return "0";
+  
+  // Create path-specific step IDs
+  const pathStepIds = generatedPath.learningPath.map((step, index) => 
+    `${generatedPath.id}-${step.id || index + 1}`
+  );
+  
+  const completedPathSteps = completedSteps.filter(stepId => 
+    pathStepIds.includes(stepId)
+  );
+  
+  if (completedPathSteps.length === pathStepIds.length) return "0";
+  
+  // Assume average of 2 weeks per step, adjust based on pace
+  const weeksPerStep = userInfo?.paceOfLearning === 'fast' ? 1 : 
+                      userInfo?.paceOfLearning === 'slow' ? 3 : 2;
+  
+  const remainingSteps = pathStepIds.length - completedPathSteps.length;
+  const remainingWeeks = remainingSteps * weeksPerStep;
+  
+  return remainingWeeks <= 4 ? `${remainingWeeks} weeks` : 
+         `${Math.round(remainingWeeks / 4)} months`;
+};
 
   // Validate URL function
   const isValidUrl = (url) => {
@@ -390,130 +374,131 @@ const generatePath = async () => {
 
   // Handler to view a specific path
   const viewPath = (path) => {
-  setGeneratedPath(path);
-  setShowPreviousPaths(false);
-  // Fetch progress for this specific path
-  fetchPathProgress(path.id);
-};
+    setGeneratedPath(path);
+    setShowPreviousPaths(false);
+  };
 
   // Handler to go back to the list of paths
   const goBackToList = () => {
     setShowPreviousPaths(true);
   };
 
-  const renderTimeline = (path) => {
-    if (!path || !path.learningPath) return null;
+  // In the renderTimeline function, update the stepId generation:
+const renderTimeline = (path) => {
+  if (!path || !path.learningPath) return null;
 
-    return (
-      <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:w-1 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-blue-500 before:to-transparent mt-8">
-        {path.learningPath.map((step, index) => {
-          const stepId = step.id || `special-${path.id}-${index + 1}`;
-          const isCompleted = completedSteps.includes(stepId);
-          
-          return (
+  return (
+    <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:w-1 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-blue-500 before:to-transparent mt-8">
+      {path.learningPath.map((step, index) => {
+        // Create path-specific step ID
+        const stepId = `${path.id}-${step.id || index + 1}`;
+        const isCompleted = completedSteps.includes(stepId);
+        
+        return (
+          <div
+            key={stepId}
+            className={`relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group ${isCompleted ? 'opacity-90' : 'opacity-100'}`}
+          >
+            {/* Icon with Step Number */}
             <div
-              key={stepId}
-              className={`relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group ${isCompleted ? 'opacity-90' : 'opacity-100'}`}
-            >
-              {/* Icon with Step Number */}
-              <div
-                className={`flex items-center justify-center w-10 h-10 rounded-full border shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 ${
-                  isCompleted 
-                    ? 'bg-green-600 border-green-300 cursor-pointer' 
-                    : 'bg-blue-600 border-white cursor-pointer'
-                } text-white font-bold`}
-                onClick={() => toggleStepCompletion(stepId)}
-              >
-                {isCompleted ? <CheckCircle size={20} /> : index + 1}
-              </div>
-
-              {/* Card */}
-              <div className={`w-full sm:w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] backdrop-blur-md p-3 sm:p-4 rounded border shadow text-sm sm:text-base mt-4 sm:mt-0 ${
+              className={`flex items-center justify-center w-10 h-10 rounded-full border shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 ${
                 isCompleted 
-                  ? 'bg-slate-800/30 border-green-700/50' 
-                  : 'bg-slate-800/50 border-slate-200'
-              }`}>
-                <div className="flex items-center justify-between space-x-2 mb-1">
-                  <div className="font-semibold text-white flex items-center gap-2">
-                    {isCompleted && <CheckCircle size={16} className="text-green-500" />}
-                    <span>{step.title}</span>
-                    {index === 0 && !isCompleted && (
-                      <Chip 
-                        label="Start Here" 
-                        size="small" 
-                        className="bg-green-700 text-white text-xs ml-2"
-                      />
-                    )}
-                  </div>
-                  <time className="text-xs font-medium text-indigo-400">
-                    {step.milestone || `Week ${(index + 1) * 2}`}
-                  </time>
+                  ? 'bg-green-600 border-green-300 cursor-pointer' 
+                  : 'bg-blue-600 border-white cursor-pointer'
+              } text-white font-bold`}
+              onClick={() => toggleStepCompletion(stepId)}
+            >
+              {isCompleted ? <CheckCircle size={20} /> : index + 1}
+            </div>
+
+            {/* Card */}
+            <div className={`w-full sm:w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] backdrop-blur-md p-3 sm:p-4 rounded border shadow text-sm sm:text-base mt-4 sm:mt-0 ${
+              isCompleted 
+                ? 'bg-slate-800/30 border-green-700/50' 
+                : 'bg-slate-800/50 border-slate-200'
+            }`}>
+              <div className="flex items-center justify-between space-x-2 mb-1">
+                <div className="font-semibold text-white flex items-center gap-2">
+                  {isCompleted && <CheckCircle size={16} className="text-green-500" />}
+                  <span>{step.title}</span>
+                  {index === 0 && !isCompleted && (
+                    <Chip 
+                      label="Start Here" 
+                      size="small" 
+                      className="bg-green-700 text-white text-xs ml-2"
+                    />
+                  )}
                 </div>
-                
-                <div className="text-slate-300 mb-2">{step.description}</div>
-                
-                {step.tips && step.tips.length > 0 && (
-                  <div className="mt-2 text-sm">
-                    <span className="font-medium text-yellow-400">Pro Tips:</span>
-                    <ul className="list-disc list-inside text-slate-300 ml-1">
-                      {step.tips.map((tip, i) => (
-                        <li key={i} className="text-sm">{tip}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                
-                <div className="text-sm mt-3">
-                  <span className="font-medium text-blue-400">Resources:</span>
-                  <ul className="mt-1 space-y-2">
-                    {step.resources && step.resources.map((resource, i) => {
-                      const resourceId = `${stepId}-${i}`;
-                      const isSaved = savedResources.includes(resourceId);
-                      return (
-                        <li key={i} className="flex items-start gap-2 group/resource">
-                          <span className="mt-1">{getResourceIcon(resource)}</span>
-                          <a
-                            href={validateResourceUrl(resource.url)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-400 hover:text-blue-300 hover:underline flex-grow"
-                          >
-                            {resource.title}
-                          </a>
-                          <Tooltip title={isSaved ? "Unsave resource" : "Save for later"}>
-                        <IconButton 
-                          size="small" 
-                          onClick={() => toggleSaveResource(resourceId)}
-                        >
-                          <BookmarkIcon 
-                            fontSize="small" 
-                            sx={{ color: isSaved ? '#FACC15' : '#FFFFFF' }}
-                          />
-                        </IconButton>
-                      </Tooltip>
-                        </li>
-                      );
-                    })}
+                <time className="text-xs font-medium text-indigo-400">
+                  {step.milestone || `Week ${(index + 1) * 2}`}
+                </time>
+              </div>
+              
+              <div className="text-slate-300 mb-2">{step.description}</div>
+              
+              {step.tips && step.tips.length > 0 && (
+                <div className="mt-2 text-sm">
+                  <span className="font-medium text-yellow-400">Pro Tips:</span>
+                  <ul className="list-disc list-inside text-slate-300 ml-1">
+                    {step.tips.map((tip, i) => (
+                      <li key={i} className="text-sm">{tip}</li>
+                    ))}
                   </ul>
                 </div>
-                
-                {isCompleted && (
-                  <div className="mt-3 text-right">
-                    <Chip 
-                      label="Completed" 
-                      size="small" 
-                      color="success" 
-                      className="bg-green-800/50 text-green-300 text-xs"
-                    />
-                  </div>
-                )}
+              )}
+              
+              <div className="text-sm mt-3">
+                <span className="font-medium text-blue-400">Resources:</span>
+                <ul className="mt-1 space-y-2">
+                  {step.resources && step.resources.map((resource, i) => {
+                    // Create path-specific resource ID
+                    const resourceId = `${path.id}-${stepId}-${i}`;
+                    const isSaved = savedResources.includes(resourceId);
+                    return (
+                      <li key={i} className="flex items-start gap-2 group/resource">
+                        <span className="mt-1">{getResourceIcon(resource)}</span>
+                        <a
+                          href={validateResourceUrl(resource.url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 hover:text-blue-300 hover:underline flex-grow"
+                        >
+                          {resource.title}
+                        </a>
+                        <Tooltip title={isSaved ? "Unsave resource" : "Save for later"}>
+                          <IconButton 
+                            size="small" 
+                            onClick={() => toggleSaveResource(resourceId)}
+                          >
+                            <BookmarkIcon 
+                              fontSize="small" 
+                              sx={{ color: isSaved ? '#FACC15' : '#FFFFFF' }}
+                            />
+                          </IconButton>
+                        </Tooltip>
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
+              
+              {isCompleted && (
+                <div className="mt-3 text-right">
+                  <Chip 
+                    label="Completed" 
+                    size="small" 
+                    color="success" 
+                    className="bg-green-800/50 text-green-300 text-xs"
+                  />
+                </div>
+              )}
             </div>
-          );
-        })}
-      </div>
-    );
-  };
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
   return (
     <section
