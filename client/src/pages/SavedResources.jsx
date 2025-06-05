@@ -338,12 +338,12 @@ const SavedResources = () => {
                   </a>
                   
                   <Tooltip title="Remove from saved">
-                    <IconButton 
-                      size="small" 
+                    <IconButton
+                      size="small"
                       onClick={() => removeResource(resource.id)}
                       className="text-red-400 hover:text-red-300"
                     >
-                      <DeleteIcon fontSize="small" />
+                      <DeleteIcon fontSize="small" className="text-white hover:text-red-300" />
                     </IconButton>
                   </Tooltip>
                 </div>
@@ -448,44 +448,6 @@ const SavedResources = () => {
                 }}
                 size="small"
               />
-              
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                <Chip 
-                  icon={<FilterListIcon />}
-                  label="All"
-                  onClick={() => setFilterType("all")}
-                  color={filterType === "all" ? "primary" : "default"}
-                  className={filterType === "all" ? "bg-blue-600" : "bg-slate-700"}
-                />
-                <Chip 
-                  icon={<OndemandVideoIcon className="text-red-400" />}
-                  label="Videos"
-                  onClick={() => setFilterType("video")}
-                  color={filterType === "video" ? "primary" : "default"}
-                  className={filterType === "video" ? "bg-blue-600" : "bg-slate-700"}
-                />
-                <Chip 
-                  icon={<ArticleIcon className="text-indigo-400" />}
-                  label="Articles"
-                  onClick={() => setFilterType("article")}
-                  color={filterType === "article" ? "primary" : "default"}
-                  className={filterType === "article" ? "bg-blue-600" : "bg-slate-700"}
-                />
-                <Chip 
-                  icon={<CodeIcon className="text-gray-300" />}
-                  label="Code"
-                  onClick={() => setFilterType("code")}
-                  color={filterType === "code" ? "primary" : "default"}
-                  className={filterType === "code" ? "bg-blue-600" : "bg-slate-700"}
-                />
-                <Chip 
-                  icon={<SchoolIcon className="text-green-400" />}
-                  label="Courses"
-                  onClick={() => setFilterType("course")}
-                  color={filterType === "course" ? "primary" : "default"}
-                  className={filterType === "course" ? "bg-blue-600" : "bg-slate-700"}
-                />
-              </div>
             </div>
             
             {/* Resources list */}
