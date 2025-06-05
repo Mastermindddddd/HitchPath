@@ -128,37 +128,38 @@ const LearningPath = () => {
     }
   };
 
-  const toggleStepCompletion = async (stepId) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("User not authenticated");
+  // In the toggleStepCompletion function, replace the existing function with this:
+const toggleStepCompletion = async (stepId) => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("User not authenticated");
 
-      const isCompleted = completedSteps.includes(stepId);
-      
-      // Optimistic UI update
-      if (isCompleted) {
-        setCompletedSteps(completedSteps.filter(id => id !== stepId));
-      } else {
-        setCompletedSteps([...completedSteps, stepId]);
-      }
-
-      // Send to server
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/user/progress`,
-        {
-          stepId,
-          completed: !isCompleted
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-    } catch (err) {
-      console.error("Failed to update progress:", err);
-      // Revert optimistic update on error
-      fetchCompletedSteps();
+    const isCompleted = completedSteps.includes(stepId);
+    
+    // Optimistic UI update
+    if (isCompleted) {
+      setCompletedSteps(completedSteps.filter(id => id !== stepId));
+    } else {
+      setCompletedSteps([...completedSteps, stepId]);
     }
-  };
+
+    // Send to server - make sure stepId is converted to string for consistency
+    await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/user/progress`,
+      {
+        stepId: String(stepId), // Ensure consistent string format
+        completed: !isCompleted
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+  } catch (err) {
+    console.error("Failed to update progress:", err);
+    // Revert optimistic update on error
+    fetchCompletedSteps();
+  }
+};
 
   const toggleSaveResource = async (resourceId) => {
     try {
@@ -289,23 +290,42 @@ const LearningPath = () => {
   // Calculate progress percentage
   const calculateProgress = () => {
     if (!learningPath.length) return 0;
-    return Math.round((completedSteps.length / learningPath.length) * 100);
+  
+    // Get all step IDs from the current learning path
+    const currentPathStepIds = learningPath.map((step, index) => String(step.id || index + 1));
+  
+    // Count only completed steps that belong to this learning path
+    const completedPathSteps = completedSteps.filter(stepId => 
+      currentPathStepIds.includes(String(stepId))
+    );
+  
+    return Math.round((completedPathSteps.length / learningPath.length) * 100);
   };
 
   // Estimate time to complete remaining steps
   const estimateTimeRemaining = () => {
-    if (!learningPath.length || completedSteps.length === learningPath.length) return "0";
-    
-    // Assume average of 2 weeks per step, adjust based on pace
-    const weeksPerStep = userInfo?.paceOfLearning === 'fast' ? 1 : 
-                        userInfo?.paceOfLearning === 'slow' ? 3 : 2;
-    
-    const remainingSteps = learningPath.length - completedSteps.length;
-    const remainingWeeks = remainingSteps * weeksPerStep;
-    
-    return remainingWeeks <= 4 ? `${remainingWeeks} weeks` : 
-           `${Math.round(remainingWeeks / 4)} months`;
-  };
+  if (!learningPath.length) return "0";
+  
+  // Get current learning path step IDs
+  const currentPathStepIds = learningPath.map((step, index) => String(step.id || index + 1));
+  
+  // Count completed steps for this path only
+  const completedPathSteps = completedSteps.filter(stepId => 
+    currentPathStepIds.includes(String(stepId))
+  ).length;
+  
+  if (completedPathSteps === learningPath.length) return "0";
+  
+  // Assume average of 2 weeks per step, adjust based on pace
+  const weeksPerStep = userInfo?.paceOfLearning === 'fast' ? 1 : 
+                      userInfo?.paceOfLearning === 'slow' ? 3 : 2;
+  
+  const remainingSteps = learningPath.length - completedPathSteps;
+  const remainingWeeks = remainingSteps * weeksPerStep;
+  
+  return remainingWeeks <= 4 ? `${remainingWeeks} weeks` : 
+         `${Math.round(remainingWeeks / 4)} months`;
+};
 
   // Validate URL function
   const isValidUrl = (url) => {
@@ -325,16 +345,17 @@ const LearningPath = () => {
   };
 
   const renderTimeline = () => (
-    <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:w-1 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-blue-500 before:to-transparent mt-8">
-      {learningPath.map((step, index) => {
-        const isCompleted = completedSteps.includes(step.id || index + 1);
-        const stepId = step.id || index + 1;
-        
-        return (
-        <div
-          key={stepId}
-          className={`relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group ${isCompleted ? 'opacity-90' : 'opacity-100'}`}
-        >
+  <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:w-1 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-blue-500 before:to-transparent mt-8">
+    {learningPath.map((step, index) => {
+      // Ensure consistent step ID format
+      const stepId = String(step.id || index + 1);
+      const isCompleted = completedSteps.includes(stepId);
+      
+      return (
+      <div
+        key={stepId}
+        className={`relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group ${isCompleted ? 'opacity-90' : 'opacity-100'}`}
+      >
           {/* Icon with Step Number */}
           <div
             className={`flex items-center justify-center w-10 h-10 rounded-full border shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 ${
@@ -358,10 +379,15 @@ const LearningPath = () => {
                 {isCompleted && <CheckCircleIcon className="text-green-500" fontSize="small" />}
                 <span>{step.title}</span>
                 {index === 0 && !isCompleted && (
-                  <Chip 
-                    label="Start Here" 
-                    size="small" 
-                    className="bg-green-700 text-white text-xs ml-2"
+                  <Chip
+                    label="Start Here"
+                    size="small"
+                    style={{
+                      backgroundColor: '#047857',
+                      color: 'white',
+                      fontSize: '0.75rem',
+                      marginLeft: '0.5rem'
+                      }}
                   />
                 )}
               </div>
@@ -546,15 +572,20 @@ const LearningPath = () => {
                       <span>{calculateProgress()}% complete</span>
                     </div>
                     <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-blue-500 to-green-500 transition-all duration-500"
-                        style={{ width: `${calculateProgress()}%` }}
-                      ></div>
-                    </div>
-                    <div className="flex justify-between mt-3 text-xs text-slate-400">
-                      <span>{completedSteps.length} of {learningPath.length} steps completed</span>
-                      <span>Est. time remaining: {estimateTimeRemaining()}</span>
-                    </div>
+                    <div 
+                      className="h-full bg-gradient-to-r from-blue-500 to-green-500 transition-all duration-500"
+                      style={{ width: `${calculateProgress()}%` }}
+                    ></div>
+                  </div>
+                  <div className="flex justify-between mt-3 text-xs text-slate-400">
+                    <span>
+                    {/* Show only learning path specific progress */}
+                    {completedSteps.filter(stepId => 
+                      learningPath.map((step, index) => String(step.id || index + 1)).includes(String(stepId))
+                      ).length} of {learningPath.length} steps completed
+                    </span>
+                    <span>Est. time remaining: {estimateTimeRemaining()}</span>
+                  </div>
                   </div>
                 </div>
                 

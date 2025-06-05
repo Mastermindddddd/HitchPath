@@ -14,7 +14,6 @@ const Chat = require("./models/Chat.js");
 const Contact = require("./models/Contact.js");
 const { Mistral } = require("@mistralai/mistralai")
 const { OAuth2Client } = require("google-auth-library")
-const Resume = require("./models/Resume.js");
 const adminCourseRoutes = require("./routes/adminCourses.js");
 const adminWorkEssentials = require("./routes/adminWorkEssentials.js");
 
@@ -554,71 +553,7 @@ app.get("/api/user/saved-resources", authenticateToken, async (req, res) => {
   }
 });
 
-app.get("/api/user/path-progress/:pathId", authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const { pathId } = req.params;
-    
-    const user = await User.findById(userId);
-    
-    if (!user) {
-      return res.status(404).json({ error: "User not found." });
-    }
-    
-    const pathProgress = user.pathProgress?.[pathId] || { completedSteps: [] };
-    
-    res.json({
-      pathId,
-      progress: pathProgress
-    });
-  } catch (error) {
-    console.error("Error fetching path progress:", error);
-    res.status(500).json({ error: "Internal server error." });
-  }
-});
 
-app.post("/api/user/save-resource/specific/:pathId", authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const { pathId } = req.params;
-    const { resourceId, saved } = req.body;
-    
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found." });
-    }
-    
-    // Initialize progress objects if they don't exist
-    if (!user.pathProgress) {
-      user.pathProgress = {};
-    }
-    
-    const pathKey = `specific-${pathId}`;
-    if (!user.pathProgress[pathKey]) {
-      user.pathProgress[pathKey] = {
-        completedSteps: [],
-        savedResources: []
-      };
-    }
-    
-    if (saved) {
-      if (!user.pathProgress[pathKey].savedResources.includes(resourceId)) {
-        user.pathProgress[pathKey].savedResources.push(resourceId);
-      }
-    } else {
-      user.pathProgress[pathKey].savedResources = user.pathProgress[pathKey].savedResources.filter(id => id !== resourceId);
-    }
-    
-    await user.save();
-    res.json({ 
-      message: `Resource ${saved ? 'saved' : 'unsaved'}.`,
-      savedResources: user.pathProgress[pathKey].savedResources
-    });
-  } catch (error) {
-    console.error("Error saving specific path resource:", error);
-    res.status(500).json({ error: "Internal server error." });
-  }
-});
 
 // Enhanced chatbot endpoint with context awareness and broader capabilities
 app.post("/api/chatbot", authenticateToken, async (req, res) => {
@@ -862,28 +797,6 @@ function formatBotResponse(rawResponse) {
   return formattedLines.join('\n');
 }
 
-// Enhanced function to determine if content is safe
-async function isSafeContent(text) {
-  try {
-    // Basic filtering - can be expanded or replaced with proper content moderation API
-    const unsafePatterns = [
-      /\b(hack|steal|exploit|attack)\b/i,
-      /\b(porn|xxx|nude)\b/i,
-      // Add more patterns as needed
-    ];
-    
-    for (const pattern of unsafePatterns) {
-      if (pattern.test(text)) {
-        return false;
-      }
-    }
-    
-    return true;
-  } catch (error) {
-    console.error("Error in content safety check:", error);
-    return true; // Default to allowing content if check fails
-  }
-}
 // Route to save or update a chat
 app.post("/api/chats", authenticateToken, async (req, res) => {
   try {
@@ -1099,27 +1012,6 @@ app.post("/api/save-resume", authenticateToken, async (req, res) => {
   } catch (error) {
     console.error("Error saving resume:", error);
     res.status(500).json({ error: "Failed to save resume" });
-  }
-});
-
-
-// Fetch resume content
-app.get("/get-resume", authenticateToken, async (req, res) => {
-  const userId = req.user.id;
-
-  if (!userId) return res.status(401).json({ error: "Unauthorized" });
-
-  try {
-    const user = await User.findOne({ clerkUserId: userId });
-    if (!user) return res.status(404).json({ error: "User not found" });
-
-    const resume = await Resume.findOne({ userId: user._id });
-    if (!resume) return res.status(404).json({ error: "Resume not found" });
-
-    return res.status(200).json(resume);
-  } catch (error) {
-    console.error("Error fetching resume:", error);
-    return res.status(500).json({ error: "Failed to fetch resume" });
   }
 });
 
