@@ -24,39 +24,60 @@ const SavedResources = () => {
   const canvasRef = useRef(null);
 
   // Get resource icon based on URL or title
-  const getResourceIcon = (resource) => {
-    const url = resource.url?.toLowerCase() || "";
-    const title = resource.title?.toLowerCase() || "";
-    
-    if (url.includes("youtube") || url.includes("vimeo") || title.includes("video")) {
-      return <OndemandVideoIcon fontSize="medium" className="text-red-500" />;
-    } else if (url.includes("github") || url.includes("stackoverflow") || title.includes("code")) {
-      return <CodeIcon fontSize="medium" className="text-gray-300" />;
-    } else if (url.includes("docs") || url.includes("documentation") || title.includes("docs")) {
-      return <MenuBookIcon fontSize="medium" className="text-blue-400" />;
-    } else if (url.includes("course") || url.includes("udemy") || url.includes("coursera")) {
-      return <SchoolIcon fontSize="medium" className="text-green-500" />;
-    } else {
-      return <ArticleIcon fontSize="medium" className="text-indigo-400" />;
-    }
-  };
+const getResourceIcon = (resource) => {
+  const url = resource.url?.toLowerCase() || "";
+  const title = resource.title?.toLowerCase() || "";
+  
+  // More comprehensive video detection
+  if (url.includes("youtube") || url.includes("youtu.be") || 
+      url.includes("vimeo") || url.includes("twitch.tv") ||
+      title.includes("video") || title.includes("tutorial") ||
+      url.includes("watch?v=") || url.includes("/embed/")) {
+    return <OndemandVideoIcon fontSize="medium" className="text-red-500" />;
+  } else if (url.includes("github") || url.includes("stackoverflow") || 
+             url.includes("codepen") || title.includes("code") ||
+             url.includes("repl.it") || url.includes("codesandbox")) {
+    return <CodeIcon fontSize="medium" className="text-gray-300" />;
+  } else if (url.includes("docs") || url.includes("documentation") || 
+             title.includes("docs") || url.includes("readme") ||
+             url.includes("wiki")) {
+    return <MenuBookIcon fontSize="medium" className="text-blue-400" />;
+  } else if (url.includes("course") || url.includes("udemy") || 
+             url.includes("coursera") || url.includes("edx") ||
+             url.includes("khan") || title.includes("course") ||
+             title.includes("lesson")) {
+    return <SchoolIcon fontSize="medium" className="text-green-500" />;
+  } else {
+    return <ArticleIcon fontSize="medium" className="text-indigo-400" />;
+  }
+};
 
   const getResourceType = (resource) => {
-    const url = resource.url?.toLowerCase() || "";
-    const title = resource.title?.toLowerCase() || "";
-    
-    if (url.includes("youtube") || url.includes("vimeo") || title.includes("video")) {
-      return "video";
-    } else if (url.includes("github") || url.includes("stackoverflow") || title.includes("code")) {
-      return "code";
-    } else if (url.includes("docs") || url.includes("documentation") || title.includes("docs")) {
-      return "documentation";
-    } else if (url.includes("course") || url.includes("udemy") || url.includes("coursera")) {
-      return "course";
-    } else {
-      return "article";
-    }
-  };
+  const url = resource.url?.toLowerCase() || "";
+  const title = resource.title?.toLowerCase() || "";
+  
+  if (url.includes("youtube") || url.includes("youtu.be") || 
+      url.includes("vimeo") || url.includes("twitch.tv") ||
+      title.includes("video") || title.includes("tutorial") ||
+      url.includes("watch?v=") || url.includes("/embed/")) {
+    return "video";
+  } else if (url.includes("github") || url.includes("stackoverflow") || 
+             url.includes("codepen") || title.includes("code") ||
+             url.includes("repl.it") || url.includes("codesandbox")) {
+    return "code";
+  } else if (url.includes("docs") || url.includes("documentation") || 
+             title.includes("docs") || url.includes("readme") ||
+             url.includes("wiki")) {
+    return "documentation";
+  } else if (url.includes("course") || url.includes("udemy") || 
+             url.includes("coursera") || url.includes("edx") ||
+             url.includes("khan") || title.includes("course") ||
+             title.includes("lesson")) {
+    return "course";
+  } else {
+    return "article";
+  }
+};
 
   // Fetch saved resources and retrieve their details from the learning path
   const fetchSavedResources = async () => {
@@ -95,25 +116,38 @@ const SavedResources = () => {
       const learningPath = pathResponse.data.learningPath || [];
       
       // Extract resource details based on saved IDs
-      const details = [];
-      savedResourceIds.forEach(savedId => {
-      // Convert savedId to string if it's not already
-      const savedIdStr = String(savedId);
-      const [stepId, resourceIndex] = savedIdStr.split('-').map(part => 
-        isNaN(parseInt(part)) ? part : parseInt(part)
-      );
+      // Replace this section in fetchSavedResources function:
+const details = [];
+savedResourceIds.forEach(savedId => {
+  // Convert savedId to string if it's not already
+  const savedIdStr = String(savedId);
   
-      const step = learningPath.find(s => (s.id || s.id === 0) ? s.id === stepId : false);
-  
-      if (step && step.resources && step.resources[resourceIndex]) {
-        details.push({
-        id: savedIdStr, // Use the string version
+  // Handle different ID formats more robustly
+  if (savedIdStr.includes('-')) {
+    const parts = savedIdStr.split('-');
+    const stepId = isNaN(parseInt(parts[0])) ? parts[0] : parseInt(parts[0]);
+    const resourceIndex = parseInt(parts[1]);
+    
+    // Find step by ID (handle both string and number IDs)
+    const step = learningPath.find(s => {
+      if (s.id === null || s.id === undefined) return false;
+      return s.id === stepId || String(s.id) === String(stepId);
+    });
+
+    if (step && step.resources && resourceIndex >= 0 && step.resources[resourceIndex]) {
+      details.push({
+        id: savedIdStr,
         ...step.resources[resourceIndex],
         stepTitle: step.title,
         stepId: step.id
-        });
-       }
       });
+    }
+  } else {
+    // Handle cases where savedId might not follow stepId-resourceIndex format
+    // This could be a fallback for older saved resources
+    console.warn(`Unexpected saved resource ID format: ${savedIdStr}`);
+  }
+});
       
       setResourceDetails(details);
     } catch (err) {
