@@ -1,12 +1,10 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation }  from "react-router-dom";
 import ButtonGradient from "./assets/svg/ButtonGradient";
-import Benefits from "./components/Benefits";
 import { AuthProvider } from "./AuthContext";
 import RegisterPage from "./pages/register";
 import Login from "./pages/login";
 import Layout from "./layout";
-import DashboardPage from "./pages/dashboard";
 import UserInfoForm from "./pages/UserInfoForm";
 import LearningPath from "./pages/LearningPath";
 import Chatbot from "./pages/Chatbot";
@@ -15,7 +13,6 @@ import { initializeGA, logPageView } from "./googleAnalytics";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import Contact from "./pages/ContactUs";
 import SavedResources from "./pages/SavedResources";
-import CommunityNetwork from "./pages/community";
 
 const App = () => {
   useEffect(() => {
@@ -38,7 +35,6 @@ const App = () => {
             <Route path="/generate-path" element={<SpecificTopicPath />} />
             <Route path="/contact-us" element={<Contact />} />
             <Route path="/saved-resources" element={<SavedResources />} />
-            <Route path="/community" element={<CommunityNetwork />} />
           </Route>
         </Routes>
       <ButtonGradient />

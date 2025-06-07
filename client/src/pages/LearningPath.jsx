@@ -600,7 +600,7 @@ const toggleStepCompletion = async (stepId) => {
                   </p>
                   
                   <div className="mt-4 flex justify-center">
-                    <Button 
+                    {/*<Button 
                       variant="contained" 
                       color="primary"
                       component={Link}
@@ -608,7 +608,7 @@ const toggleStepCompletion = async (stepId) => {
                       startIcon={<PlayCircleOutlineIcon />}
                     >
                       Network
-                    </Button>
+                    </Button>*/}
                   </div>
                 </div>
               </div>
