@@ -64,27 +64,26 @@ const HowItWorks = () => {
   }
 
   return (
-    <section className="py-20">
+    <section className="py-12 sm:py-16 md:py-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
-          className="text-center mb-16"
+          className="text-center mb-8 sm:mb-12 md:mb-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-4xl md:text-5xl font-bold bg-gray-200 bg-clip-text text-transparent mb-6">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gray-200 bg-clip-text text-transparent mb-3 sm:mb-4 md:mb-6">
             How It Works
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed px-2">
             Transform your career journey with our AI-powered platform in just four simple steps
           </p>
         </motion.div>
 
         <div className="relative max-w-7xl mx-auto">
-
           <motion.div
-            className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-6"
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
@@ -103,34 +102,34 @@ const HowItWorks = () => {
                   }}
                 >
                   <div
-                    className={`relative p-8 ${step.borderColor} border-2 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 text-center group`}
+                    className={`relative p-4 sm:p-6 md:p-8 ${step.borderColor} border-2 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 text-center group`}
                   >
                     {/* Step Number Badge */}
                     <div
-                      className={`absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-gradient-to-r ${step.color} rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg`}
+                      className={`absolute -top-3 sm:-top-4 left-1/2 transform -translate-x-1/2 w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r ${step.color} rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-bold shadow-lg`}
                     >
                       {step.step}
                     </div>
 
                     {/* Icon Container */}
                     <div
-                      className={`relative mx-auto w-16 h-16 bg-gradient-to-r ${step.color} rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300`}
+                      className={`relative mx-auto w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-r ${step.color} rounded-2xl flex items-center justify-center mb-4 sm:mb-5 md:mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300`}
                     >
-                      <IconComponent className="w-8 h-8 text-white" />
+                      <IconComponent className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" />
                     </div>
 
                     {/* Content */}
-                    <h3 className="text-xl font-bold text-gray-400 mb-4 group-hover:text-white transition-colors">
+                    <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-400 mb-2 sm:mb-3 md:mb-4 group-hover:text-white transition-colors">
                       {step.title}
                     </h3>
-                    <p className="text-gray-500 leading-relaxed group-hover:text-gray-700 transition-colors">
+                    <p className="text-sm sm:text-base text-gray-500 leading-relaxed group-hover:text-gray-700 transition-colors">
                       {step.description}
                     </p>
 
                     {/* Arrow for mobile */}
                     {index < steps.length - 1 && (
-                      <div className="lg:hidden flex justify-center mt-6">
-                        <ArrowRight className="w-6 h-6 text-gray-400" />
+                      <div className="sm:hidden flex justify-center mt-4">
+                        <ArrowRight className="w-5 h-5 text-gray-400" />
                       </div>
                     )}
                   </div>
@@ -141,14 +140,14 @@ const HowItWorks = () => {
         </div>
 
         <motion.div
-          className="text-center mt-16"
+          className="text-center mt-8 sm:mt-12 md:mt-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.8 }}
           viewport={{ once: true }}
         >
           <motion.button
-            className="group relative px-10 py-4 bg-blue-600 text-white font-semibold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden"
+            className="group relative px-6 sm:px-8 md:px-10 py-3 sm:py-4 bg-blue-600 text-white font-semibold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden text-sm sm:text-base"
             whileHover={{
               scale: 1.05,
               boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
@@ -157,12 +156,12 @@ const HowItWorks = () => {
           >
             <span className="relative z-10 flex items-center gap-2">
               Start Your Journey Now
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform duration-300" />
             </span>
             <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-blue-600 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </motion.button>
 
-          <p className="text-sm text-gray-500 mt-4">No credit card required • Get started in under 2 minutes</p>
+          <p className="text-xs sm:text-sm text-gray-500 mt-3 sm:mt-4 px-4">No credit card required • Get started in under 2 minutes</p>
         </motion.div>
       </div>
     </section>
