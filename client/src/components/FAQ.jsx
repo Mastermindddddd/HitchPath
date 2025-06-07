@@ -1,6 +1,6 @@
 import { motion } from "framer-motion"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion"
-import { HelpCircle, BookOpen, User, RefreshCw, LogIn, Briefcase } from "lucide-react"
+import { useState } from "react"
+import { HelpCircle, BookOpen, User, RefreshCw, LogIn, Briefcase, ChevronDown } from "lucide-react"
 
 const faqData = [
   {
@@ -42,6 +42,12 @@ const faqData = [
 ]
 
 const FAQ = () => {
+  const [openItem, setOpenItem] = useState(null)
+
+  const toggleItem = (index) => {
+    setOpenItem(openItem === index ? null : index)
+  }
+
   return (
     <div className="relative w-full py-8 sm:py-12 lg:py-16 overflow-hidden">
       {/* Decorative elements */}
@@ -68,7 +74,7 @@ const FAQ = () => {
               </p>
             </motion.div>
 
-            <Accordion type="single" collapsible className="w-full">
+            <div className="w-full">
               {faqData.map((faq, index) => (
                 <motion.div
                   key={index}
@@ -76,25 +82,40 @@ const FAQ = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.1 }}
                 >
-                  <AccordionItem
-                    value={`item-${index}`}
-                    className="border border-border rounded-lg mb-2 sm:mb-4 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"
-                  >
-                    <AccordionTrigger className="px-3 py-3 sm:px-4 sm:py-4 lg:px-6 hover:bg-muted/50 group">
-                      <div className="flex items-center text-left">
-                        <span className="mr-2 sm:mr-3 flex-shrink-0 p-1.5 sm:p-2 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                          {faq.icon}
-                        </span>
-                        <span className="font-medium text-sm sm:text-base lg:text-lg leading-tight">{faq.question}</span>
+                  <div className="border border-border rounded-lg mb-2 sm:mb-4 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+                    <button
+                      onClick={() => toggleItem(index)}
+                      className="w-full px-3 py-3 sm:px-4 sm:py-4 lg:px-6 hover:bg-muted/50 group transition-colors duration-200"
+                    >
+                      <div className="flex items-center justify-between text-left">
+                        <div className="flex items-center">
+                          <span className="mr-2 sm:mr-3 flex-shrink-0 p-1.5 sm:p-2 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                            {faq.icon}
+                          </span>
+                          <span className="font-medium text-sm sm:text-base lg:text-lg leading-tight">{faq.question}</span>
+                        </div>
+                        <ChevronDown 
+                          className={`h-4 w-4 sm:h-5 sm:w-5 transition-transform duration-200 ${
+                            openItem === index ? 'rotate-180' : ''
+                          }`}
+                        />
                       </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-3 pb-3 pt-1 sm:px-4 sm:pb-4 sm:pt-2 lg:px-6">
-                      <div className="pl-6 sm:pl-8 lg:pl-12 text-xs sm:text-sm lg:text-base text-muted-foreground leading-relaxed">{faq.answer}</div>
-                    </AccordionContent>
-                  </AccordionItem>
+                    </button>
+                    <div 
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                        openItem === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                      }`}
+                    >
+                      <div className="px-3 pb-3 pt-1 sm:px-4 sm:pb-4 sm:pt-2 lg:px-6">
+                        <div className="pl-6 sm:pl-8 lg:pl-12 text-xs sm:text-sm lg:text-base text-muted-foreground leading-relaxed">
+                          {faq.answer}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </motion.div>
               ))}
-            </Accordion>
+            </div>
           </div>
 
           {/* Image Section */}

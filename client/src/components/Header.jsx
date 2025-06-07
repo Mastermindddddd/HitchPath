@@ -178,7 +178,7 @@ const Header = () => {
 
       {/* Sidebar Overlay with Fade Animation */}
       <div
-        className={`fixed inset-0 z-40 bg-black transition-opacity duration-500 ease-in-out ${
+        className={`fixed inset-0 z-40 bg-black transition-opacity duration-300 ease-out ${
           openNavigation ? "opacity-60 backdrop-blur-sm" : "opacity-0 pointer-events-none"
         }`}
         onClick={toggleNavigation}
@@ -187,11 +187,13 @@ const Header = () => {
       {/* Sidebar with Smooth Slide Animation */}
       <div
         ref={sidebarRef}
-        className={`fixed top-0 right-0 h-full bg-gradient-to-b from-gray-900 to-gray-800 text-white z-50 shadow-xl transition-all duration-500 ease-in-out transform ${
+        className={`fixed top-0 right-0 h-full bg-gradient-to-b from-gray-900 to-gray-800 text-white z-50 shadow-xl transition-transform duration-300 ease-out ${
           openNavigation ? "translate-x-0" : "translate-x-full"
-        } rounded-l-xl overflow-hidden w-[75%] max-w-[280px] sm:max-w-[320px]`}
+        } rounded-l-xl w-[75%] max-w-[280px] sm:max-w-[320px]`}
       >
-        <div className="flex flex-col h-full p-4 sm:p-6">
+        <div className={`flex flex-col h-full p-4 sm:p-6 transition-opacity duration-300 ${
+          openNavigation ? "opacity-100" : "opacity-0"
+        }`}>
           {/* Close Button */}
           <button
             className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300"
@@ -201,23 +203,21 @@ const Header = () => {
             <FaTimes size={16} />
           </button>
 
-          {/* User Profile Section */}
-          {user && (
-            <div className="mb-6 pb-4 border-b border-white/10">
-              <div className="flex items-center">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white font-bold">
-                  {user.email.charAt(0).toUpperCase()}
-                </div>
-                <div className="ml-3">
-                  <p className="font-medium text-base sm:text-lg text-white">{user.name}</p>
-                  <p className="text-xs sm:text-sm text-gray-300">{user.email}</p>
-                </div>
+          {/* User Profile Section - Always rendered to prevent layout shift */}
+          <div className={`mb-6 pb-4 border-b border-white/10 ${user ? 'block' : 'hidden'}`}>
+            <div className="flex items-center">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white font-bold">
+                {user?.email?.charAt(0)?.toUpperCase() || 'U'}
+              </div>
+              <div className="ml-3">
+                <p className="font-medium text-base sm:text-lg text-white">{user?.name || ''}</p>
+                <p className="text-xs sm:text-sm text-gray-300">{user?.email || ''}</p>
               </div>
             </div>
-          )}
+          </div>
 
           {/* Navigation Tabs */}
-          <ul className="space-y-2 sm:space-y-4">
+          <ul className="space-y-2 sm:space-y-4 flex-1">
             <SidebarNavItem 
               icon={<FaHome size={16} />} 
               label="Home" 
@@ -257,7 +257,7 @@ const Header = () => {
           </ul>
 
           {/* Sign In / Sign Out */}
-          <div className="mt-auto pt-4 sm:pt-6 border-t border-white/10">
+          <div className="pt-4 sm:pt-6 border-t border-white/10">
             {user ? (
               <button
                 className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-2 sm:py-3 rounded-lg flex items-center justify-center space-x-2 hover:shadow-lg hover:shadow-red-500/20 transition-all duration-300 text-sm sm:text-base"
