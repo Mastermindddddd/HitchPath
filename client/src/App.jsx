@@ -15,6 +15,7 @@ import { initializeGA, logPageView } from "./googleAnalytics";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import Contact from "./pages/ContactUs";
 import SavedResources from "./pages/SavedResources";
+import CommunityNetwork from "./pages/community";
 
 const App = () => {
   useEffect(() => {
@@ -37,6 +38,7 @@ const App = () => {
             <Route path="/generate-path" element={<SpecificTopicPath />} />
             <Route path="/contact-us" element={<Contact />} />
             <Route path="/saved-resources" element={<SavedResources />} />
+            <Route path="/community" element={<CommunityNetwork />} />
           </Route>
         </Routes>
       <ButtonGradient />

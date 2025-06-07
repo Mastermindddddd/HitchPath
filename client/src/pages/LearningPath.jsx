@@ -607,7 +607,7 @@ const toggleStepCompletion = async (stepId) => {
                       to="/community"
                       startIcon={<PlayCircleOutlineIcon />}
                     >
-                      Join Study Groups
+                      Network
                     </Button>
                   </div>
                 </div>
