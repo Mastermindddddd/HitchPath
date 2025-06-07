@@ -14,8 +14,6 @@ const Chat = require("./models/Chat.js");
 const Contact = require("./models/Contact.js");
 const { Mistral } = require("@mistralai/mistralai")
 const { OAuth2Client } = require("google-auth-library")
-const adminCourseRoutes = require("./routes/adminCourses.js");
-const adminWorkEssentials = require("./routes/adminWorkEssentials.js");
 
 dotenv.config();
 

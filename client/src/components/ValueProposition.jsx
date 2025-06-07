@@ -49,7 +49,7 @@ const ValueProposition = () => {
                 <h3 className="text-2xl font-bold mb-4">{prop.title}</h3>
                 <p className="text-lg opacity-90">{prop.description}</p>
               </div>
-              <div className="absolute top-4 right-4 w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center text-white text-xl font-bold">
+              <div className="absolute top-4 right-4 w-12 h-12 bg-blue-800 rounded-full flex items-center justify-center text-white text-xl font-bold">
                 {index + 1}
               </div>
             </motion.div>
@@ -57,7 +57,7 @@ const ValueProposition = () => {
         </div>
 
         <div className="text-center mt-12">
-          <button className="px-8 py-4 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transform hover:scale-105 transition-all duration-300 shadow-lg">
+          <button className="px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-800 transform hover:scale-105 transition-all duration-300 shadow-lg">
             Experience the Difference
           </button>
         </div>

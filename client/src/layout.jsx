@@ -47,10 +47,10 @@ const Layout = () => {
         <>
           <Hero />
           <CallToActionBanner />
-          <ValueProposition />
           <HowItWorks />
           <Collaboration />
           <CTA />
+          <ValueProposition />
           {/*<CareerInvestmentShop />*/}
           <Services />
           <Footer />

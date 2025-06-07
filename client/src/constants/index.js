@@ -142,6 +142,14 @@ export const collabContent = [
     id: "2",
     title: "Expert-Level Advice",
   },
+  {
+    id: "3",
+    title: "Expert-Level Advice",
+  },
+  {
+    id: "4",
+    title: "Expert-Level Advice",
+  },
 ];
 
 export const collabApps = [

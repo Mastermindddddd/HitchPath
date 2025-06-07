@@ -14,7 +14,7 @@ const CallToActionBanner = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <button className="px-8 py-4 bg-white text-blue-600 font-bold rounded-lg hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-lg">
+            <button className="px-8 py-4 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-800 transform hover:scale-105 transition-all duration-300 shadow-lg">
               Get Started Free
             </button>
             {/*<button className="px-8 py-4 border-2 border-white text-white font-bold rounded-lg hover:bg-white hover:text-blue-600 transform hover:scale-105 transition-all duration-300">

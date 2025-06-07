@@ -10,7 +10,7 @@ const CTA = () => (
     </div>
     <div className="gpt3__cta-btn">
       <Link to="/register">
-      <button type="button">Get Started</button>
+      <button type="button" className='bg-blue-600 hover:bg-blue-800'>Get Started</button>
       </Link>
     </div>
   </div>

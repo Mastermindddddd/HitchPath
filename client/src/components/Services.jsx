@@ -3,7 +3,6 @@ import { service1, service2, service3, check } from "../assets";
 import { brainwaveServices, brainwaveServicesIcons } from "../constants";
 import {
   PhotoChatMessage,
-  Gradient,
 } from "./design/Services";
 
 import Generating from "./Generating";
@@ -78,9 +77,9 @@ const Services = () => {
 
           </div>
 
-          <Gradient />
         </div>
       </div>
+      
       <FAQ />
     </section>
   );
