@@ -234,6 +234,24 @@ app.get("/api/user/profile", authenticateToken, async (req, res) => {
   }
 });
 
+// Update user information endpoint
+app.post("/api/user/update", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const updatedData = req.body;
+
+    const user = await User.findByIdAndUpdate(userId, updatedData, { new: true });
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    res.json({ message: "User information updated successfully.", user });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
+
 app.get("/api/user-info/completed", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
