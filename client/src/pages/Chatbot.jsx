@@ -250,7 +250,7 @@ const Chatbot = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-4 relative h-screen">
+    <div className="flex flex-col items-center justify-center p-4 relative h-screen mt-4">
       <div className="absolute inset-0 bg-[url('/placeholder.svg?height=800&width=800')] opacity-5 bg-repeat z-0 fixed" />
 
       <div className="w-full max-w-6xl h-[85vh] flex shadow-2xl bg-gray-900/80 backdrop-blur-sm border border-purple-500/30 rounded-xl overflow-hidden z-10 relative">
@@ -276,7 +276,7 @@ const Chatbot = () => {
               className={`h-full border-r border-purple-500/30 bg-gray-900 
                           ${isDesktop ? 'w-[300px]' : 'w-[280px] left-0 top-0 bottom-0 z-20 shadow-lg shadow-black/50'}`}
             >
-              <div className="p-4 border-b border-purple-500/30 bg-gradient-to-r from-blue-900 to-purple-900 flex items-center justify-between">
+              <div className="p-4 border-b border-purple-500/30 bg-blue-600 flex items-center justify-between">
                 <h2 className="text-white font-semibold flex items-center">
                   <MessageSquare className="h-4 w-4 mr-2" />
                   Recent Chats
@@ -360,7 +360,7 @@ const Chatbot = () => {
               <div className="p-2">
                 <button 
                   onClick={startNewChat}
-                  className="w-full p-3 rounded-lg mb-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white flex items-center justify-center hover:brightness-110 transition"
+                  className="w-full p-3 rounded-lg mb-2 bg-blue-600 text-white flex items-center justify-center hover:brightness-110 transition"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   New Chat
@@ -415,7 +415,7 @@ const Chatbot = () => {
         {/* Main Chat Container */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="p-4 border-b border-purple-500/30 bg-gradient-to-r from-blue-900 to-purple-900 flex items-center">
+          <div className="p-3 border-b border-purple-500/30 bg-blue-600 flex items-center">
             {/* Sidebar toggle button */}
             {!isDesktop && (
               <button 
