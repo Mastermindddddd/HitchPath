@@ -26,7 +26,6 @@ const specificPathSchema = new mongoose.Schema({
 
 // Main user schema
 const userSchema = new mongoose.Schema({
-  _id: mongoose.Types.ObjectId,
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: false }, // Consider making this required: true for security

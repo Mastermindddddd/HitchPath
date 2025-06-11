@@ -169,7 +169,7 @@ const Login = () => {
           */}
 
           {/* Sign Up Link */}
-          <div className="text-center">
+          <div className="text-center mt-4">
             <p className="text-gray-600 dark:text-gray-400">
               Don't have an account?{" "}
               <a
