@@ -1,7 +1,39 @@
 import { motion } from "framer-motion"
 import { User, Bot, Rocket, Target, ArrowRight } from "lucide-react"
+import {Link, useNavigate} from "react-router-dom";
+import axios from "axios";
 
 const HowItWorks = () => {
+  const navigate = useNavigate();
+
+  const handleLearningPathClick = async () => {
+        try {
+          const token = localStorage.getItem("token");
+      
+          // If the user is not logged in, redirect to the login page with the intended path
+          if (!token) {
+            navigate(`/register?redirect=${encodeURIComponent("/learning-path")}`);
+            return;
+          }
+      
+          // Check user info and redirect accordingly
+          const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/user-info/completed`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+      
+          if (response.data.completed) {
+            navigate("/learning-path");
+          } else {
+            navigate("/user-info");
+          }
+        } catch (error) {
+          console.error("Error checking user info:", error);
+          navigate("/user-info"); // Redirect to user-info as a fallback
+        }
+      };  
+
   const steps = [
     {
       step: "01",
@@ -153,6 +185,7 @@ const HowItWorks = () => {
               boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
             }}
             whileTap={{ scale: 0.98 }}
+            onClick={handleLearningPathClick}
           >
             <span className="relative z-10 flex items-center gap-2">
               Start Your Journey Now

@@ -2,30 +2,30 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
+import { Eye, EyeOff, Mail, Lock, LogIn } from "lucide-react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false); // Loading state
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
-    setLoading(true); // Start loading
+    setError("");
+    setLoading(true);
 
     try {
       const apiUrl = import.meta.env.VITE_API_URL;
       const response = await axios.post(`${apiUrl}/login`, { email, password });
       const { token, user } = response.data;
 
-      // Save user data
       localStorage.setItem("token", token);
       localStorage.setItem("userName", user.name);
 
-      // Determine redirection path
       const redirectPath = new URLSearchParams(location.search).get("redirect") || "/";
       navigate(redirectPath, { state: { fromLogin: true } });
       window.location.reload();
@@ -33,87 +33,185 @@ const Login = () => {
       console.error("Login error response:", err.response?.data);
       setError(err.response?.data?.error || "An error occurred.");
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 
-
-
   return (
-    <section>
-      <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-        <div className="w-full bg-white rounded-lg shadow dark:border sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
-          <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
-            <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-              Log in to your account
-            </h1>
-            {error && (
-              <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg dark:bg-red-200 dark:text-red-800 animate-pulse" role="alert">
-                {error}
-              </div>
-            )}
-            <form className="space-y-4 md:space-y-6" onSubmit={handleLogin}>
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                >
-                  Your email
-                </label>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated Background Elements */}
+
+      <div className="w-full max-w-md relative z-10">
+        {/* Logo/Brand Section */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold bg-blue-600 bg-clip-text text-transparent">
+            Welcome Back
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            Sign in to continue your journey
+          </p>
+        </div>
+
+        {/* Main Login Card */}
+        <div className="bg-slate-800/50 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 dark:border-gray-700/50 p-8 transition-all duration-300 hover:shadow-3xl">
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-700 dark:text-red-400 text-sm flex items-center gap-2 animate-shake">
+              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-6">
+            {/* Email Field */}
+            <div className="space-y-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-semibold text-gray-700 dark:text-gray-300"
+              >
+                Email Address
+              </label>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                </div>
                 <input
                   type="email"
                   id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  placeholder="name@company.com"
+                  className="w-full pl-12 pr-4 py-3 bg-gray-50/50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
+                  placeholder="Enter your email"
                   required
                 />
               </div>
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                >
-                  Password
-                </label>
+            </div>
+
+            {/* Password Field */}
+            <div className="space-y-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-semibold text-gray-700 dark:text-gray-300"
+              >
+                Password
+              </label>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                </div>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  placeholder="••••••••"
+                  className="w-full pl-12 pr-12 py-3 bg-gray-50/50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
+                  placeholder="Enter your password"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
               </div>
-              <button
-                type="submit"
-                className="w-full text-white bg-blue-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                disabled={loading} // Disable button while loading
+            </div>
+
+            {/* Forgot Password Link */}
+            <div className="flex justify-end">
+              <a
+                href="/forgot-password"
+                className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors"
               >
-                {loading ? "Logging in..." : "Log in"} {/* Show loading text */}
-              </button>
-            </form>
-            {/*<div className="mt-4">
-              <GoogleLogin
-                onSuccess={handleGoogleLogin}
-                onError={() => setError("Google Sign-In failed. Please try again.")}
-              />
-            </div>*/}
-            <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-              Don’t have an account?{" "}
+                Forgot password?
+              </a>
+            </div>
+
+            {/* Login Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                  Signing in...
+                </>
+              ) : (
+                <>
+                  <LogIn className="h-5 w-5" />
+                  Sign In
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="my-8 flex items-center">
+              <div className="flex-1 border-t border-gray-200"></div>
+              <span className="px-2 text-sm text-gray-500">Or continue with</span>
+              <div className="flex-1 border-t border-gray-200"></div>
+            </div>
+
+          {/* Google Login */}
+          <div className="mb-6">
+            <GoogleLogin
+              onSuccess={(response) => console.log('Google login success:', response)}
+              onError={() => setError("Google Sign-In failed. Please try again.")}
+              width="100%"
+              size="large"
+              theme="outline"
+              shape="rectangular"
+            />
+          </div>
+
+          {/* Sign Up Link */}
+          <div className="text-center">
+            <p className="text-gray-600 dark:text-gray-400">
+              Don't have an account?{" "}
               <a
                 href="/register"
-                className="font-medium text-primary-600 hover:underline dark:text-primary-500"
+                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold transition-colors hover:underline"
               >
-                Register here
+                Create one now
               </a>
             </p>
           </div>
         </div>
+
+        {/* Footer */}
+        <div className="text-center mt-8 text-gray-500 dark:text-gray-400 text-sm">
+          <p>© 2025 Hitchhub. All rights reserved.</p>
+        </div>
       </div>
-    </section>
+
+      <style jsx>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+        
+        @keyframes spin-slow {
+          from { transform: translate(-50%, -50%) rotate(0deg); }
+          to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        .animate-shake {
+          animation: shake 0.5s ease-in-out;
+        }
+        
+        .animate-spin-slow {
+          animation: spin-slow 20s linear infinite;
+        }
+        
+        .shadow-3xl {
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+      `}</style>
+    </div>
   );
 };
 

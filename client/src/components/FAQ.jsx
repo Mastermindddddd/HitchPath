@@ -1,6 +1,7 @@
 import { motion } from "framer-motion"
 import { useState } from "react"
 import { HelpCircle, BookOpen, User, RefreshCw, LogIn, Briefcase, ChevronDown } from "lucide-react"
+import { Link } from "react-router-dom";
 
 const faqData = [
   {
@@ -141,9 +142,11 @@ const FAQ = () => {
                   <p className="mt-1 sm:mt-2 text-xs sm:text-sm lg:text-base text-muted-foreground">
                     Our support team is here to help you with any questions you might have.
                   </p>
-                  <button className="mt-3 sm:mt-4 px-4 py-2 sm:px-6 text-sm sm:text-base bg-blue-600 rounded-full hover:bg-primary/90 transition-colors">
-                    Contact Support
-                  </button>
+                  <Link to="/contact-us">
+                    <button className="mt-3 sm:mt-4 px-4 py-2 sm:px-6 text-sm sm:text-base bg-blue-600 rounded-full hover:bg-primary/90 transition-colors">
+                      Contact Support
+                    </button>
+                  </Link>
                 </div>
               </div>
             </div>

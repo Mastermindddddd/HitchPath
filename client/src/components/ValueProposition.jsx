@@ -1,7 +1,39 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import {Link, useNavigate} from "react-router-dom";
+import axios from "axios";
 
 const ValueProposition = () => {
+  const navigate = useNavigate();
+
+  const handleLearningPathClick = async () => {
+        try {
+          const token = localStorage.getItem("token");
+      
+          // If the user is not logged in, redirect to the login page with the intended path
+          if (!token) {
+            navigate(`/register?redirect=${encodeURIComponent("/learning-path")}`);
+            return;
+          }
+      
+          // Check user info and redirect accordingly
+          const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/user-info/completed`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+      
+          if (response.data.completed) {
+            navigate("/learning-path");
+          } else {
+            navigate("/user-info");
+          }
+        } catch (error) {
+          console.error("Error checking user info:", error);
+          navigate("/user-info"); // Redirect to user-info as a fallback
+        }
+      };  
+
   const props = [
     {
       title: "Save 100+ Hours",
@@ -61,7 +93,10 @@ const ValueProposition = () => {
         </div>
 
         <div className="text-center mt-8 sm:mt-10 md:mt-12">
-          <button className="px-6 py-3 sm:px-7 sm:py-3.5 md:px-8 md:py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-800 transform hover:scale-105 transition-all duration-300 shadow-lg text-sm sm:text-base md:text-base">
+          <button 
+            className="px-6 py-3 sm:px-7 sm:py-3.5 md:px-8 md:py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-800 transform hover:scale-105 transition-all duration-300 shadow-lg text-sm sm:text-base md:text-base"
+            onClick={handleLearningPathClick}
+          >
             Experience the Difference
           </button>
         </div>
