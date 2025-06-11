@@ -402,7 +402,7 @@ const UserInfoForm = () => {
 
   if (submitSuccess) {
     return (
-      <div className="relative p-6 sm:p-8 bg-gradient-to-r from-blue-900 to-blue-600 rounded-lg shadow-xl text-white mb-20 mx-4 sm:mx-auto max-w-2xl">
+      <div className="relative p-6 sm:p-8 bg-gradient-to-r from-blue-900 to-blue-800 rounded-lg shadow-xl text-white mb-20 mx-4 sm:mx-auto max-w-2xl">
         <canvas id="cosmosCanvas" className="absolute top-0 left-0 z-0 w-full h-full rounded-lg"></canvas>
         <div className="relative z-10">
           <SuccessMessage />
@@ -412,7 +412,7 @@ const UserInfoForm = () => {
   }
 
   return (
-    <div className="relative p-4 sm:p-6 lg:p-8 bg-gradient-to-r from-blue-900 via-blue-700 to-blue-600 rounded-lg shadow-xl text-white mb-8 mx-4 sm:mx-auto max-w-4xl">
+    <div className="relative p-4 sm:p-6 lg:p-8 bg-blue-900 rounded-lg shadow-xl text-white mb-8 mx-4 sm:mx-auto max-w-4xl">
       <canvas id="cosmosCanvas" className="absolute top-0 left-0 z-0 w-full h-full rounded-lg"></canvas>
 
       <div className="relative z-10">
