@@ -14,28 +14,69 @@ const UserInfoForm = () => {
   });
 
   const [step, setStep] = useState(1);
+  const [errors, setErrors] = useState({});
   const totalSteps = 3;
-  const [loading, setLoading] = useState(false); // State for loading indicator
+  const [loading, setLoading] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const navigate = useNavigate(); 
   const { user } = useContext(AuthContext);
 
+  // Check if user is authenticated and has required data
+  useEffect(() => {
+    if (!user || !user.name || !user.email) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: "" });
+    }
   };
 
-  const handleNext = () => setStep((prevStep) => prevStep + 1);
+  const validateStep = (stepNumber) => {
+    const newErrors = {};
+    
+    switch (stepNumber) {
+      case 2:
+        if (!formData.preferredLearningStyle) newErrors.preferredLearningStyle = "Please select a learning style";
+        if (!formData.primaryLanguage.trim()) newErrors.primaryLanguage = "Please enter your primary language";
+        if (!formData.paceOfLearning) newErrors.paceOfLearning = "Please select your learning pace";
+        break;
+      case 3:
+        if (!formData.DesiredSkill.trim()) newErrors.DesiredSkill = "Please describe your desired skills";
+        if (!formData.careerPath.trim()) newErrors.careerPath = "Please enter your career path";
+        if (!formData.currentSkillLevel) newErrors.currentSkillLevel = "Please select your current skill level";
+        break;
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = () => {
+    if (validateStep(step)) {
+      setStep((prevStep) => prevStep + 1);
+    }
+  };
+
   const handlePrev = () => setStep((prevStep) => prevStep - 1);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Show loading indicator
+    if (!validateStep(step)) return;
+    
+    setLoading(true);
     try {
       const token = localStorage.getItem("token");
       console.log("Token:", token);
       if (!token) {
         console.error("Token not found.");
+        setErrors({ submit: "Authentication token not found. Please log in again." });
         return;
       }
 
@@ -49,13 +90,18 @@ const UserInfoForm = () => {
         }
       );
       console.log("User information updated successfully:", response.data);
-
-      // Redirect to /learning-path
-      navigate("/learning-path");
+      
+      setSubmitSuccess(true);
+      setTimeout(() => {
+        navigate("/learning-path");
+      }, 1500);
     } catch (error) {
       console.error("Error updating user information:", error);
+      setErrors({ 
+        submit: error.response?.data?.message || "Failed to update information. Please try again." 
+      });
     } finally {
-      setLoading(false); // Hide loading indicator
+      setLoading(false);
     }
   };
 
@@ -63,85 +109,172 @@ const UserInfoForm = () => {
     switch (step) {
       case 1:
         return (
-          <div>
-            <h3>Step 1: Basic Information</h3>
-            <label>
-              Name:
-              <input
-                type="text"
-                name="name"
-                value={user?.name}
-                readOnly
-                className="w-full p-2 rounded-lg border-2 border-gray-300 bg-gray-200 text-gray-800 cursor-not-allowed"
-              />
-            </label>
-            <label>
-              Email:
-              <input
-                type="email"
-                name="email"
-                value={user?.email}
-                readOnly
-                className="w-full p-2 rounded-lg border-2 border-gray-300 bg-gray-200 text-gray-800 cursor-not-allowed"
-              />
-            </label>
+          <div className="space-y-4 sm:space-y-6">
+            <h3 className="text-lg sm:text-xl font-semibold mb-4 text-center">Basic Information</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={user?.name || ""}
+                  readOnly
+                  className="w-full p-3 sm:p-4 rounded-lg border-2 border-gray-300 bg-gray-100 text-gray-700 cursor-not-allowed text-sm sm:text-base"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={user?.email || ""}
+                  readOnly
+                  className="w-full p-3 sm:p-4 rounded-lg border-2 border-gray-300 bg-gray-100 text-gray-700 cursor-not-allowed text-sm sm:text-base"
+                />
+              </div>
+            </div>
           </div>
         );
       case 2:
         return (
-          <div>
-            <h3>Step 2: Learning Preferences</h3>
-            <label>
-              Preferred Learning Style:
-              <select name="preferredLearningStyle" value={formData.preferredLearningStyle} onChange={handleChange} 
-                className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800">
-                <option value="">Select</option>
-                <option value="visual">Visual</option>
-                <option value="auditory">Auditory</option>
-                <option value="reading">Reading/Writing</option>
-                <option value="kinesthetic">Kinesthetic</option>
-              </select>
-            </label>
-            <label>
-              Primary Language:
-              <input type="text" name="primaryLanguage" value={formData.primaryLanguage} onChange={handleChange} 
-                className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800" />
-            </label>
-            <label>
-              Pace of Learning:
-              <select name="paceOfLearning" value={formData.paceOfLearning} onChange={handleChange} 
-                className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800">
-                <option value="">Select</option>
-                <option value="fast">Fast</option>
-                <option value="moderate">Moderate</option>
-                <option value="slow">Slow</option>
-              </select>
-            </label>
+          <div className="space-y-4 sm:space-y-6">
+            <h3 className="text-lg sm:text-xl font-semibold mb-4 text-center">Learning Preferences</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Preferred Learning Style *
+                </label>
+                <select 
+                  name="preferredLearningStyle" 
+                  value={formData.preferredLearningStyle} 
+                  onChange={handleChange}
+                  className={`w-full p-3 sm:p-4 rounded-lg border-2 ${
+                    errors.preferredLearningStyle ? 'border-red-500' : 'border-gray-300'
+                  } focus:border-purple-600 focus:outline-none bg-white text-gray-800 text-sm sm:text-base transition-colors`}
+                >
+                  <option value="">Select your learning style</option>
+                  <option value="visual">Visual (charts, diagrams, images)</option>
+                  <option value="auditory">Auditory (listening, discussions)</option>
+                  <option value="reading">Reading/Writing (text-based)</option>
+                  <option value="kinesthetic">Kinesthetic (hands-on, practical)</option>
+                </select>
+                {errors.preferredLearningStyle && (
+                  <p className="text-red-400 text-xs sm:text-sm mt-1">{errors.preferredLearningStyle}</p>
+                )}
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Primary Language *
+                </label>
+                <input 
+                  type="text" 
+                  name="primaryLanguage" 
+                  value={formData.primaryLanguage} 
+                  onChange={handleChange}
+                  placeholder="e.g., English, Spanish, French..."
+                  className={`w-full p-3 sm:p-4 rounded-lg border-2 ${
+                    errors.primaryLanguage ? 'border-red-500' : 'border-gray-300'
+                  } focus:border-purple-600 focus:outline-none bg-white text-gray-800 text-sm sm:text-base transition-colors`}
+                />
+                {errors.primaryLanguage && (
+                  <p className="text-red-400 text-xs sm:text-sm mt-1">{errors.primaryLanguage}</p>
+                )}
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Pace of Learning *
+                </label>
+                <select 
+                  name="paceOfLearning" 
+                  value={formData.paceOfLearning} 
+                  onChange={handleChange}
+                  className={`w-full p-3 sm:p-4 rounded-lg border-2 ${
+                    errors.paceOfLearning ? 'border-red-500' : 'border-gray-300'
+                  } focus:border-purple-600 focus:outline-none bg-white text-gray-800 text-sm sm:text-base transition-colors`}
+                >
+                  <option value="">Select your preferred pace</option>
+                  <option value="fast">Fast (intensive learning)</option>
+                  <option value="moderate">Moderate (balanced approach)</option>
+                  <option value="slow">Slow (take your time)</option>
+                </select>
+                {errors.paceOfLearning && (
+                  <p className="text-red-400 text-xs sm:text-sm mt-1">{errors.paceOfLearning}</p>
+                )}
+              </div>
+            </div>
           </div>
         );
       case 3:
         return (
-          <div>
-            <h3>Step 3: Goals & Career</h3>
-            <label>
-              Desired skills:
-              <textarea name="DesiredSkill" value={formData.DesiredSkill} onChange={handleChange} className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800"></textarea>
-            </label>
-            <label>
-              Desired Career Path:
-              <input type="text" name="careerPath" value={formData.careerPath} onChange={handleChange} 
-                className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800" />
-            </label>
-            <label>
-              Current Skill Level:
-              <select name="currentSkillLevel" value={formData.currentSkillLevel} onChange={handleChange} 
-                className="w-full p-2 rounded-lg border-2 border-gray-300 focus:border-purple-600 bg-white text-gray-800">
-                <option value="">Select</option>
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
-            </label>
+          <div className="space-y-4 sm:space-y-6">
+            <h3 className="text-lg sm:text-xl font-semibold mb-4 text-center">Goals & Career</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Desired Skills *
+                </label>
+                <textarea 
+                  name="DesiredSkill" 
+                  value={formData.DesiredSkill} 
+                  onChange={handleChange}
+                  placeholder="Describe the skills you want to develop..."
+                  rows="4"
+                  className={`w-full p-3 sm:p-4 rounded-lg border-2 ${
+                    errors.DesiredSkill ? 'border-red-500' : 'border-gray-300'
+                  } focus:border-purple-600 focus:outline-none bg-white text-gray-800 text-sm sm:text-base resize-vertical transition-colors`}
+                />
+                {errors.DesiredSkill && (
+                  <p className="text-red-400 text-xs sm:text-sm mt-1">{errors.DesiredSkill}</p>
+                )}
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Desired Career Path *
+                </label>
+                <input 
+                  type="text" 
+                  name="careerPath" 
+                  value={formData.careerPath} 
+                  onChange={handleChange}
+                  placeholder="e.g., Web Developer, Data Scientist, Product Manager..."
+                  className={`w-full p-3 sm:p-4 rounded-lg border-2 ${
+                    errors.careerPath ? 'border-red-500' : 'border-gray-300'
+                  } focus:border-purple-600 focus:outline-none bg-white text-gray-800 text-sm sm:text-base transition-colors`}
+                />
+                {errors.careerPath && (
+                  <p className="text-red-400 text-xs sm:text-sm mt-1">{errors.careerPath}</p>
+                )}
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Current Skill Level *
+                </label>
+                <select 
+                  name="currentSkillLevel" 
+                  value={formData.currentSkillLevel} 
+                  onChange={handleChange}
+                  className={`w-full p-3 sm:p-4 rounded-lg border-2 ${
+                    errors.currentSkillLevel ? 'border-red-500' : 'border-gray-300'
+                  } focus:border-purple-600 focus:outline-none bg-white text-gray-800 text-sm sm:text-base transition-colors`}
+                >
+                  <option value="">Select your current level</option>
+                  <option value="beginner">Beginner (just starting out)</option>
+                  <option value="intermediate">Intermediate (some experience)</option>
+                  <option value="advanced">Advanced (experienced)</option>
+                </select>
+                {errors.currentSkillLevel && (
+                  <p className="text-red-400 text-xs sm:text-sm mt-1">{errors.currentSkillLevel}</p>
+                )}
+              </div>
+            </div>
           </div>
         );
       default:
@@ -149,9 +282,30 @@ const UserInfoForm = () => {
     }
   };
 
+  // Loading Spinner Component
+  const LoadingSpinner = () => (
+    <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+  );
+
+  // Success Animation Component
+  const SuccessMessage = () => (
+    <div className="text-center py-8">
+      <div className="inline-flex items-center justify-center w-16 h-16 bg-green-500 rounded-full mb-4 animate-pulse">
+        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+      <h3 className="text-lg font-semibold text-green-400 mb-2">Success!</h3>
+      <p className="text-white">Your information has been saved. Redirecting...</p>
+    </div>
+  );
+
   useEffect(() => {
     const canvas = document.getElementById("cosmosCanvas");
+    if (!canvas) return;
+    
     const ctx = canvas.getContext("2d");
+    let animationFrameId;
 
     function resizeCanvas() {
       canvas.width = window.innerWidth;
@@ -162,7 +316,7 @@ const UserInfoForm = () => {
     window.addEventListener("resize", resizeCanvas);
 
     const particles = [];
-    const numParticles = 100;
+    const numParticles = Math.min(150, Math.floor((window.innerWidth * window.innerHeight) / 15000));
 
     class Particle {
       constructor(x, y, radius, speed) {
@@ -171,6 +325,7 @@ const UserInfoForm = () => {
         this.radius = radius;
         this.speed = speed;
         this.angle = Math.random() * Math.PI * 2;
+        this.opacity = Math.random() * 0.5 + 0.3;
       }
 
       update() {
@@ -184,7 +339,7 @@ const UserInfoForm = () => {
       draw() {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
         ctx.fill();
       }
     }
@@ -194,8 +349,8 @@ const UserInfoForm = () => {
         new Particle(
           Math.random() * canvas.width,
           Math.random() * canvas.height,
-          Math.random() * 4 + 1,
-          Math.random() * 0.5 + 0.2
+          Math.random() * 3 + 1,
+          Math.random() * 0.3 + 0.1
         )
       );
     }
@@ -208,9 +363,9 @@ const UserInfoForm = () => {
             particles[a].y - particles[b].y
           );
 
-          if (dist < 120) {
-            ctx.strokeStyle = `rgba(255, 255, 255, ${1 - dist / 120})`;
-            ctx.lineWidth = 0.7;
+          if (dist < 100) {
+            ctx.strokeStyle = `rgba(255, 255, 255, ${(1 - dist / 100) * 0.3})`;
+            ctx.lineWidth = 0.5;
             ctx.beginPath();
             ctx.moveTo(particles[a].x, particles[a].y);
             ctx.lineTo(particles[b].x, particles[b].y);
@@ -227,79 +382,161 @@ const UserInfoForm = () => {
         particle.draw();
       });
       connectParticles();
-      requestAnimationFrame(animate);
+      animationFrameId = requestAnimationFrame(animate);
     }
 
     animate();
+
+    return () => {
+      window.removeEventListener("resize", resizeCanvas);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
   }, []);
 
+  // Don't render the form if user is not authenticated
+  if (!user || !user.name || !user.email) {
+    return null; // Component will redirect to login via useEffect
+  }
+
+  if (submitSuccess) {
+    return (
+      <div className="relative p-6 sm:p-8 bg-gradient-to-r from-blue-900 to-blue-600 rounded-lg shadow-xl text-white mb-20 mx-4 sm:mx-auto max-w-2xl">
+        <canvas id="cosmosCanvas" className="absolute top-0 left-0 z-0 w-full h-full rounded-lg"></canvas>
+        <div className="relative z-10">
+          <SuccessMessage />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="relative p-4 sm:p-6 bg-gradient-to-r from-blue-900 to-blue-400 rounded-lg shadow-xl text-white mb-20 mx-4 sm:mx-auto max-w-4xl">
-      <canvas id="cosmosCanvas" className="absolute top-0 left-0 z-0 w-full h-full"></canvas>
+    <div className="relative p-4 sm:p-6 lg:p-8 bg-gradient-to-r from-blue-900 via-blue-700 to-blue-600 rounded-lg shadow-xl text-white mb-8 mx-4 sm:mx-auto max-w-4xl">
+      <canvas id="cosmosCanvas" className="absolute top-0 left-0 z-0 w-full h-full rounded-lg"></canvas>
 
       <div className="relative z-10">
-        <h2 className="text-xl md:text-2xl font-bold text-center mb-4 sm:mb-6">Update Your Information</h2>
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-center mb-4 sm:mb-6">
+          Update Your Information
+        </h2>
 
-        <div className="relative h-3 sm:h-4 bg-gray-300 rounded-full mb-6 sm:mb-8">
+        {/* Progress Bar */}
+        <div className="relative h-2 sm:h-3 bg-gray-300 bg-opacity-30 rounded-full mb-4 sm:mb-6">
           <div
-            className="absolute top-0 left-0 h-full bg-purple-600 rounded-full transition-all duration-500"
+            className="absolute top-0 left-0 h-full bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-700 ease-out"
             style={{ width: `${(step / totalSteps) * 100}%` }}
           ></div>
         </div>
 
-        <p className="text-center font-semibold mb-4 text-sm sm:text-base">
+        {/* Step Indicator */}
+        <div className="flex justify-center items-center mb-4 sm:mb-6">
+          <div className="flex space-x-2 sm:space-x-4">
+            {[1, 2, 3].map((stepNumber) => (
+              <div
+                key={stepNumber}
+                className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 ${
+                  stepNumber === step
+                    ? 'bg-purple-600 text-white scale-110'
+                    : stepNumber < step
+                    ? 'bg-green-500 text-white'
+                    : 'bg-gray-400 bg-opacity-50 text-gray-300'
+                }`}
+              >
+                {stepNumber < step ? '✓' : stepNumber}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <p className="text-center font-semibold mb-4 sm:mb-6 text-sm sm:text-base">
           Step {step} of {totalSteps}
         </p>
 
+        {/* Error message for submission */}
+        {errors.submit && (
+          <div className="bg-red-500 bg-opacity-20 border border-red-500 text-red-200 px-4 py-3 rounded-lg mb-6">
+            {errors.submit}
+          </div>
+        )}
+
         {loading ? (
-          <div className="text-center text-white py-4">
-            <span>Saving your information...</span>
-            {/* You can use a spinner or a loading component here */}
+          <div className="text-center py-12">
+            <LoadingSpinner />
+            <span className="text-lg">Saving your information...</span>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
-            {renderStep()}
-            <div className="flex justify-between mt-4">
-              {step > 1 && (
-                <button
-                  type="button"
-                  onClick={handlePrev}
-                  className="bg-gray-600 hover:bg-gray-700 text-white py-2 px-3 sm:px-4 rounded-lg"
-                >
-                  Previous
-                </button>
-              )}
-              {step < totalSteps && (
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  className="bg-green-600 hover:bg-green-700 text-white py-2 px-3 sm:px-4 rounded-lg"
-                >
-                  Next
-                </button>
-              )}
-              {step === totalSteps && (
-                <button
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 sm:px-4 rounded-lg"
-                >
-                  Submit
-                </button>
-              )}
+            <div className="min-h-[300px] sm:min-h-[320px]">
+              {renderStep()}
             </div>
+            
+            {/* Navigation Buttons */}
+            // Replace the Navigation Buttons section with this improved version:
+
+{/* Navigation Buttons */}
+<div className="flex justify-between items-center pt-6 gap-4">
+  {/* Previous Button Container - Always takes left space */}
+  <div className="flex-shrink-0">
+    {step > 1 ? (
+      <button
+        type="button"
+        onClick={handlePrev}
+        className="bg-gray-600 hover:bg-gray-700 text-white py-3 px-4 sm:px-6 rounded-lg transition-colors duration-200 font-medium text-sm sm:text-base min-w-[100px] sm:min-w-[120px]"
+      >
+        <span className="hidden sm:inline">← Previous</span>
+        <span className="sm:hidden">← Prev</span>
+      </button>
+    ) : (
+      // Empty div to maintain layout when Previous button is not shown
+      <div className="min-w-[100px] sm:min-w-[120px]"></div>
+    )}
+  </div>
+  
+  {/* Next/Complete Button Container - Always takes right space */}
+  <div className="flex-shrink-0">
+    {step < totalSteps ? (
+      <button
+        type="button"
+        onClick={handleNext}
+        className="bg-green-600 hover:bg-green-700 text-white py-3 px-4 sm:px-6 rounded-lg transition-colors duration-200 font-medium text-sm sm:text-base min-w-[100px] sm:min-w-[120px]"
+      >
+        <span className="hidden sm:inline">Next →</span>
+        <span className="sm:hidden">Next →</span>
+      </button>
+    ) : (
+      <button
+        type="submit"
+        disabled={loading}
+        className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 px-4 sm:px-6 rounded-lg transition-colors duration-200 font-medium flex items-center justify-center text-sm sm:text-base min-w-[120px] sm:min-w-[140px]"
+      >
+        {loading && <LoadingSpinner />}
+        <span className="hidden sm:inline">Complete Setup</span>
+        <span className="sm:hidden">Complete</span>
+      </button>
+    )}
+  </div>
+</div>
           </form>
         )}
 
-        {step < totalSteps && (
-          <div className="text-center mt-4 sm:mt-6">
-            <strong>Complete Step {step}</strong> to unlock more insights!
-          </div>
-        )}
-        {step === totalSteps && (
-          <div className="text-center mt-4 sm:mt-6">
-            You're all set to save your information.
-          </div>
-        )}
+        {/* Progress Messages */}
+        <div className="text-center mt-6 sm:mt-8">
+          {step < totalSteps ? (
+            <div className="bg-blue-800 bg-opacity-40 rounded-lg p-4">
+              <strong className="text-blue-200">Complete Step {step}</strong>
+              <span className="text-blue-100 block sm:inline sm:ml-2">
+                to unlock your personalized learning path!
+              </span>
+            </div>
+          ) : (
+            <div className="bg-green-800 bg-opacity-40 rounded-lg p-4">
+              <strong className="text-green-200">Almost there!</strong>
+              <span className="text-green-100 block sm:inline sm:ml-2">
+                Click "Complete Setup" to save your information.
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
