@@ -42,16 +42,11 @@ const Contact = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/contact`, formData);
       setIsSubmitted(true);
     } catch (error) {
       alert('Failed to send message.');
-    } finally {
-      setIsLoading(false);
     }
   };
 
