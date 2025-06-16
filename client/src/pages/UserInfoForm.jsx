@@ -470,9 +470,6 @@ const UserInfoForm = () => {
               {renderStep()}
             </div>
             
-            {/* Navigation Buttons */}
-            // Replace the Navigation Buttons section with this improved version:
-
 {/* Navigation Buttons */}
 <div className="flex justify-between items-center pt-6 gap-4">
   {/* Previous Button Container - Always takes left space */}
