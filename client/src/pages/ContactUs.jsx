@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios'; // Added missing axios import
 import { Send, CheckCircle, User, Mail, MessageSquare } from 'lucide-react';
 
 const Success = ({ resetForm }) => (
@@ -17,7 +18,7 @@ const Success = ({ resetForm }) => (
         </p>
       </div>
       <button
-        className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl text-sm sm:text-base"
+        className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl text-sm sm:text-base"
         onClick={resetForm}
       >
         Send Another Message
@@ -35,24 +36,66 @@ const Contact = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
+    // Clear error when user starts typing
+    if (error) setError('');
+  };
+
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      setError('Please enter your name');
+      return false;
+    }
+    if (!formData.email.trim()) {
+      setError('Please enter your email');
+      return false;
+    }
+    if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      setError('Please enter a valid email address');
+      return false;
+    }
+    if (!formData.message.trim()) {
+      setError('Please enter your message');
+      return false;
+    }
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/contact`, formData);
-      setIsSubmitted(true);
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/contact`, {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        message: formData.message.trim()
+      });
+
+      if (response.status === 201) {
+        setIsSubmitted(true);
+      }
     } catch (error) {
-      alert('Failed to send message.');
+      console.error('Error sending message:', error);
+      setError('Failed to send message. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const resetForm = () => {
     setFormData({ name: '', email: '', message: '' });
     setIsSubmitted(false);
+    setError('');
   };
 
   useEffect(() => {
@@ -165,11 +208,7 @@ const Contact = () => {
       />
       
       {/* Floating orbs - responsive sizing */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-48 h-48 sm:w-72 sm:h-72 bg-blue-500/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
-        <div className="absolute top-1/2 right-1/3 w-32 h-32 sm:w-48 sm:h-48 bg-cyan-500/10 rounded-full blur-3xl animate-pulse delay-500" />
-      </div>
+     
 
       <div className="relative z-10 min-h-screen flex items-center justify-center p-4 py-8 sm:py-4">
         <div className="w-full max-w-2xl">
@@ -185,7 +224,14 @@ const Contact = () => {
 
           {/* Form Container */}
           <div className="bg-white/5 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-2xl border border-white/10 mx-2 sm:mx-0">
-            <div className="space-y-4 sm:space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              {/* Error Message */}
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 text-sm sm:text-base">
+                  {error}
+                </div>
+              )}
+
               {/* Name Field */}
               <div className="relative">
                 <label 
@@ -260,9 +306,9 @@ const Contact = () => {
 
               {/* Submit Button */}
               <button
-                onClick={handleSubmit}
+                type="submit"
                 disabled={isLoading}
-                className="w-full bg-blue-600 hover:bg-blue-800 text-white font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:scale-100 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 text-sm sm:text-base"
+                className="w-full bg-blue-600 hover:bg-blue-800 text-white font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:scale-100 disabled:opacity-70 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 text-sm sm:text-base"
               >
                 {isLoading ? (
                   <>
@@ -276,7 +322,7 @@ const Contact = () => {
                   </>
                 )}
               </button>
-            </div>
+            </form>
           </div>
 
           {/* Footer */}

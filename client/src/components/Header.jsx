@@ -66,8 +66,19 @@ const Header = () => {
     }, 200); // Add a small delay for smoother UX
   };
 
-  const handleLearningPathClick = async () => {
+  // Generic function to handle authenticated navigation
+  const handleAuthenticatedNavigation = async (path, fallbackPath = "/user-info") => {
     setLoading(true);
+    
+    // If user is not logged in, redirect to login
+    if (!user) {
+      navigate("/login");
+      setOpenNavigation(false);
+      enablePageScroll();
+      setLoading(false);
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/user-info/completed`, {
@@ -75,19 +86,25 @@ const Header = () => {
       });
 
       if (response.data.completed) {
-        navigate("/learning-path");
+        navigate(path);
       } else {
-        navigate("/user-info");
+        navigate(fallbackPath);
       }
     } catch (error) {
       console.error("Error checking user info:", error);
-      navigate("/user-info"); // Fallback
+      navigate(fallbackPath); // Fallback
     } finally {
       setOpenNavigation(false); // Close sidebar
       enablePageScroll(); // Re-enable page scroll
       setLoading(false); // Reset loading
     }
   };
+
+  const handleLearningPathClick = () => handleAuthenticatedNavigation("/learning-path");
+  const handleCustomPathClick = () => handleAuthenticatedNavigation("/generate-path");
+  const handleGuideMateClick = () => handleAuthenticatedNavigation("/guidemate-AI");
+  const handleSavedResourcesClick = () => handleAuthenticatedNavigation("/saved-resources");
+  const handleContactUsClick = () => handleNavigation("/contact-us");
 
   // Close Sidebar when clicking outside
   const handleClickOutside = (event) => {
@@ -136,8 +153,8 @@ const Header = () => {
         <nav className="hidden lg:flex items-center space-x-8">
           <NavLink path="/" label="Home" icon={<FaHome className="mr-2" />} onClick={() => handleNavigation("/")} active={isActive("/")} />
           <NavLink path="/learning-path" label="My Goal Path" icon={<FaRoute className="mr-2" />} onClick={handleLearningPathClick} active={isActive("/learning-path")} />
-          <NavLink path="/generate-path" label="Custom Path" icon={<FaLightbulb className="mr-2" />} onClick={() => handleNavigation("/generate-path")} active={isActive("/generate-path")} />
-          <NavLink path="/guidemate-AI" label="GuideMate" icon={<FaRobot className="mr-2" />} onClick={() => handleNavigation("/guidemate-AI")} active={isActive("/guidemate-AI")} />
+          <NavLink path="/generate-path" label="Custom Path" icon={<FaLightbulb className="mr-2" />} onClick={handleCustomPathClick} active={isActive("/generate-path")} />
+          <NavLink path="/guidemate-AI" label="GuideMate" icon={<FaRobot className="mr-2" />} onClick={handleGuideMateClick} active={isActive("/guidemate-AI")} />
         </nav>
 
         {/* Action Buttons */}
@@ -233,25 +250,25 @@ const Header = () => {
             <SidebarNavItem 
               icon={<FaLightbulb size={16} />} 
               label="Custom Path" 
-              onClick={() => handleNavigation("/generate-path")}
+              onClick={handleCustomPathClick}
               active={isActive("/generate-path")}
             />
             <SidebarNavItem 
               icon={<FaBookmark size={16} />} 
               label="Saved Resources" 
-              onClick={() => handleNavigation("/saved-resources")}
+              onClick={handleSavedResourcesClick}
               active={isActive("/saved-resources")}
             />
             <SidebarNavItem 
               icon={<FaRobot size={16} />} 
               label="GuideMate" 
-              onClick={() => handleNavigation("/guidemate-AI")}
+              onClick={handleGuideMateClick}
               active={isActive("/guidemate-AI")}
             />
             <SidebarNavItem 
               icon={<FaEnvelope size={16} />} 
               label="Contact Us" 
-              onClick={() => handleNavigation("/contact-us")}
+              onClick={handleContactUsClick}
               active={isActive("/contact-us")}
             />
           </ul>
