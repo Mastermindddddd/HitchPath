@@ -97,6 +97,10 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+app.get('/ads.txt', function (req, res) {
+  res.sendFile(__dirname + '/public/ads.txt');
+});
+
 // Registration endpoint
 app.post(
   "/register",
