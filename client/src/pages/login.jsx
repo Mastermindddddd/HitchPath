@@ -38,31 +38,31 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="flex items-center justify-center p-4 sm:p-6 lg:p-8 min-h-screen relative overflow-hidden">
       {/* Animated Background Elements */}
 
       <div className="w-full max-w-md relative z-10">
         {/* Logo/Brand Section */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold bg-blue-600 bg-clip-text text-transparent">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold bg-blue-600 bg-clip-text text-transparent">
             Welcome Back
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm sm:text-base">
             Sign in to continue your journey
           </p>
         </div>
 
         {/* Main Login Card */}
-        <div className="bg-slate-800/50 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 dark:border-gray-700/50 p-8 transition-all duration-300 hover:shadow-3xl">
+        <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl border border-white/20 dark:border-gray-700/50 p-6 sm:p-8 transition-all duration-300 hover:shadow-3xl">
           {/* Error Message */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-700 dark:text-red-400 text-sm flex items-center gap-2 animate-shake">
-              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-              {error}
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-700 dark:text-red-400 text-sm flex items-center gap-2 animate-shake">
+              <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
+              <span className="break-words">{error}</span>
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleLogin} className="space-y-4 sm:space-y-6">
             {/* Email Field */}
             <div className="space-y-2">
               <label
@@ -72,19 +72,18 @@ const Login = () => {
                 Email Address
               </label>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                  <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
                 </div>
                 <input
                   type="email"
                   id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 bg-blue-500/20 dark:bg-blue-500/30 border border-blue-500 rounded-xl text-gray-200 dark:text-white placeholder-gray-100 dark:placeholder-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
+                  className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3 bg-blue-500/20 dark:bg-blue-500/30 border border-blue-500 rounded-xl text-gray-200 dark:text-white placeholder-gray-100 dark:placeholder-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm text-sm sm:text-base"
                   placeholder="Enter your email"
                   required
                 />
-
               </div>
             </div>
 
@@ -97,24 +96,24 @@ const Login = () => {
                 Password
               </label>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                  <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 bg-blue-500/20 dark:bg-blue-500/30 border border-blue-500 rounded-xl text-gray-200 dark:text-white placeholder-gray-100 dark:placeholder-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
+                  className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-2.5 sm:py-3 bg-blue-500/20 dark:bg-blue-500/30 border border-blue-500 rounded-xl text-gray-200 dark:text-white placeholder-gray-100 dark:placeholder-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm text-sm sm:text-base"
                   placeholder="Enter your password"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  className="absolute inset-y-0 right-0 pr-3 sm:pr-4 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
                 </button>
               </div>
             </div>
@@ -133,17 +132,17 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-blue-600 hover:bg-blue-800 text-white font-semibold py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base"
             >
               {loading ? (
                 <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                  Signing in...
+                  <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-2 border-white border-t-transparent"></div>
+                  <span>Signing in...</span>
                 </>
               ) : (
                 <>
-                  <LogIn className="h-5 w-5" />
-                  Sign In
+                  <LogIn className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <span>Sign In</span>
                 </>
               )}
             </button>
@@ -169,8 +168,8 @@ const Login = () => {
           */}
 
           {/* Sign Up Link */}
-          <div className="text-center mt-4">
-            <p className="text-gray-600 dark:text-gray-400">
+          <div className="text-center mt-6">
+            <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
               Don't have an account?{" "}
               <a
                 href="/register"
@@ -183,7 +182,7 @@ const Login = () => {
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-8 text-gray-500 dark:text-gray-400 text-sm">
+        <div className="text-center mt-6 sm:mt-8 text-gray-500 dark:text-gray-400 text-xs sm:text-sm">
           <p>© 2025 Hitchhub. All rights reserved.</p>
         </div>
       </div>

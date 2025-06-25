@@ -92,7 +92,7 @@ const Register = () => {
   const passwordStrength = getPasswordStrength(password);
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8">
+    <div className="flex items-center justify-center px-4 py-8">
 
       <div className="relative w-full max-w-md">
         {/* Main card */}
